@@ -6,6 +6,8 @@ Sistema web para pastelería especializada en tortas para eventos. Incluye:
 - **Sitio público**: Catálogo, agendamiento, cotizaciones, pagos
 - **Panel administrativo (SaaS)**: Gestión completa del negocio
 
+> **Task Tracker**: Lee `.claude/task.md` para ver el estado completo del proyecto (milestones, lo hecho y lo pendiente).
+
 ---
 
 ## Stack Técnico
@@ -861,44 +863,4 @@ NEXT_PUBLIC_APP_NAME="DulceArte"
 
 ## Checklist Desarrollo
 
-### Fase 1: Setup
-- [ ] Inicializar Next.js + TypeScript
-- [ ] Configurar Tailwind + Design tokens
-- [ ] Setup Supabase (proyecto, tablas, RLS)
-- [ ] Configurar GSAP
-- [ ] Crear componentes UI base
-
-### Fase 2: Sitio Público
-- [ ] Layout (Navbar, Footer)
-- [ ] Home page con animaciones
-- [ ] Catálogo + Filtros
-- [ ] Detalle producto
-- [ ] Sistema de agendamiento
-- [ ] Formulario cotización
-- [ ] Checkout + Pagos
-- [ ] Seguimiento pedido
-
-### Fase 3: Panel Admin
-- [ ] Autenticación + Roles
-- [ ] Dashboard
-- [ ] Gestión pedidos
-- [ ] Calendario
-- [ ] Catálogo admin
-- [ ] Cotizaciones
-- [ ] Inventario
-- [ ] Clientes
-- [ ] Finanzas
-- [ ] Configuración
-
-### Fase 4: Integraciones
-- [ ] Twilio WhatsApp
-- [ ] Emails transaccionales
-- [ ] Webhooks pagos
-- [ ] Notificaciones push (opcional)
-
-### Fase 5: Polish
-- [ ] Testing
-- [ ] Optimización imágenes
-- [ ] SEO
-- [ ] Analytics
-- [ ] Deploy producción
+> Ver `.claude/task.md` para el desglose completo con estado actualizado de cada milestone.

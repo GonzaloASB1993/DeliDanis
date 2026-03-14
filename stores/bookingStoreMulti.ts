@@ -16,25 +16,32 @@ export interface TortaService {
   price: number
 }
 
-// Servicio de Coctelería
+// Servicio de Coctelería (sistema de selección de productos)
 export interface CocktailService {
   type: 'cocteleria'
-  guests: number
-  duration: 2 | 3 | 4 // horas
-  includesBar: boolean
+  items: Record<string, number> // productId: quantity
+  itemsDetails?: Array<{
+    productId: string
+    productName: string
+    quantity: number
+    unitPrice: number
+    imageUrl?: string | null
+  }>
   specialRequests?: string
   price: number
 }
 
-// Servicio de Pastelería
+// Servicio de Pastelería (nuevo formato con productos de BD)
 export interface PastryService {
   type: 'pasteleria'
-  items: {
-    pieLimon: number
-    tartas: number
-    galletas: number // docenas
-    rollitos: number // paquetes de 6
-  }
+  items: Record<string, number> // productId: quantity
+  itemsDetails?: Array<{
+    productId: string
+    productName: string
+    quantity: number
+    unitPrice: number
+    imageUrl?: string | null
+  }>
   price: number
 }
 
@@ -148,16 +155,51 @@ const calculateTortaPrice = (service: Omit<TortaService, 'id' | 'price'>): numbe
   return price
 }
 
-// Helper para calcular precio de coctelería
+// Helper para calcular precio de coctelería (basado en productos individuales)
 const calculateCocktailPrice = (service: Omit<CocktailService, 'id' | 'price'>): number => {
-  const { guests, duration, includesBar } = service
-  let price = guests * duration * PRICES.cocktail.perGuestPerHour
+  const { items } = service
 
-  if (includesBar) {
-    price += PRICES.cocktail.barSetup
+  // Precios de productos de coctelería (deben coincidir con CocktailServiceForm)
+  const productPrices: Record<string, number> = {
+    // Dulces - Mini Pies
+    '1': 3500,  // Mini Pie de Limón
+    '2': 3500,  // Mini Pie de Manzana
+    '3': 3800,  // Mini Pie de Frutillas
+    // Dulces - Mini Cheesecakes
+    '4': 4000,  // Mini Cheesecake Frutos Rojos
+    '5': 4200,  // Mini Cheesecake Oreo
+    '6': 4000,  // Mini Cheesecake Maracuyá
+    // Dulces - Bocados
+    '7': 3000,  // Profiteroles
+    '8': 4500,  // Macarons
+    '9': 3500,  // Trufas
+    '10': 3000, // Alfajores
+    // Salados - Tapaditos
+    '11': 2500, // Tapaditos Jamón y Queso
+    '12': 2500, // Tapaditos Pollo
+    '13': 2800, // Tapaditos Atún
+    '14': 2500, // Tapaditos Vegetales
+    // Salados - Mini Hamburguesas
+    '15': 3500, // Mini Hamburguesa Clásica
+    '16': 3800, // Mini Hamburguesa BBQ
+    '17': 3500, // Mini Hamburguesa Pollo
+    // Salados - Croissants
+    '18': 3500, // Mini Croissant Jamón y Queso
+    '19': 3800, // Mini Croissant Pollo Champiñones
+    // Salados - Empanadas
+    '20': 2800, // Empanada de Pino
+    '21': 2500, // Empanada de Queso
+    '22': 2800, // Empanada Napolitana
+    // Salados - Otros
+    '23': 2500, // Tequeños
+    '24': 4000, // Canapés Variados
+    '25': 3500, // Quiches Individuales
   }
 
-  return price
+  return Object.entries(items).reduce((sum, [productId, quantity]) => {
+    const price = productPrices[productId] || 0
+    return sum + (price * quantity)
+  }, 0)
 }
 
 // Helper para calcular precio de pastelería
@@ -210,17 +252,26 @@ export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
   addService: (serviceData) => {
     let price = 0
 
-    // Calcular precio según tipo
-    if (serviceData.type === 'torta') {
-      price = calculateTortaPrice(serviceData as Omit<TortaService, 'id' | 'price'>)
-    } else if (serviceData.type === 'cocteleria') {
-      price = calculateCocktailPrice(serviceData as Omit<CocktailService, 'id' | 'price'>)
-    } else if (serviceData.type === 'pasteleria') {
-      price = calculatePastryPrice(serviceData as Omit<PastryService, 'id' | 'price'>)
+    // Si viene un precio pre-calculado del formulario, usarlo
+    const dataWithPrice = serviceData as any
+    if (dataWithPrice.calculatedPrice !== undefined) {
+      price = dataWithPrice.calculatedPrice
+    } else {
+      // Calcular precio según tipo (fallback)
+      if (serviceData.type === 'torta') {
+        price = calculateTortaPrice(serviceData as Omit<TortaService, 'id' | 'price'>)
+      } else if (serviceData.type === 'cocteleria') {
+        price = calculateCocktailPrice(serviceData as Omit<CocktailService, 'id' | 'price'>)
+      } else if (serviceData.type === 'pasteleria') {
+        price = calculatePastryPrice(serviceData as Omit<PastryService, 'id' | 'price'>)
+      }
     }
 
+    // Limpiar calculatedPrice antes de guardar
+    const { calculatedPrice, ...cleanServiceData } = dataWithPrice
+
     const newService: ServiceItem = {
-      ...serviceData,
+      ...cleanServiceData,
       id: generateId(),
       price,
     } as ServiceItem

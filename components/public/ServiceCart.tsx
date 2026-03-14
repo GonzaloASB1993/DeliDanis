@@ -44,12 +44,21 @@ const getServiceDescription = (service: ServiceItem): string => {
     }
     case 'cocteleria': {
       const cocktailService = service as CocktailService
-      return `${cocktailService.guests} invitados × ${cocktailService.duration} hrs`
+      const totalUnits = Object.values(cocktailService.items).reduce((sum, qty) => sum + qty, 0)
+      const productCount = Object.keys(cocktailService.items).length
+      return `${productCount} ${productCount === 1 ? 'producto' : 'productos'} • ${totalUnits} unidades`
     }
     case 'pasteleria': {
       const pastryService = service as PastryService
+      // Usar itemsDetails si está disponible (nuevo formato)
+      if (pastryService.itemsDetails && pastryService.itemsDetails.length > 0) {
+        const totalItems = pastryService.itemsDetails.reduce((sum, item) => sum + item.quantity, 0)
+        const productCount = pastryService.itemsDetails.length
+        return `${productCount} ${productCount === 1 ? 'producto' : 'productos'} • ${totalItems} unidades`
+      }
+      // Fallback al formato antiguo
       const items = Object.entries(pastryService.items)
-        .filter(([_, qty]) => qty > 0)
+        .filter(([_, qty]) => typeof qty === 'number' && qty > 0)
         .map(([key, qty]) => {
           const names: Record<string, string> = {
             pieLimon: 'Pie de limón',
@@ -57,11 +66,85 @@ const getServiceDescription = (service: ServiceItem): string => {
             galletas: 'Galletas',
             rollitos: 'Rollitos',
           }
-          return `${qty}× ${names[key]}`
+          return `${qty}× ${names[key] || key}`
         })
-      return items.join(', ')
+      return items.join(', ') || 'Sin productos'
     }
   }
+}
+
+const ServiceDetailsExpanded = ({ service }: { service: ServiceItem }) => {
+  if (service.type === 'cocteleria') {
+    const cocktailService = service as CocktailService
+
+    if (!cocktailService.itemsDetails || cocktailService.itemsDetails.length === 0) {
+      return null
+    }
+
+    return (
+      <div className="mt-3 pt-3 border-t border-border/50">
+        <p className="text-xs font-semibold text-dark-light mb-2">Detalle de productos:</p>
+        <div className="space-y-1">
+          {cocktailService.itemsDetails.map((item, idx) => (
+            <div key={idx} className="flex justify-between items-center text-xs">
+              <span className="text-dark-light">
+                {item.quantity}× {item.productName}
+              </span>
+              <span className="text-dark font-medium">
+                {formatCurrency(item.unitPrice * item.quantity)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (service.type === 'pasteleria') {
+    const pastryService = service as PastryService
+
+    if (!pastryService.itemsDetails || pastryService.itemsDetails.length === 0) {
+      return null
+    }
+
+    return (
+      <div className="mt-3 pt-3 border-t border-border/50">
+        <p className="text-xs font-semibold text-dark-light mb-2">Detalle de productos:</p>
+        <div className="space-y-1">
+          {pastryService.itemsDetails.map((item, idx) => (
+            <div key={idx} className="flex justify-between items-center text-xs">
+              <span className="text-dark-light">
+                {item.quantity}× {item.productName}
+              </span>
+              <span className="text-dark font-medium">
+                {formatCurrency(item.unitPrice * item.quantity)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (service.type === 'torta') {
+    const tortaService = service as TortaService
+    return (
+      <div className="mt-3 pt-3 border-t border-border/50 space-y-1">
+        {tortaService.customizations.message && (
+          <p className="text-xs text-dark-light">
+            <span className="font-semibold">Mensaje:</span> {tortaService.customizations.message}
+          </p>
+        )}
+        {tortaService.customizations.specialRequests && (
+          <p className="text-xs text-dark-light">
+            <span className="font-semibold">Solicitudes:</span> {tortaService.customizations.specialRequests}
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  return null
 }
 
 export function ServiceCart({
@@ -136,6 +219,9 @@ export function ServiceCart({
                   <p className="text-accent font-bold">
                     {formatCurrency(service.price)}
                   </p>
+
+                  {/* Detalle expandido */}
+                  <ServiceDetailsExpanded service={service} />
                 </div>
               </div>
             </div>

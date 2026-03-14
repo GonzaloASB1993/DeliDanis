@@ -1,203 +1,147 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils/format'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
+import { getPastryProducts } from '@/lib/supabase/product-queries'
+import { ProductDetailModal } from '@/components/public/ProductDetailModal'
+
+interface ProductImage {
+  id: string
+  url: string
+  alt_text?: string
+  is_primary: boolean
+}
 
 interface PastryItem {
   id: string
   name: string
   slug: string
   description: string
-  short_description: string
-  base_price: number
+  price: number
   unit: string
   is_featured: boolean
-  category: 'postres' | 'panaderia' | 'galletas'
+  min_order_quantity?: number
+  category?: {
+    id: string
+    name: string
+    slug: string
+  }
+  subcategory?: {
+    id: string
+    name: string
+  }
+  images?: ProductImage[]
 }
-
-// Productos de pastelería
-const pastryItems: PastryItem[] = [
-  // Postres
-  {
-    id: '1',
-    name: 'Pie de Limón',
-    slug: 'pie-limon',
-    description: 'Crujiente base de galleta, relleno cremoso de limón y merengue italiano tostado. El equilibrio perfecto entre dulce y ácido.',
-    short_description: 'Cremoso, cítrico y delicioso',
-    base_price: 45000,
-    unit: 'porción 8 personas',
-    is_featured: true,
-    category: 'postres',
-  },
-  {
-    id: '2',
-    name: 'Cheesecake New York',
-    slug: 'cheesecake-new-york',
-    description: 'Auténtico cheesecake estilo New York, cremoso y denso, con base de galleta graham y topping de frutas.',
-    short_description: 'Cremoso estilo americano',
-    base_price: 55000,
-    unit: 'porción 10 personas',
-    is_featured: true,
-    category: 'postres',
-  },
-  {
-    id: '3',
-    name: 'Tiramisú',
-    slug: 'tiramisu',
-    description: 'Clásico italiano con bizcochos remojados en café, crema de mascarpone y cacao. Suave y sofisticado.',
-    short_description: 'Café y mascarpone italiano',
-    base_price: 50000,
-    unit: 'porción 8 personas',
-    is_featured: true,
-    category: 'postres',
-  },
-  {
-    id: '4',
-    name: 'Mousse de Maracuyá',
-    slug: 'mousse-maracuya',
-    description: 'Ligero mousse de maracuyá con base de galleta y cobertura de frutas frescas. Tropical y refrescante.',
-    short_description: 'Tropical y refrescante',
-    base_price: 48000,
-    unit: 'porción 8 personas',
-    is_featured: false,
-    category: 'postres',
-  },
-  {
-    id: '5',
-    name: 'Flan de Caramelo',
-    slug: 'flan-caramelo',
-    description: 'Tradicional flan de caramelo casero, suave y cremoso, con caramelo líquido abundante.',
-    short_description: 'Casero y tradicional',
-    base_price: 35000,
-    unit: 'porción 8 personas',
-    is_featured: false,
-    category: 'postres',
-  },
-  // Panadería
-  {
-    id: '6',
-    name: 'Rollitos de Canela',
-    slug: 'rollitos-canela',
-    description: 'Recién horneados, suaves y esponjosos, con glaseado de queso crema. El aroma irresistible de la canela.',
-    short_description: 'Suaves con glaseado',
-    base_price: 28000,
-    unit: 'bandeja 6 unidades',
-    is_featured: true,
-    category: 'panaderia',
-  },
-  {
-    id: '7',
-    name: 'Croissants de Mantequilla',
-    slug: 'croissants',
-    description: 'Croissants artesanales con mantequilla francesa, crujientes por fuera y suaves por dentro.',
-    short_description: 'Mantequilla francesa',
-    base_price: 25000,
-    unit: 'bandeja 6 unidades',
-    is_featured: false,
-    category: 'panaderia',
-  },
-  {
-    id: '8',
-    name: 'Pan de Chocolate',
-    slug: 'pan-chocolate',
-    description: 'Pain au chocolat con barras de chocolate belga, perfecto para el desayuno o la merienda.',
-    short_description: 'Chocolate belga',
-    base_price: 30000,
-    unit: 'bandeja 6 unidades',
-    is_featured: false,
-    category: 'panaderia',
-  },
-  {
-    id: '9',
-    name: 'Muffins Variados',
-    slug: 'muffins',
-    description: 'Esponjosos muffins en sabores: chocolate, arándanos, vainilla con chips o zanahoria.',
-    short_description: 'Variedad de sabores',
-    base_price: 22000,
-    unit: 'bandeja 6 unidades',
-    is_featured: false,
-    category: 'panaderia',
-  },
-  // Galletas
-  {
-    id: '10',
-    name: 'Galletas Chips de Chocolate',
-    slug: 'galletas-chocolate',
-    description: 'Galletas con abundantes chips de chocolate, crujientes por fuera y suaves por dentro.',
-    short_description: 'Abundante chocolate',
-    base_price: 18000,
-    unit: 'docena',
-    is_featured: true,
-    category: 'galletas',
-  },
-  {
-    id: '11',
-    name: 'Galletas de Avena y Pasas',
-    slug: 'galletas-avena',
-    description: 'Nutritivas galletas de avena con pasas y un toque de canela. Perfectas para cualquier momento.',
-    short_description: 'Nutritivas y deliciosas',
-    base_price: 16000,
-    unit: 'docena',
-    is_featured: false,
-    category: 'galletas',
-  },
-  {
-    id: '12',
-    name: 'Alfajores de Maicena',
-    slug: 'alfajores-maicena',
-    description: 'Delicados alfajores de maicena rellenos de arequipe y cubiertos de coco rallado.',
-    short_description: 'Arequipe y coco',
-    base_price: 20000,
-    unit: 'docena',
-    is_featured: false,
-    category: 'galletas',
-  },
-]
 
 const categories = [
   { id: 'todos', name: 'Todos', icon: '🍰' },
-  { id: 'postres', name: 'Postres', icon: '🍮' },
-  { id: 'panaderia', name: 'Panadería', icon: '🥐' },
+  { id: 'pies', name: 'Pies', icon: '🥧' },
+  { id: 'tartas', name: 'Tartas', icon: '🍮' },
   { id: 'galletas', name: 'Galletas', icon: '🍪' },
+  { id: 'bocaditos', name: 'Bocaditos', icon: '🥐' },
 ]
 
 export default function PasteleriaPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('todos')
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'name'>('name')
+  const [selectedProduct, setSelectedProduct] = useState<PastryItem | null>(null)
+
+  // Estado para productos cargados desde BD
+  const [products, setProducts] = useState<PastryItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Cargar productos desde la base de datos
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setIsLoading(true)
+        const { success, products: pastryProducts } = await getPastryProducts()
+
+        if (success) {
+          setProducts(pastryProducts as PastryItem[])
+        } else {
+          setError('No se pudieron cargar los productos')
+        }
+      } catch (err) {
+        console.error('Error loading pastry products:', err)
+        setError('Error al cargar los productos')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
 
   const filteredProducts = useMemo(() => {
-    return pastryItems
+    return products
       .filter((item) => {
         if (selectedCategory === 'todos') return true
-        return item.category === selectedCategory
+        const categorySlug = item.category?.slug || ''
+        return categorySlug === selectedCategory
       })
       .sort((a, b) => {
         switch (sortBy) {
           case 'price-asc':
-            return a.base_price - b.base_price
+            return a.price - b.price
           case 'price-desc':
-            return b.base_price - a.base_price
+            return b.price - a.price
           case 'name':
           default:
             return a.name.localeCompare(b.name)
         }
       })
-  }, [selectedCategory, sortBy])
+  }, [products, selectedCategory, sortBy])
 
   const getCategoryCount = (category: string) => {
-    if (category === 'todos') return pastryItems.length
-    return pastryItems.filter(i => i.category === category).length
+    if (category === 'todos') return products.length
+    return products.filter(i => i.category?.slug === category).length
   }
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'postres': return '🍮'
-      case 'panaderia': return '🥐'
-      case 'galletas': return '🍪'
-      default: return '🍰'
-    }
+  const getCategoryIcon = (categorySlug?: string) => {
+    const cat = categories.find(c => c.id === categorySlug)
+    return cat?.icon || '🍰'
+  }
+
+  const getPrimaryImage = (item: PastryItem) => {
+    if (!item.images || item.images.length === 0) return null
+    const primary = item.images.find(img => img.is_primary)
+    return primary?.url || item.images[0]?.url
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-dark-light text-lg">Cargando productos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-20">
+        <div className="max-w-md mx-auto text-center">
+          <div className="text-red-600 mb-4 text-5xl">⚠️</div>
+          <h2 className="text-2xl font-bold text-dark mb-4">Error al cargar productos</h2>
+          <p className="text-dark-light mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -225,15 +169,14 @@ export default function PasteleriaPage() {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
               </svg>
-              {pastryItems.length} productos disponibles
+              {products.length} productos disponibles
             </div>
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
               Pastelería <span className="text-primary">Artesanal</span>
             </h1>
             <p className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
-              Delicias frescas horneadas diariamente con amor. Postres, panadería y galletas
-              elaboradas con ingredientes de primera calidad.
+              Delicias frescas horneadas diariamente con amor. Elaboradas con ingredientes de primera calidad.
             </p>
 
             {/* Quick Stats */}
@@ -322,89 +265,124 @@ export default function PasteleriaPage() {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProducts.map((item) => (
-                <div
-                  key={item.id}
-                  className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border border-transparent hover:border-primary/10"
-                >
-                  {/* Image Placeholder */}
-                  <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-secondary to-primary/5">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center transform group-hover:scale-110 transition-transform duration-500">
-                        <div className="text-6xl mb-2">{getCategoryIcon(item.category)}</div>
-                      </div>
-                    </div>
+            {filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProducts.map((item) => {
+                  const imageUrl = getPrimaryImage(item)
 
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
-
-                    {/* Quick view */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
-                      <span className="px-6 py-2.5 bg-white text-dark font-semibold rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                        Ver detalles
-                      </span>
-                    </div>
-
-                    {/* Featured Badge */}
-                    {item.is_featured && (
-                      <div className="absolute top-4 left-4">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-primary font-semibold rounded-full text-xs shadow-md">
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                          Destacado
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Category Badge */}
-                    <div className="absolute top-4 right-4">
-                      <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-dark">
-                        {categories.find(c => c.id === item.category)?.name}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-5">
-                    <h3 className="font-display text-lg font-bold text-dark mb-2 group-hover:text-primary transition-colors">
-                      {item.name}
-                    </h3>
-
-                    <p className="text-dark-light text-sm mb-4 line-clamp-2">
-                      {item.short_description}
-                    </p>
-
-                    {/* Price */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <span className="text-xl font-bold text-accent font-display">
-                          {formatCurrency(item.base_price)}
-                        </span>
-                      </div>
-                      <div className="text-xs text-dark-light bg-secondary/50 px-2.5 py-1 rounded-full">
-                        {item.unit}
-                      </div>
-                    </div>
-
-                    {/* CTA */}
-                    <Link
-                      href="/agendar"
-                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary/10 text-primary font-semibold rounded-xl hover:bg-primary hover:text-white transition-all duration-300"
+                  return (
+                    <div
+                      key={item.id}
+                      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border border-transparent hover:border-primary/10"
                     >
-                      <span>Agregar al pedido</span>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
+                      {/* Image */}
+                      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-secondary to-primary/5">
+                        {imageUrl ? (
+                          <Image
+                            src={imageUrl}
+                            alt={item.name}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center transform group-hover:scale-110 transition-transform duration-500">
+                              <div className="text-6xl mb-2">{getCategoryIcon(item.category?.slug)}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+
+                        {/* Quick view button */}
+                        <button
+                          onClick={() => setSelectedProduct(item)}
+                          className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500"
+                        >
+                          <span className="px-6 py-2.5 bg-white text-dark font-semibold rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            Ver detalles
+                          </span>
+                        </button>
+
+                        {/* Featured Badge */}
+                        {item.is_featured && (
+                          <div className="absolute top-4 left-4">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-primary font-semibold rounded-full text-xs shadow-md">
+                              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                              Destacado
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Category Badge */}
+                        <div className="absolute top-4 right-4">
+                          <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-dark">
+                            {item.category?.name || 'Pastelería'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-5">
+                        <h3 className="font-display text-lg font-bold text-dark mb-2 group-hover:text-primary transition-colors">
+                          {item.name}
+                        </h3>
+
+                        <p className="text-dark-light text-sm mb-4 line-clamp-2">
+                          {item.description || 'Delicioso producto artesanal'}
+                        </p>
+
+                        {/* Price */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <span className="text-xl font-bold text-accent font-display">
+                              {formatCurrency(item.price)}
+                            </span>
+                          </div>
+                          <div className="text-xs text-dark-light bg-secondary/50 px-2.5 py-1 rounded-full">
+                            {item.unit}
+                          </div>
+                        </div>
+
+                        {/* CTA */}
+                        <Link
+                          href="/agendar"
+                          className="flex items-center justify-center gap-2 w-full py-2.5 bg-primary/10 text-primary font-semibold rounded-xl hover:bg-primary hover:text-white transition-all duration-300"
+                        >
+                          <span>Agregar al pedido</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </Link>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-dark mb-2">No se encontraron productos</h3>
+                <p className="text-dark-light">
+                  Intenta ajustar los filtros para ver más resultados
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Product Detail Modal */}
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          productType="pastry"
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
 
       <WhatsAppButton />
     </>

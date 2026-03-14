@@ -8,22 +8,22 @@ import { WhatsAppButton } from '@/components/public/WhatsAppButton'
 export default function HomePage() {
   return (
     <main className="overflow-x-hidden">
-      {/* Hero - Primera impresión impactante */}
+      {/* Hero - Impacto inmediato con valor y confianza */}
       <Hero />
 
       {/* Productos destacados - Mostrar lo mejor */}
       <FeaturedProducts />
 
-      {/* Servicios - Todo lo que ofrecemos */}
+      {/* Servicios - Diversidad de opciones */}
       <ServicesSection />
 
-      {/* Testimonios - Prueba social */}
+      {/* Testimonios - Prueba social y credibilidad */}
       <TestimonialsCarousel />
 
-      {/* CTA Final - Llamado a la acción */}
+      {/* CTA Final - Conversión con urgencia */}
       <CTASection />
 
-      {/* WhatsApp flotante */}
+      {/* WhatsApp flotante - Acceso rápido a contacto */}
       <WhatsAppButton />
     </main>
   )

@@ -26,13 +26,9 @@ export function TortaServiceForm({
   const [message, setMessage] = useState('')
   const [specialRequests, setSpecialRequests] = useState('')
 
-  // Filtrar productos por tipo de evento
-  const filteredProducts = useMemo(() => {
-    return availableProducts.filter((product) => {
-      const productEventTypes = (product.metadata?.event_types as string[]) || []
-      return productEventTypes.includes(eventType)
-    })
-  }, [availableProducts, eventType])
+  // Mostrar todos los productos disponibles (sin filtrar por evento)
+  // El cliente puede elegir cualquier torta para cualquier tipo de evento
+  const filteredProducts = availableProducts
 
   // Calcular precio estimado
   const estimatedPrice = useMemo(() => {

@@ -1,409 +1,360 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils/format'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { useScrollAnimation } from '@/hooks/useScrollAnimation'
+import { ProductDetailModal } from './ProductDetailModal'
+import { getCakeProducts } from '@/lib/supabase/product-queries'
 import type { ProductWithImages } from '@/types'
 
 gsap.registerPlugin(ScrollTrigger)
 
-interface FeaturedProductsProps {
-  products?: ProductWithImages[]
-}
-
-// Mock data - Enfocado en SABORES
-const mockProducts: ProductWithImages[] = [
-  {
-    id: '1',
-    category_id: '1',
-    name: 'Torta de Chocolate',
-    slug: 'torta-chocolate',
-    description: 'Bizcocho de chocolate belga con ganache de chocolate semi-amargo y decoración elegante',
-    short_description: 'Chocolate belga premium con ganache',
-    base_price: 180000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 8000,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: {},
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '2',
-    category_id: '2',
-    name: 'Torta Hojarasca',
-    slug: 'torta-hojarasca',
-    description: 'Capas de hojaldre crujiente con arequipe casero y merengue italiano',
-    short_description: 'Hojaldre y arequipe artesanal',
-    base_price: 160000,
-    min_portions: 15,
-    max_portions: 70,
-    price_per_portion: 7500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: {},
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '3',
-    category_id: '3',
-    name: 'Torta Amor',
-    slug: 'torta-amor',
-    description: 'Clásica torta de fresas con crema chantilly y bizcocho esponjoso',
-    short_description: 'Fresas frescas con crema chantilly',
-    base_price: 150000,
-    min_portions: 15,
-    max_portions: 70,
-    price_per_portion: 7000,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: {},
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '4',
-    category_id: '4',
-    name: 'Torta Tres Leches',
-    slug: 'torta-tres-leches',
-    description: 'Bizcocho empapado en mezcla de tres leches con crema batida',
-    short_description: 'Suave y húmeda, un clásico irresistible',
-    base_price: 140000,
-    min_portions: 15,
-    max_portions: 70,
-    price_per_portion: 6500,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: {},
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '5',
-    category_id: '5',
-    name: 'Torta Red Velvet',
-    slug: 'torta-red-velvet',
-    description: 'Bizcocho aterciopelado con frosting de queso crema y toque de cacao',
-    short_description: 'Suave textura con queso crema',
-    base_price: 190000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 8500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: {},
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '6',
-    category_id: '6',
-    name: 'Torta de Zanahoria',
-    slug: 'torta-zanahoria',
-    description: 'Bizcocho especiado con zanahoria, nueces y frosting de queso crema',
-    short_description: 'Especiada con nueces y queso crema',
-    base_price: 170000,
-    min_portions: 15,
-    max_portions: 70,
-    price_per_portion: 7500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: {},
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-]
-
-export function FeaturedProducts({ products = mockProducts }: FeaturedProductsProps) {
+export function FeaturedProducts() {
+  const [selectedProduct, setSelectedProduct] = useState<ProductWithImages | null>(null)
+  const [products, setProducts] = useState<ProductWithImages[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [itemsToShow, setItemsToShow] = useState(4)
+
   const sectionRef = useRef<HTMLDivElement>(null)
   const carouselRef = useRef<HTMLDivElement>(null)
-  const { ref: headerRef, isVisible: headerVisible } = useScrollAnimation({ threshold: 0.3 })
+  const headerRef = useRef<HTMLDivElement>(null)
 
-  // Calcular cuántas tarjetas mostrar según el viewport
-  const getItemsPerView = () => {
-    if (typeof window === 'undefined') return 3
-    if (window.innerWidth < 768) return 1
-    if (window.innerWidth < 1024) return 2
-    return 3
-  }
-
-  const [itemsPerView, setItemsPerView] = useState(3)
-
+  // Responsive items count
   useEffect(() => {
-    const handleResize = () => {
-      setItemsPerView(getItemsPerView())
+    const updateItemsToShow = () => {
+      if (window.innerWidth >= 1280) {
+        setItemsToShow(4)
+      } else if (window.innerWidth >= 1024) {
+        setItemsToShow(3)
+      } else if (window.innerWidth >= 640) {
+        setItemsToShow(2)
+      } else {
+        setItemsToShow(2)
+      }
     }
 
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    updateItemsToShow()
+    window.addEventListener('resize', updateItemsToShow)
+    return () => window.removeEventListener('resize', updateItemsToShow)
   }, [])
 
-  const maxIndex = Math.max(0, products.length - itemsPerView)
-  const canGoPrev = currentIndex > 0
-  const canGoNext = currentIndex < maxIndex
-
-  const animateSlide = (index: number) => {
-    if (!carouselRef.current) return
-
-    const itemWidth = carouselRef.current.querySelector('[data-carousel-item]')?.clientWidth || 0
-    const gap = 24
-    const offset = -(index * (itemWidth + gap))
-
-    gsap.to(carouselRef.current, {
-      x: offset,
-      duration: 0.8,
-      ease: 'power3.out',
-    })
-  }
-
-  const handlePrev = () => {
-    if (!canGoPrev) return
-    const newIndex = currentIndex - 1
-    setCurrentIndex(newIndex)
-    animateSlide(newIndex)
-  }
-
-  const handleNext = () => {
-    if (!canGoNext) return
-    const newIndex = currentIndex + 1
-    setCurrentIndex(newIndex)
-    animateSlide(newIndex)
-  }
-
-  // Animate cards on scroll
+  // Load featured products from DB
   useEffect(() => {
-    if (!sectionRef.current) return
+    async function loadFeaturedProducts() {
+      try {
+        const { success, products: allProducts } = await getCakeProducts()
+        if (success && allProducts) {
+          const featured = allProducts
+            .filter((p: ProductWithImages) => p.is_featured)
+            .slice(0, 8)
+          setProducts(featured.length > 0 ? featured : allProducts.slice(0, 8))
+        }
+      } catch (error) {
+        console.error('Error loading featured products:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadFeaturedProducts()
+  }, [])
+
+  // GSAP entrance animations
+  useEffect(() => {
+    if (!sectionRef.current || isLoading || products.length === 0) return
 
     const ctx = gsap.context(() => {
-      const cards = sectionRef.current?.querySelectorAll('[data-carousel-item]')
-      cards?.forEach((card, i) => {
+      // Header animation
+      if (headerRef.current) {
+        const headerChildren = headerRef.current.children
         gsap.fromTo(
-          card,
-          { opacity: 0, y: 50, scale: 0.95 },
+          headerChildren,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            stagger: 0.1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: 'top 82%',
+              toggleActions: 'play none none none',
+            },
+          }
+        )
+      }
+
+      // Cards stagger
+      const cards = carouselRef.current?.querySelectorAll('[data-product-card]')
+      if (cards && cards.length > 0) {
+        gsap.fromTo(
+          cards,
+          { opacity: 0, y: 50, scale: 0.96 },
           {
             opacity: 1,
             y: 0,
             scale: 1,
             duration: 0.7,
-            delay: i * 0.1,
+            stagger: 0.08,
             ease: 'power3.out',
             scrollTrigger: {
-              trigger: sectionRef.current,
-              start: 'top 70%',
+              trigger: carouselRef.current,
+              start: 'top 82%',
               toggleActions: 'play none none none',
             },
           }
         )
-      })
+      }
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [])
+  }, [isLoading, products])
 
-  const totalPages = maxIndex + 1
-  const indicators = Array.from({ length: totalPages }, (_, i) => i)
+  // Carousel navigation
+  const maxIndex = Math.max(0, products.length - itemsToShow)
+
+  const goToSlide = useCallback((index: number) => {
+    if (isAnimating || !carouselRef.current) return
+
+    setIsAnimating(true)
+    const newIndex = Math.max(0, Math.min(index, maxIndex))
+
+    gsap.to(carouselRef.current, {
+      x: `${-newIndex * (100 / itemsToShow)}%`,
+      duration: 0.6,
+      ease: 'power2.inOut',
+      onComplete: () => {
+        setCurrentIndex(newIndex)
+        setIsAnimating(false)
+      }
+    })
+  }, [isAnimating, maxIndex, itemsToShow])
+
+  const goNext = useCallback(() => {
+    if (currentIndex < maxIndex) goToSlide(currentIndex + 1)
+  }, [currentIndex, maxIndex, goToSlide])
+
+  const goPrev = useCallback(() => {
+    if (currentIndex > 0) goToSlide(currentIndex - 1)
+  }, [currentIndex, goToSlide])
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <section className="py-20 lg:py-28 bg-gradient-to-b from-white via-secondary/30 to-white overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-14">
+            <div className="h-3 w-36 bg-primary/10 rounded-full mx-auto mb-5 animate-pulse" />
+            <div className="h-10 w-72 bg-primary/10 rounded-xl mx-auto mb-3 animate-pulse" />
+            <div className="h-4 w-56 bg-primary/5 rounded mx-auto animate-pulse" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-sm animate-pulse">
+                <div className="aspect-[4/5] bg-secondary" />
+                <div className="p-5">
+                  <div className="h-5 bg-secondary rounded-lg w-3/4 mb-3" />
+                  <div className="h-6 bg-secondary rounded-lg w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (products.length === 0) return null
+
+  const showNavigation = products.length > itemsToShow
 
   return (
-    <section ref={sectionRef} id="productos" className="py-20 lg:py-28 bg-white relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-      <div className="container mx-auto px-4 relative">
+    <section
+      ref={sectionRef}
+      id="productos"
+      className="py-20 lg:py-28 bg-gradient-to-b from-white via-secondary/30 to-white overflow-hidden"
+    >
+      <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
-        <div
-          ref={headerRef}
-          className={`text-center mb-14 lg:mb-16 transition-all duration-1000 ${
-            headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary font-semibold rounded-full text-sm mb-4">
-            Nuestros Sabores
+        <div ref={headerRef} className="text-center mb-14 lg:mb-16">
+          <span className="inline-flex items-center gap-2 px-5 py-2 bg-primary/8 text-primary font-semibold rounded-full text-sm mb-5">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            Favoritos de Nuestros Clientes
           </span>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
-            Sabores que <span className="text-primary">Enamoran</span>
+
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-dark mb-4 leading-[1.1]">
+            Creaciones que{' '}
+            <span className="relative inline-block">
+              <span className="text-primary">Enamoran</span>
+              <svg className="absolute -bottom-2 left-0 w-full h-3 text-primary/25" viewBox="0 0 100 12" preserveAspectRatio="none">
+                <path d="M0 9 Q 50 0, 100 9" stroke="currentColor" strokeWidth="3" fill="none" />
+              </svg>
+            </span>
           </h2>
-          <p className="text-xl text-dark-light max-w-2xl mx-auto">
-            Cada sabor cuenta una historia, cada bocado es una celebración
+
+          <p className="text-dark-light max-w-lg mx-auto text-lg">
+            Descubre nuestras tortas mas solicitadas, elaboradas con pasion y los mejores ingredientes
           </p>
         </div>
 
-        {/* Carousel Container */}
-        <div className="relative mb-12">
-          {/* Navigation Buttons */}
-          <button
-            onClick={handlePrev}
-            disabled={!canGoPrev}
-            className={`hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-20 w-14 h-14 rounded-full bg-white items-center justify-center transition-all duration-300 ${
-              canGoPrev
-                ? 'opacity-100 hover:bg-primary hover:text-white shadow-lg hover:shadow-xl hover:scale-110'
-                : 'opacity-0 pointer-events-none'
-            }`}
-            aria-label="Anterior"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+        {/* Carousel */}
+        <div className="relative">
+          {/* Navigation arrows */}
+          {showNavigation && (
+            <>
+              <button
+                onClick={goPrev}
+                disabled={currentIndex === 0}
+                className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 lg:-translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 ${
+                  currentIndex === 0
+                    ? 'opacity-30 cursor-not-allowed'
+                    : 'hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105'
+                }`}
+                aria-label="Anterior"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={goNext}
+                disabled={currentIndex >= maxIndex}
+                className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 lg:translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 ${
+                  currentIndex >= maxIndex
+                    ? 'opacity-30 cursor-not-allowed'
+                    : 'hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105'
+                }`}
+                aria-label="Siguiente"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
 
-          <button
-            onClick={handleNext}
-            disabled={!canGoNext}
-            className={`hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-20 w-14 h-14 rounded-full bg-white items-center justify-center transition-all duration-300 ${
-              canGoNext
-                ? 'opacity-100 hover:bg-primary hover:text-white shadow-lg hover:shadow-xl hover:scale-110'
-                : 'opacity-0 pointer-events-none'
-            }`}
-            aria-label="Siguiente"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Carousel Track */}
-          <div className="overflow-hidden">
+          {/* Carousel container */}
+          <div className="overflow-hidden mx-2 lg:mx-6">
             <div
               ref={carouselRef}
-              className="flex gap-6"
-              style={{ width: `${(products.length * 100) / itemsPerView}%` }}
+              className="flex"
+              style={{
+                width: showNavigation ? `${(products.length / itemsToShow) * 100}%` : '100%',
+                gap: '1.25rem',
+              }}
             >
-              {products.map((product, index) => (
-                <div
-                  key={product.id}
-                  data-carousel-item
-                  className="flex-shrink-0"
-                  style={{ width: `${100 / products.length}%` }}
-                  onMouseEnter={() => setHoveredIndex(index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                >
-                  <Link href={`/catalogo/${product.slug}`} className="block group">
-                    <div className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-transparent hover:border-primary/10">
+              {products.map((product) => {
+                const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0]
+
+                return (
+                  <div
+                    key={product.id}
+                    data-product-card
+                    className="group cursor-pointer flex-shrink-0"
+                    style={{
+                      width: showNavigation
+                        ? `calc(${100 / products.length}% - 1rem)`
+                        : `calc(${100 / itemsToShow}% - 1rem)`
+                    }}
+                    onClick={() => setSelectedProduct(product)}
+                  >
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1.5 border border-border/20 hover:border-primary/15 h-full flex flex-col">
                       {/* Image */}
-                      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-secondary to-primary/5">
-                        {/* Placeholder */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="text-center transform group-hover:scale-110 transition-transform duration-500">
-                            <div className="text-6xl mb-2 filter group-hover:drop-shadow-lg transition-all">🎂</div>
+                      <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
+                        {primaryImage ? (
+                          <Image
+                            src={primaryImage.url}
+                            alt={primaryImage.alt_text || product.name}
+                            fill
+                            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-secondary to-primary/5">
+                            <svg className="w-16 h-16 text-primary/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                            </svg>
                           </div>
-                        </div>
+                        )}
 
                         {/* Hover overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-dark/80 via-dark/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-dark/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                        {/* Quick view button */}
+                        {/* Quick view */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
-                          <span className="px-6 py-2.5 bg-white text-dark font-semibold rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                          <span className="px-5 py-2.5 bg-white/95 backdrop-blur-sm text-dark text-xs font-semibold rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 shadow-lg">
                             Ver detalles
                           </span>
                         </div>
 
-                        {/* Featured Badge */}
+                        {/* Featured badge */}
                         {product.is_featured && (
-                          <div className="absolute top-4 left-4">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm text-primary font-semibold rounded-full text-xs shadow-md">
-                              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                          <div className="absolute top-3 left-3">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-white/95 backdrop-blur-sm text-primary font-bold rounded-full text-[10px] shadow-sm">
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                               </svg>
-                              Destacado
+                              Top
                             </span>
                           </div>
                         )}
                       </div>
 
                       {/* Content */}
-                      <div className="p-6">
-                        <h3 className="font-display text-xl font-bold text-dark mb-2 group-hover:text-primary transition-colors">
-                          {product.name}
-                        </h3>
-
-                        {product.short_description && (
-                          <p className="text-dark-light text-sm mb-4 line-clamp-2">
-                            {product.short_description}
-                          </p>
-                        )}
-
-                        {/* Price & Details */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <span className="text-2xl font-bold text-accent font-display">
-                              {formatCurrency(product.base_price)}
-                            </span>
-                            <span className="text-xs text-dark-light ml-1">desde</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-dark-light bg-secondary/50 px-2.5 py-1 rounded-full">
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span>{product.min_portions}-{product.max_portions}</span>
-                          </div>
+                      <div className="p-4 lg:p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="font-display text-base lg:text-lg font-bold text-dark mb-1 group-hover:text-primary transition-colors duration-300 line-clamp-1">
+                            {product.name}
+                          </h3>
+                          {product.short_description && (
+                            <p className="text-sm text-dark-light mb-3 line-clamp-1 leading-relaxed">
+                              {product.short_description}
+                            </p>
+                          )}
                         </div>
 
-                        {/* CTA Arrow */}
-                        <div className="flex items-center gap-2 text-primary font-semibold text-sm pt-4 border-t border-border/50">
-                          <span className="group-hover:mr-2 transition-all">Ver más</span>
-                          <svg
-                            className="w-4 h-4 transform group-hover:translate-x-2 transition-transform"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
+                        <div className="flex items-center justify-between pt-3 border-t border-border/40">
+                          <div>
+                            <span className="text-[11px] text-dark-light uppercase tracking-wide">Desde</span>
+                            <p className="text-lg font-bold text-accent font-display leading-tight">
+                              {formatCurrency(product.base_price || 0)}
+                            </p>
+                          </div>
+                          <div className="w-9 h-9 rounded-full bg-primary/8 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </Link>
-                </div>
-              ))}
+                  </div>
+                )
+              })}
             </div>
           </div>
 
-          {/* Pagination Indicators */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-10">
-              {indicators.map((index) => (
+          {/* Pagination dots */}
+          {showNavigation && (
+            <div className="flex justify-center gap-2 mt-8">
+              {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
-                  key={index}
-                  onClick={() => {
-                    setCurrentIndex(index)
-                    animateSlide(index)
-                  }}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    index === currentIndex
-                      ? 'w-10 bg-primary'
-                      : 'w-2.5 bg-dark/20 hover:bg-dark/40'
+                  key={i}
+                  onClick={() => goToSlide(i)}
+                  className={`h-2 rounded-full transition-all duration-400 ${
+                    i === currentIndex
+                      ? 'w-8 bg-primary'
+                      : 'w-2 bg-primary/20 hover:bg-primary/40'
                   }`}
-                  aria-label={`Ir a página ${index + 1}`}
+                  aria-label={`Ir a slide ${i + 1}`}
                 />
               ))}
             </div>
@@ -411,10 +362,10 @@ export function FeaturedProducts({ products = mockProducts }: FeaturedProductsPr
         </div>
 
         {/* CTA */}
-        <div className="text-center">
-          <Link href="/catalogo" className="group inline-block">
-            <Button size="lg" className="shadow-lg hover:shadow-2xl transition-all duration-300 group-hover:scale-105">
-              <span>Explorar Todos los Sabores</span>
+        <div className="text-center mt-12 lg:mt-14">
+          <Link href="/catalogo">
+            <Button variant="secondary" size="lg" className="group">
+              Explorar Catalogo Completo
               <svg className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -422,6 +373,15 @@ export function FeaturedProducts({ products = mockProducts }: FeaturedProductsPr
           </Link>
         </div>
       </div>
+
+      {/* Product detail modal */}
+      {selectedProduct && (
+        <ProductDetailModal
+          product={selectedProduct}
+          productType="cake"
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
     </section>
   )
 }

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import { MobileMenu } from './MobileMenu'
@@ -9,22 +10,22 @@ import { MobileMenu } from './MobileMenu'
 interface NavigationItem {
   name: string
   href: string
-  submenu?: { name: string; href: string }[]
+  submenu?: { name: string; href: string; description?: string }[]
 }
 
 const navigation: NavigationItem[] = [
   { name: 'Inicio', href: '/' },
   {
-    name: 'Catálogo',
+    name: 'Catalogo',
     href: '/catalogo',
     submenu: [
-      { name: 'Catálogo de Tortas', href: '/catalogo' },
-      { name: 'Catálogo de Coctelería', href: '/catalogo/cocteleria' },
-      { name: 'Catálogo de Pastelería', href: '/catalogo/pasteleria' },
+      { name: 'Tortas', href: '/catalogo', description: 'Tortas personalizadas para tu evento' },
+      { name: 'Cocteleria', href: '/catalogo/cocteleria', description: 'Delicias para cocktails y recepciones' },
+      { name: 'Pasteleria', href: '/catalogo/pasteleria', description: 'Postres y dulces artesanales' },
     ],
   },
   { name: 'Nosotros', href: '/nosotros' },
-  { name: 'Galería', href: '/galeria' },
+  { name: 'Galeria', href: '/galeria' },
   { name: 'Contacto', href: '/contacto' },
 ]
 
@@ -34,37 +35,48 @@ export function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const pathname = usePathname()
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+  const handleScroll = useCallback(() => {
+    setIsScrolled(window.scrollY > 10)
   }, [])
+
+  useEffect(() => {
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
 
   return (
     <>
       <nav
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out',
           isScrolled
-            ? 'bg-white/95 backdrop-blur-sm shadow-md py-4'
-            : 'bg-transparent py-6'
+            ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_20px_rgba(61,61,61,0.08)] py-2'
+            : 'bg-white/80 backdrop-blur-sm py-4'
         )}
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link
               href="/"
-              className="font-display text-2xl md:text-3xl font-bold text-primary hover:text-primary-hover transition-colors"
+              className={cn(
+                'relative transition-all duration-500 ease-out flex-shrink-0',
+                isScrolled ? 'h-12 md:h-14' : 'h-14 md:h-[72px]'
+              )}
             >
-              DeliDanis
+              <Image
+                src="/logo.png"
+                alt="DeliDanis"
+                width={240}
+                height={80}
+                className="h-full w-auto object-contain"
+                priority
+              />
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-1">
               {navigation.map((item) => (
                 <div
                   key={item.href}
@@ -76,61 +88,54 @@ export function Navbar() {
                     <>
                       <button
                         className={cn(
-                          'font-medium transition-all duration-200 relative group flex items-center gap-1',
+                          'px-4 py-2 rounded-full text-[15px] font-medium transition-all duration-300 relative flex items-center gap-1.5',
                           pathname.startsWith('/catalogo')
                             ? 'text-primary'
-                            : 'text-dark hover:text-primary'
+                            : 'text-dark/80 hover:text-dark hover:bg-secondary/60'
                         )}
                       >
                         {item.name}
                         <svg
                           className={cn(
-                            'w-4 h-4 transition-transform duration-200',
+                            'w-3.5 h-3.5 transition-transform duration-300',
                             activeDropdown === item.name ? 'rotate-180' : ''
                           )}
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 9l-7 7-7-7"
-                          />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
-                        <span
-                          className={cn(
-                            'absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-200',
-                            pathname.startsWith('/catalogo')
-                              ? 'w-full'
-                              : 'w-0 group-hover:w-full'
-                          )}
-                        />
+                        {pathname.startsWith('/catalogo') && (
+                          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                        )}
                       </button>
 
-                      {/* Dropdown Menu - con padding top para área continua */}
+                      {/* Dropdown Menu */}
                       <div
                         className={cn(
-                          'absolute top-full left-0 pt-2 transition-all duration-200',
+                          'absolute top-full left-1/2 -translate-x-1/2 pt-3 transition-all duration-300',
                           activeDropdown === item.name
-                            ? 'opacity-100 translate-y-0'
+                            ? 'opacity-100 translate-y-0 pointer-events-auto'
                             : 'opacity-0 -translate-y-2 pointer-events-none'
                         )}
                       >
-                        <div className="w-56 bg-white rounded-xl shadow-xl border border-border overflow-hidden">
+                        <div className="w-64 bg-white rounded-2xl shadow-lg border border-border/50 overflow-hidden p-2">
                           {item.submenu.map((subItem) => (
                             <Link
                               key={subItem.href}
                               href={subItem.href}
                               className={cn(
-                                'block px-4 py-3 text-sm font-medium transition-colors duration-200',
+                                'block px-4 py-3 rounded-xl text-sm transition-all duration-200',
                                 pathname === subItem.href
-                                  ? 'bg-primary/10 text-primary'
-                                  : 'text-dark hover:bg-secondary hover:text-primary'
+                                  ? 'bg-primary/8 text-primary'
+                                  : 'text-dark hover:bg-secondary/80'
                               )}
                             >
-                              {subItem.name}
+                              <span className="font-semibold block">{subItem.name}</span>
+                              {subItem.description && (
+                                <span className="text-dark-light text-xs mt-0.5 block">{subItem.description}</span>
+                              )}
                             </Link>
                           ))}
                         </div>
@@ -140,19 +145,16 @@ export function Navbar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        'font-medium transition-all duration-200 relative group',
+                        'px-4 py-2 rounded-full text-[15px] font-medium transition-all duration-300 relative',
                         pathname === item.href
                           ? 'text-primary'
-                          : 'text-dark hover:text-primary'
+                          : 'text-dark/80 hover:text-dark hover:bg-secondary/60'
                       )}
                     >
                       {item.name}
-                      <span
-                        className={cn(
-                          'absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-200',
-                          pathname === item.href ? 'w-full' : 'w-0 group-hover:w-full'
-                        )}
-                      />
+                      {pathname === item.href && (
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                      )}
                     </Link>
                   )}
                 </div>
@@ -160,46 +162,34 @@ export function Navbar() {
             </div>
 
             {/* CTA Button */}
-            <div className="hidden md:flex items-center gap-4">
+            <div className="hidden lg:flex items-center">
               <Link
                 href="/agendar"
-                className="px-6 py-2.5 bg-primary text-white rounded-full font-semibold hover:bg-primary-hover hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center gap-2 animate-bounce-gentle hover:animate-none"
+                className="group relative px-7 py-2.5 bg-primary text-white rounded-full font-semibold text-[15px] overflow-hidden transition-all duration-300 hover:shadow-[0_4px_20px_rgba(212,132,124,0.4)] active:scale-[0.97]"
               >
-                <span>Haz tu Pedido</span>
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
+                <span className="relative z-10 flex items-center gap-2">
+                  Haz tu Pedido
+                  <svg
+                    className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+                <div className="absolute inset-0 bg-primary-hover opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Link>
             </div>
 
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden p-2 text-dark hover:text-primary transition-colors"
-              aria-label="Abrir menú"
+              className="lg:hidden p-2.5 -mr-2 text-dark hover:text-primary transition-colors rounded-xl hover:bg-secondary/60"
+              aria-label="Abrir menu"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>

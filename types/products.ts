@@ -51,9 +51,26 @@ export interface Category {
   updated_at: string
 }
 
+export interface Subcategory {
+  id: string
+  name: string
+  slug: string
+  description?: string | null
+  is_active: boolean
+  order_index: number
+  category_id?: string
+  category?: Category
+}
+
 export interface ProductWithImages extends Product {
   images: ProductImage[]
   category?: Category
+  subcategory?: Subcategory
+  // Propiedades adicionales para pasteleria/cocteleria
+  price?: number
+  unit?: string
+  min_order_quantity?: number
+  order_index?: number
 }
 
 export interface ProductWithVariants extends ProductWithImages {

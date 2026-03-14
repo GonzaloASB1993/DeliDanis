@@ -7,11 +7,12 @@ import type { ProductWithImages } from '@/types'
 
 interface ProductGridProps {
   products: ProductWithImages[]
+  productType?: 'cake' | 'cocktail' | 'pastry'
 }
 
-export function ProductGrid({ products }: ProductGridProps) {
+export function ProductGrid({ products, productType = 'cake' }: ProductGridProps) {
   const gridRef = useRef<HTMLDivElement>(null)
-  useStaggerChildren(gridRef)
+  useStaggerChildren(gridRef, products.length)
 
   if (products.length === 0) {
     return (
@@ -33,7 +34,7 @@ export function ProductGrid({ products }: ProductGridProps) {
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
     >
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard key={product.id} product={product} productType={productType} />
       ))}
     </div>
   )

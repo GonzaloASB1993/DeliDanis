@@ -1,43 +1,159 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { useBookingStore } from '@/stores/bookingStore'
+import { useBookingStoreMulti } from '@/stores/bookingStoreMulti'
 import { Button, Card } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils/format'
+import { getOrderByNumber } from '@/lib/supabase/booking-mutations'
 
-export default function ConfirmacionPage() {
+interface OrderData {
+  id: string
+  order_number: string
+  status: string
+  event_type: string | null
+  event_date: string
+  event_time: string | null
+  delivery_type: string
+  delivery_address: string | null
+  delivery_city: string | null
+  delivery_fee: number
+  subtotal: number
+  total: number
+  payment_status: string
+  customer: {
+    first_name: string
+    last_name: string
+    email: string
+    phone: string
+    address: string | null
+    city: string | null
+  }
+  items: Array<{
+    id: string
+    service_type: string
+    service_data: any
+    unit_price: number
+    total_price: number
+  }>
+}
+
+function ConfirmacionContent() {
   const router = useRouter()
-  const { bookingData, resetBooking } = useBookingStore()
-  const [orderNumber, setOrderNumber] = useState<string>('')
+  const searchParams = useSearchParams()
+  const { resetBooking } = useBookingStoreMulti()
+
+  const [orderData, setOrderData] = useState<OrderData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Verificar que hay datos de booking
-    if (!bookingData.product || !bookingData.eventDate) {
+    const orderNumber = searchParams.get('order')
+
+    if (!orderNumber) {
       router.push('/agendar')
       return
     }
 
-    // Generar número de orden
-    const number = `ORD-${Date.now().toString().slice(-8)}`
-    setOrderNumber(number)
-  }, [bookingData, router])
+    // Cargar datos del pedido desde la base de datos
+    async function loadOrder() {
+      try {
+        const result = await getOrderByNumber(orderNumber!)
+
+        if (!result.success || !result.order) {
+          setError('No se encontró el pedido')
+          setIsLoading(false)
+          return
+        }
+
+        setOrderData(result.order as OrderData)
+        setIsLoading(false)
+
+        // Send notification email to business (fire and forget)
+        const order = result.order as OrderData
+        fetch('/api/email/notify-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderNumber: order.order_number,
+            customerName: `${order.customer.first_name} ${order.customer.last_name}`,
+            customerEmail: order.customer.email,
+            customerPhone: order.customer.phone,
+            eventDate: order.event_date,
+            eventTime: order.event_time,
+            eventType: order.event_type,
+            deliveryType: order.delivery_type,
+            deliveryAddress: order.delivery_address,
+            deliveryCity: order.delivery_city,
+            deliveryFee: order.delivery_fee,
+            subtotal: order.subtotal,
+            total: order.total,
+            items: order.items,
+          }),
+        }).catch(console.error)
+      } catch (err) {
+        setError('Error al cargar el pedido')
+        setIsLoading(false)
+      }
+    }
+
+    loadOrder()
+  }, [searchParams, router])
 
   const handleFinish = () => {
     resetBooking()
     router.push('/')
   }
 
-  if (!bookingData.product) return null
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary to-white py-16 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block p-6 bg-primary/10 rounded-full mb-4 animate-spin">
+            <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </div>
+          <p className="text-lg text-dark-light">Cargando pedido...</p>
+        </div>
+      </div>
+    )
+  }
 
-  const formatDate = (date: Date) => {
+  // Error state
+  if (error || !orderData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-secondary to-white py-16 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center px-4">
+          <div className="inline-block p-6 bg-red-100 rounded-full mb-4">
+            <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h1 className="font-display text-3xl font-bold text-dark mb-3">
+            Error
+          </h1>
+          <p className="text-dark-light mb-6">{error || 'No se encontró el pedido'}</p>
+          <Link href="/agendar">
+            <Button>Volver a Agendar</Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const formatDate = (dateString: string) => {
+    // Parse YYYY-MM-DD without timezone shift by splitting the string
+    const [year, month, day] = dateString.split('-').map(Number)
+    const date = new Date(year, month - 1, day) // Local timezone
     return new Intl.DateTimeFormat('es-CO', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(date))
+    }).format(date)
   }
 
   return (
@@ -72,7 +188,7 @@ export default function ConfirmacionPage() {
           {/* Order Number */}
           <Card className="mb-6 bg-primary text-white text-center">
             <p className="text-sm opacity-90 mb-1">Número de pedido</p>
-            <p className="text-3xl font-bold font-display">{orderNumber}</p>
+            <p className="text-3xl font-bold font-display">{orderData.order_number}</p>
           </Card>
 
           {/* Order Details */}
@@ -82,25 +198,51 @@ export default function ConfirmacionPage() {
             </h2>
 
             <div className="space-y-4">
-              {/* Producto */}
-              <div className="flex items-start gap-4 pb-4 border-b border-border">
-                <div className="w-20 h-20 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                  <span className="text-3xl">🎂</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg text-dark">
-                    {bookingData.product.name}
-                  </h3>
-                  <p className="text-sm text-dark-light mb-2">
-                    {bookingData.portions} porciones
-                  </p>
-                  {bookingData.customizations.message && (
-                    <p className="text-sm text-dark-light">
-                      <span className="font-medium">Mensaje:</span>{' '}
-                      "{bookingData.customizations.message}"
-                    </p>
-                  )}
-                </div>
+              {/* Servicios */}
+              <div className="space-y-3 pb-4 border-b border-border">
+                <h3 className="text-sm font-medium text-dark-light mb-3">
+                  Servicios contratados
+                </h3>
+                {orderData.items.map((item) => {
+                  const service = item.service_data
+                  return (
+                    <div key={item.id} className="flex items-start gap-4 p-3 bg-secondary/50 rounded-lg">
+                      <div className="text-3xl flex-shrink-0">
+                        {item.service_type === 'torta' ? '🎂' : item.service_type === 'cocteleria' ? '🥪' : '🍰'}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-dark">
+                          {item.service_type === 'torta'
+                            ? service.product.name
+                            : item.service_type === 'cocteleria'
+                            ? 'Coctelería para Eventos'
+                            : 'Pastelería Artesanal'}
+                        </h4>
+                        <p className="text-sm text-dark-light">
+                          {item.service_type === 'torta' && `${service.portions} porciones`}
+                          {item.service_type === 'cocteleria' && (() => {
+                            const totalUnits = Object.values(service.items).reduce((sum: number, qty: any) => sum + qty, 0)
+                            return `${Object.keys(service.items).length} productos • ${totalUnits} unidades`
+                          })()}
+                          {item.service_type === 'pasteleria' && (() => {
+                            const items = Object.entries(service.items)
+                              .filter(([_, qty]) => (qty as number) > 0)
+                              .map(([key]) => key)
+                            return items.join(', ')
+                          })()}
+                        </p>
+                        {item.service_type === 'torta' && service.customizations.message && (
+                          <p className="text-xs text-dark-light mt-1">
+                            <span className="font-medium">Mensaje:</span> "{service.customizations.message}"
+                          </p>
+                        )}
+                        <p className="text-accent font-bold mt-1">
+                          {formatCurrency(item.total_price)}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
 
               {/* Fecha y hora */}
@@ -110,11 +252,11 @@ export default function ConfirmacionPage() {
                     Fecha del evento
                   </p>
                   <p className="text-dark font-semibold">
-                    {formatDate(bookingData.eventDate!)}
+                    {formatDate(orderData.event_date)}
                   </p>
-                  {bookingData.eventTime && (
+                  {orderData.event_time && (
                     <p className="text-sm text-dark-light">
-                      {bookingData.eventTime}
+                      {orderData.event_time === 'AM' ? 'Mañana' : 'Tarde'}
                     </p>
                   )}
                 </div>
@@ -123,7 +265,7 @@ export default function ConfirmacionPage() {
                     Tipo de entrega
                   </p>
                   <p className="text-dark font-semibold">
-                    {bookingData.deliveryType === 'pickup'
+                    {orderData.delivery_type === 'pickup'
                       ? '🏪 Recoger en tienda'
                       : '🚗 Entrega a domicilio'}
                   </p>
@@ -137,17 +279,17 @@ export default function ConfirmacionPage() {
                 </p>
                 <div className="space-y-1 text-dark">
                   <p>
-                    {bookingData.customer.firstName} {bookingData.customer.lastName}
+                    {orderData.customer.first_name} {orderData.customer.last_name}
                   </p>
                   <p className="text-sm text-dark-light">
-                    {bookingData.customer.email}
+                    {orderData.customer.email}
                   </p>
                   <p className="text-sm text-dark-light">
-                    {bookingData.customer.phone}
+                    {orderData.customer.phone}
                   </p>
-                  {bookingData.customer.address && (
+                  {orderData.delivery_address && (
                     <p className="text-sm text-dark-light">
-                      {bookingData.customer.address}, {bookingData.customer.city}
+                      {orderData.delivery_address}, {orderData.delivery_city}
                     </p>
                   )}
                 </div>
@@ -158,12 +300,12 @@ export default function ConfirmacionPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold text-dark">Total</span>
                   <span className="text-3xl font-bold text-accent font-display">
-                    {formatCurrency(bookingData.total)}
+                    {formatCurrency(orderData.total)}
                   </span>
                 </div>
-                {bookingData.deliveryFee > 0 && (
+                {orderData.delivery_fee > 0 && (
                   <p className="text-sm text-dark-light mt-1">
-                    Incluye {formatCurrency(bookingData.deliveryFee)} de envío
+                    Incluye {formatCurrency(orderData.delivery_fee)} de envío
                   </p>
                 )}
               </div>
@@ -259,5 +401,22 @@ export default function ConfirmacionPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ConfirmacionPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-secondary to-white py-16 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-dark-light">Cargando confirmación...</p>
+          </div>
+        </div>
+      }
+    >
+      <ConfirmacionContent />
+    </Suspense>
   )
 }

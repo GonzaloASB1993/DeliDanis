@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { cn } from '@/lib/utils/cn'
 import { formatCurrency } from '@/lib/utils/format'
 import type { ProductWithImages } from '@/types'
@@ -47,8 +48,17 @@ export function ProductSelector({
       {selectedProduct ? (
         <div className="bg-white rounded-2xl p-6 shadow-md border-2 border-primary">
           <div className="flex items-start gap-6">
-            <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-secondary to-primary/10 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <span className="text-5xl">🎂</span>
+            <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-secondary to-primary/10 flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden relative">
+              {selectedProduct.images?.[0] ? (
+                <Image
+                  src={selectedProduct.images.find(img => img.is_primary)?.url || selectedProduct.images[0].url}
+                  alt={selectedProduct.name}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <span className="text-5xl">🎂</span>
+              )}
             </div>
             <div className="flex-1">
               <div className="flex items-start justify-between mb-2">
@@ -155,8 +165,17 @@ export function ProductSelector({
                   )}
                 >
                   <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-secondary to-primary/10 flex items-center justify-center flex-shrink-0">
-                      <span className="text-3xl">🎂</span>
+                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-secondary to-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                      {product.images?.[0] ? (
+                        <Image
+                          src={product.images.find(img => img.is_primary)?.url || product.images[0].url}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="text-3xl">🎂</span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">

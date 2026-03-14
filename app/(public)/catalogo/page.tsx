@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { EventTypeFilter, type EventType } from '@/components/public/EventTypeFilter'
 import { PriceFilter } from '@/components/public/PriceFilter'
 import { ProductGrid } from '@/components/public/ProductGrid'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
+import { getCakeProducts } from '@/lib/supabase/product-queries'
 import type { ProductWithImages } from '@/types'
 
 // Tipos de eventos
@@ -19,269 +20,53 @@ const eventTypes: EventType[] = [
   { id: '8', name: 'Aniversarios', slug: 'aniversarios', icon: '💝' },
 ]
 
-// Mock data - SABORES con tipos de eventos disponibles
-const mockProducts: ProductWithImages[] = [
-  {
-    id: '1',
-    category_id: '1',
-    name: 'Torta de Chocolate',
-    slug: 'torta-chocolate',
-    description: 'Bizcocho de chocolate belga con ganache de chocolate semi-amargo y decoración elegante. Perfecta para cualquier ocasión especial.',
-    short_description: 'Chocolate belga premium con ganache',
-    base_price: 180000,
-    min_portions: 15,
-    max_portions: 100,
-    price_per_portion: 8000,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'aniversarios', 'corporativos', 'quinceaneras'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '2',
-    category_id: '2',
-    name: 'Torta Hojarasca',
-    slug: 'torta-hojarasca',
-    description: 'Capas de hojaldre crujiente con arequipe casero y merengue italiano. Un clásico colombiano irresistible.',
-    short_description: 'Hojaldre y arequipe artesanal',
-    base_price: 160000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 7500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'aniversarios', 'baby-shower'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '3',
-    category_id: '3',
-    name: 'Torta Amor (Fresas con Crema)',
-    slug: 'torta-amor',
-    description: 'Clásica torta de fresas frescas con crema chantilly y bizcocho esponjoso. Ligera y deliciosa.',
-    short_description: 'Fresas frescas con crema chantilly',
-    base_price: 150000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 7000,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['cumpleanos', 'baby-shower', 'aniversarios', 'quinceaneras'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '4',
-    category_id: '4',
-    name: 'Torta Tres Leches',
-    slug: 'torta-tres-leches',
-    description: 'Bizcocho empapado en mezcla de tres leches con crema batida. Suave, húmeda y delicada.',
-    short_description: 'Suave y húmeda, un clásico irresistible',
-    base_price: 140000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 6500,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['cumpleanos', 'bautizos', 'primera-comunion', 'baby-shower', 'aniversarios'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '5',
-    category_id: '5',
-    name: 'Torta Red Velvet',
-    slug: 'torta-red-velvet',
-    description: 'Bizcocho aterciopelado con frosting de queso crema y toque de cacao. Elegante y sofisticada.',
-    short_description: 'Suave textura con queso crema',
-    base_price: 190000,
-    min_portions: 15,
-    max_portions: 100,
-    price_per_portion: 8500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['bodas', 'aniversarios', 'quinceaneras', 'corporativos'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '6',
-    category_id: '6',
-    name: 'Torta de Zanahoria',
-    slug: 'torta-zanahoria',
-    description: 'Bizcocho especiado con zanahoria, nueces y frosting de queso crema. Perfecta para quienes buscan algo diferente.',
-    short_description: 'Especiada con nueces y queso crema',
-    base_price: 170000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 7500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['cumpleanos', 'baby-shower', 'aniversarios', 'corporativos'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '7',
-    category_id: '7',
-    name: 'Torta de Vainilla',
-    slug: 'torta-vainilla',
-    description: 'Bizcocho de vainilla natural con buttercream suave. Un lienzo perfecto para cualquier decoración.',
-    short_description: 'Clásica y versátil para cualquier evento',
-    base_price: 130000,
-    min_portions: 15,
-    max_portions: 100,
-    price_per_portion: 6000,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'bautizos', 'primera-comunion', 'baby-shower', 'quinceaneras'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '8',
-    category_id: '8',
-    name: 'Torta de Limón',
-    slug: 'torta-limon',
-    description: 'Bizcocho de limón con relleno de lemon curd y merengue italiano. Fresca y cítrica.',
-    short_description: 'Fresca y cítrica con lemon curd',
-    base_price: 165000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 7500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'baby-shower', 'aniversarios', 'corporativos'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '9',
-    category_id: '9',
-    name: 'Torta Selva Negra',
-    slug: 'torta-selva-negra',
-    description: 'Bizcocho de chocolate con cerezas, crema chantilly y virutas de chocolate. Un clásico alemán.',
-    short_description: 'Chocolate, cerezas y crema',
-    base_price: 195000,
-    min_portions: 15,
-    max_portions: 90,
-    price_per_portion: 8500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'aniversarios', 'corporativos'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '10',
-    category_id: '10',
-    name: 'Torta de Coco',
-    slug: 'torta-coco',
-    description: 'Bizcocho con coco rallado y crema de coco. Tropical y deliciosa.',
-    short_description: 'Tropical con coco natural',
-    base_price: 155000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 7000,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['cumpleanos', 'baby-shower', 'bautizos', 'primera-comunion'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '11',
-    category_id: '11',
-    name: 'Torta Marmoleada',
-    slug: 'torta-marmoleada',
-    description: 'Combinación perfecta de vainilla y chocolate en un delicioso bizcocho marmoleado.',
-    short_description: 'Lo mejor de dos mundos',
-    base_price: 145000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 6500,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['cumpleanos', 'bautizos', 'primera-comunion', 'baby-shower'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '12',
-    category_id: '12',
-    name: 'Torta Ópera',
-    slug: 'torta-opera',
-    description: 'Sofisticada torta francesa con capas de almendra, café y chocolate. Para paladares exigentes.',
-    short_description: 'Sofisticación francesa',
-    base_price: 220000,
-    min_portions: 20,
-    max_portions: 80,
-    price_per_portion: 9500,
-    preparation_days: 4,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['bodas', 'aniversarios', 'corporativos'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-]
-
 export default function CatalogoPage() {
   const [selectedEventType, setSelectedEventType] = useState<string | null>(null)
   const [priceRange, setPriceRange] = useState({ min: 0, max: Infinity })
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'name'>('name')
 
+  // Estado para productos cargados desde BD
+  const [products, setProducts] = useState<ProductWithImages[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Cargar productos desde la base de datos
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setIsLoading(true)
+        const { success, products: cakeProducts } = await getCakeProducts()
+
+        if (success) {
+          setProducts(cakeProducts)
+        } else {
+          setError('No se pudieron cargar los productos')
+        }
+      } catch (err) {
+        console.error('Error loading products:', err)
+        setError('Error al cargar los productos')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
+
   // Calcular conteo de productos por tipo de evento
   const eventTypesWithCount = useMemo(() => {
     return eventTypes.map((eventType) => ({
       ...eventType,
-      count: mockProducts.filter((product) => {
+      count: products.filter((product) => {
         const productEventTypes = product.metadata?.event_types as string[] || []
         return productEventTypes.includes(eventType.slug)
       }).length,
     }))
-  }, [])
+  }, [products])
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    return mockProducts
+    return products
       .filter((product) => {
         // Filter by event type
         if (selectedEventType) {
@@ -310,7 +95,38 @@ export default function CatalogoPage() {
             return a.name.localeCompare(b.name)
         }
       })
-  }, [selectedEventType, priceRange, sortBy])
+  }, [products, selectedEventType, priceRange, sortBy])
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-20">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-dark-light text-lg">Cargando sabores...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-20">
+        <div className="max-w-md mx-auto text-center">
+          <div className="text-red-600 mb-4 text-5xl">⚠️</div>
+          <h2 className="text-2xl font-bold text-dark mb-4">Error al cargar productos</h2>
+          <p className="text-dark-light mb-6">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -340,7 +156,7 @@ export default function CatalogoPage() {
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
               </svg>
-              {mockProducts.length} sabores únicos
+              {products.length} sabores únicos
             </div>
 
             <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
@@ -427,7 +243,17 @@ export default function CatalogoPage() {
             </div>
 
             {/* Products Grid */}
-            <ProductGrid products={filteredProducts} />
+            {filteredProducts.length > 0 ? (
+              <ProductGrid products={filteredProducts} />
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-dark mb-2">No se encontraron productos</h3>
+                <p className="text-dark-light">
+                  Intenta ajustar los filtros para ver más resultados
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

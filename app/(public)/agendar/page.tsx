@@ -2,773 +2,753 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useBookingStore } from '@/stores/bookingStore'
-import { BookingCalendar } from '@/components/public/BookingCalendar'
-import { ProductSelector } from '@/components/public/ProductSelector'
+import { useBookingStoreMulti } from '@/stores/bookingStoreMulti'
+import { getCakeProducts, getCocktailProducts, getPastryProducts } from '@/lib/supabase/product-queries'
+import { ServiceCategorySelector } from '@/components/public/ServiceCategorySelector'
+import { ServiceCart } from '@/components/public/ServiceCart'
+import { TortaServiceForm } from '@/components/public/TortaServiceForm'
+import { CocktailServiceForm } from '@/components/public/CocktailServiceForm'
+import { PastryServiceForm } from '@/components/public/PastryServiceForm'
 import { EventTypeSelector } from '@/components/public/EventTypeSelector'
-import { OrderSummaryFloat } from '@/components/public/OrderSummaryFloat'
+import { BookingCalendar } from '@/components/public/BookingCalendar'
 import { Button, Input, Card } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils/format'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
 import { cn } from '@/lib/utils/cn'
 import type { ProductWithImages } from '@/types'
-
-// Mock products con event_types
-const allProducts: ProductWithImages[] = [
-  {
-    id: '1',
-    category_id: '1',
-    name: 'Torta de Chocolate',
-    slug: 'torta-chocolate',
-    description: 'Bizcocho de chocolate belga con ganache de chocolate semi-amargo',
-    short_description: 'Chocolate belga premium con ganache',
-    base_price: 180000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 8000,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'dias-especiales', 'corporativos', 'quinceaneras'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '2',
-    category_id: '2',
-    name: 'Torta Hojarasca',
-    slug: 'torta-hojarasca',
-    description: 'Capas de hojaldre crujiente con arequipe casero y merengue italiano',
-    short_description: 'Hojaldre y arequipe artesanal',
-    base_price: 160000,
-    min_portions: 15,
-    max_portions: 70,
-    price_per_portion: 7500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'dias-especiales', 'baby-shower'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '3',
-    category_id: '3',
-    name: 'Torta Amor (Fresas con Crema)',
-    slug: 'torta-amor',
-    description: 'Clásica torta de fresas frescas con crema chantilly',
-    short_description: 'Fresas frescas con crema chantilly',
-    base_price: 150000,
-    min_portions: 15,
-    max_portions: 70,
-    price_per_portion: 7000,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['cumpleanos', 'baby-shower', 'dias-especiales', 'quinceaneras'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '4',
-    category_id: '4',
-    name: 'Torta Tres Leches',
-    slug: 'torta-tres-leches',
-    description: 'Bizcocho empapado en mezcla de tres leches con crema batida',
-    short_description: 'Suave y húmeda, un clásico irresistible',
-    base_price: 140000,
-    min_portions: 15,
-    max_portions: 80,
-    price_per_portion: 6500,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['cumpleanos', 'bautizos', 'primera-comunion', 'baby-shower', 'dias-especiales'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '5',
-    category_id: '5',
-    name: 'Torta Red Velvet',
-    slug: 'torta-red-velvet',
-    description: 'Bizcocho aterciopelado con frosting de queso crema',
-    short_description: 'Suave textura con queso crema',
-    base_price: 190000,
-    min_portions: 15,
-    max_portions: 100,
-    price_per_portion: 8500,
-    preparation_days: 3,
-    is_customizable: true,
-    is_active: true,
-    is_featured: true,
-    metadata: { event_types: ['bodas', 'dias-especiales', 'quinceaneras', 'corporativos'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-  {
-    id: '6',
-    category_id: '6',
-    name: 'Torta de Vainilla',
-    slug: 'torta-vainilla',
-    description: 'Bizcocho de vainilla natural con buttercream suave',
-    short_description: 'Clásica y versátil para cualquier evento',
-    base_price: 130000,
-    min_portions: 15,
-    max_portions: 100,
-    price_per_portion: 6000,
-    preparation_days: 2,
-    is_customizable: true,
-    is_active: true,
-    is_featured: false,
-    metadata: { event_types: ['bodas', 'cumpleanos', 'bautizos', 'primera-comunion', 'baby-shower', 'quinceaneras'] },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    images: [],
-  },
-]
+import type { ServiceType } from '@/stores/bookingStoreMulti'
+import {
+  validateEmail,
+  validatePhone,
+  validateName,
+  validateAddress,
+  validateCity,
+} from '@/lib/utils/validation'
+import { createBooking } from '@/lib/supabase/booking-mutations'
 
 export default function AgendarPage() {
   const router = useRouter()
   const {
     bookingData,
+    currentStep,
     setEventType,
-    setProduct,
     setEventDate,
     setEventTime,
     setDeliveryType,
-    setPortions,
-    setCustomizations,
     setCustomer,
-  } = useBookingStore()
+    addService,
+    removeService,
+    nextStep,
+    prevStep,
+    resetBooking,
+  } = useBookingStoreMulti()
 
-  // Filtrar productos según tipo de evento
-  const filteredProducts = useMemo(() => {
-    if (!bookingData.eventType) return []
+  // Local state for modal/forms
+  const [showServiceSelector, setShowServiceSelector] = useState(false)
+  const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | null>(null)
+  const [showServiceForm, setShowServiceForm] = useState(false)
 
-    return allProducts.filter((product) => {
-      const productEventTypes = product.metadata?.event_types as string[] || []
-      return productEventTypes.includes(bookingData.eventType!)
-    })
-  }, [bookingData.eventType])
+  // Estado para validación de formulario
+  const [formErrors, setFormErrors] = useState<{
+    firstName?: string
+    lastName?: string
+    email?: string
+    phone?: string
+    address?: string
+    city?: string
+  }>({})
 
-  // Calcular progreso
-  const progress = useMemo(() => {
-    let completed = 0
-    const total = 7
+  // Estado para el envío del formulario
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
-    if (bookingData.eventType) completed++
-    if (bookingData.product) completed++
-    if (bookingData.eventDate) completed++
-    if (bookingData.portions >= (bookingData.product?.min_portions || 0)) completed++
-    if (bookingData.deliveryType !== null) completed++
-    if (bookingData.customer.firstName && bookingData.customer.email && bookingData.customer.phone) completed++
-    if (bookingData.deliveryType === 'pickup' || (bookingData.customer.address && bookingData.customer.city)) completed++
+  // Estado para productos cargados desde BD
+  const [cakeProducts, setCakeProducts] = useState<ProductWithImages[]>([])
+  const [cocktailProducts, setCocktailProducts] = useState<any[]>([])
+  const [pastryProducts, setPastryProducts] = useState<any[]>([])
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true)
+  const [productsError, setProductsError] = useState<string | null>(null)
 
-    return Math.round((completed / total) * 100)
-  }, [bookingData])
+  // Cargar productos desde la base de datos
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setIsLoadingProducts(true)
 
-  // Determinar qué secciones están habilitadas
-  const isProductEnabled = !!bookingData.eventType
-  const isDateEnabled = !!bookingData.product
-  const isPortionsEnabled = !!bookingData.eventDate
-  const isCustomizationEnabled = isPortionsEnabled && bookingData.portions >= (bookingData.product?.min_portions || 0)
-  const isDeliveryEnabled = isCustomizationEnabled
-  const isContactEnabled = isDeliveryEnabled
+        // Cargar todos los productos en paralelo
+        const [cakeResult, cocktailResult, pastryResult] = await Promise.all([
+          getCakeProducts(),
+          getCocktailProducts(),
+          getPastryProducts(),
+        ])
 
-  const canSubmit = progress === 100
+        if (cakeResult.success) {
+          setCakeProducts(cakeResult.products)
+        }
 
-  const handleSubmit = () => {
-    if (canSubmit) {
-      router.push('/agendar/confirmacion')
+        if (cocktailResult.success) {
+          setCocktailProducts(cocktailResult.products)
+        }
+
+        if (pastryResult.success) {
+          setPastryProducts(pastryResult.products)
+        }
+
+        // Si ninguno cargó correctamente, mostrar error
+        if (!cakeResult.success && !cocktailResult.success && !pastryResult.success) {
+          setProductsError('No se pudieron cargar los productos')
+        }
+      } catch (error) {
+        console.error('Error loading products:', error)
+        setProductsError('Error al cargar los productos')
+      } finally {
+        setIsLoadingProducts(false)
+      }
+    }
+
+    loadProducts()
+  }, [])
+
+  // Handler: select service category
+  const handleSelectCategory = (type: ServiceType) => {
+    setSelectedServiceType(type)
+    setShowServiceSelector(false)
+    setShowServiceForm(true)
+  }
+
+  // Handler: add service and reset form
+  const handleAddService = (service: any) => {
+    addService(service)
+    setShowServiceForm(false)
+    setSelectedServiceType(null)
+  }
+
+  // Handler: cancel service form
+  const handleCancelServiceForm = () => {
+    setShowServiceForm(false)
+    setSelectedServiceType(null)
+  }
+
+  // Validar todo el formulario del paso 4
+  const validateContactForm = (): boolean => {
+    const errors: typeof formErrors = {}
+
+    // Validar nombre
+    const firstNameValidation = validateName(bookingData.customer.firstName, 'nombre')
+    if (!firstNameValidation.isValid) {
+      errors.firstName = firstNameValidation.error
+    }
+
+    // Validar apellido
+    const lastNameValidation = validateName(bookingData.customer.lastName, 'apellido')
+    if (!lastNameValidation.isValid) {
+      errors.lastName = lastNameValidation.error
+    }
+
+    // Validar email
+    const emailValidation = validateEmail(bookingData.customer.email)
+    if (!emailValidation.isValid) {
+      errors.email = emailValidation.error
+    }
+
+    // Validar teléfono
+    const phoneValidation = validatePhone(bookingData.customer.phone)
+    if (!phoneValidation.isValid) {
+      errors.phone = phoneValidation.error
+    }
+
+    // Validar dirección y ciudad solo si es delivery
+    if (bookingData.deliveryType === 'delivery') {
+      const addressValidation = validateAddress(bookingData.customer.address || '')
+      if (!addressValidation.isValid) {
+        errors.address = addressValidation.error
+      }
+
+      const cityValidation = validateCity(bookingData.customer.city || '')
+      if (!cityValidation.isValid) {
+        errors.city = cityValidation.error
+      }
+    }
+
+    setFormErrors(errors)
+    return Object.keys(errors).length === 0
+  }
+
+  // Limpiar error cuando el usuario comience a escribir
+  const handleInputChange = (field: keyof typeof formErrors, value: string) => {
+    setCustomer({ [field]: value })
+
+    // Limpiar error del campo (eliminar la key, no setear undefined)
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const next = { ...prev }
+        delete next[field]
+        return next
+      })
     }
   }
 
+  // Validar campo al perder foco (onBlur)
+  const handleInputBlur = (field: keyof typeof formErrors) => {
+    let errorMsg: string | undefined
+
+    switch (field) {
+      case 'firstName': {
+        const v = validateName(bookingData.customer.firstName, 'nombre')
+        if (!v.isValid) errorMsg = v.error
+        break
+      }
+      case 'lastName': {
+        const v = validateName(bookingData.customer.lastName, 'apellido')
+        if (!v.isValid) errorMsg = v.error
+        break
+      }
+      case 'email': {
+        const v = validateEmail(bookingData.customer.email)
+        if (!v.isValid) errorMsg = v.error
+        break
+      }
+      case 'phone': {
+        const v = validatePhone(bookingData.customer.phone)
+        if (!v.isValid) errorMsg = v.error
+        break
+      }
+      case 'address': {
+        if (bookingData.deliveryType === 'delivery') {
+          const v = validateAddress(bookingData.customer.address || '')
+          if (!v.isValid) errorMsg = v.error
+        }
+        break
+      }
+      case 'city': {
+        if (bookingData.deliveryType === 'delivery') {
+          const v = validateCity(bookingData.customer.city || '')
+          if (!v.isValid) errorMsg = v.error
+        }
+        break
+      }
+    }
+
+    setFormErrors((prev) => {
+      const next = { ...prev }
+      if (errorMsg) {
+        next[field] = errorMsg
+      } else {
+        delete next[field]
+      }
+      return next
+    })
+  }
+
+  // Handler: add another service
+  const handleAddAnother = () => {
+    setShowServiceSelector(true)
+  }
+
+  // Handler: continue to next step
+  const handleContinueToCheckout = () => {
+    nextStep()
+  }
+
+  // Validation functions
+  const canContinueStep1 = bookingData.eventType !== null
+  const canContinueStep2 = bookingData.services.length > 0
+  const canContinueStep3 =
+    bookingData.eventDate !== null &&
+    bookingData.eventTime !== null &&
+    bookingData.deliveryType !== null
+  const canContinueStep4 = useMemo(() => {
+    // Verificar que todos los campos requeridos tengan valor
+    const hasRequiredFields =
+      bookingData.customer.firstName.trim() !== '' &&
+      bookingData.customer.lastName.trim() !== '' &&
+      bookingData.customer.email.trim() !== '' &&
+      bookingData.customer.phone.trim() !== ''
+
+    // Si es delivery, verificar dirección y ciudad
+    const hasDeliveryFields =
+      bookingData.deliveryType === 'pickup' ||
+      (bookingData.customer.address?.trim() !== '' &&
+        bookingData.customer.city?.trim() !== '')
+
+    // No debe haber errores de validación activos
+    const hasNoErrors = Object.values(formErrors).filter(Boolean).length === 0
+
+    return hasRequiredFields && hasDeliveryFields && hasNoErrors
+  }, [bookingData.customer, bookingData.deliveryType, formErrors])
+
+  // Progress percentage
+  const progressPercentage = (currentStep / 4) * 100
+
   return (
-    <>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden">
-        {/* Pattern Background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-full h-full">
-            <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/30 rounded-full" />
-            <div className="absolute top-20 right-20 w-32 h-32 border-2 border-accent/30 rounded-full" />
-            <div className="absolute bottom-20 left-1/4 w-24 h-24 border-2 border-primary/30 rounded-full" />
-            <div className="absolute bottom-10 right-1/3 w-16 h-16 border-2 border-accent/30 rounded-full" />
-          </div>
-        </div>
-
-        {/* Gradient Blobs */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/15 rounded-full blur-2xl" />
-        </div>
-
-        <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary font-medium mb-6 shadow-sm">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-              </svg>
-              Pedidos personalizados
+    <div className="min-h-screen bg-gradient-to-br from-secondary via-white to-primary/5 py-12">
+      <div className="container mx-auto px-4">
+        {/* Progress Bar - Aligned with content */}
+        <div className="max-w-7xl mx-auto mb-8">
+          <div className="lg:pr-[420px]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-dark">Paso {currentStep} de 4</span>
+              <span className="text-sm text-dark-light font-medium">{Math.round(progressPercentage)}% completado</span>
             </div>
-
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
-              Haz tu <span className="text-primary">Pedido</span>
-            </h1>
-            <p className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
-              Completa los datos paso a paso y crea la torta perfecta para tu evento especial
-            </p>
-
-            {/* Progress Indicator */}
-            <div className="mt-8 inline-flex items-center gap-2 px-5 py-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
-              <div className="flex items-center gap-2">
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors",
-                  progress > 0 ? "bg-primary text-white" : "bg-dark/10 text-dark-light"
-                )}>
-                  {progress > 0 ? '✓' : '1'}
-                </div>
-                <div className={cn("h-1 w-8 rounded-full transition-colors", progress >= 33 ? "bg-primary" : "bg-dark/10")} />
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors",
-                  progress >= 33 ? "bg-primary text-white" : "bg-dark/10 text-dark-light"
-                )}>
-                  {progress >= 33 ? '✓' : '2'}
-                </div>
-                <div className={cn("h-1 w-8 rounded-full transition-colors", progress >= 66 ? "bg-primary" : "bg-dark/10")} />
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors",
-                  progress >= 66 ? "bg-primary text-white" : "bg-dark/10 text-dark-light"
-                )}>
-                  {progress >= 66 ? '✓' : '3'}
-                </div>
-              </div>
-              <span className="text-sm font-medium text-dark-light ml-2">{progress}% completado</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="container mx-auto px-4 py-12">
-        {/* Progress Stepper */}
-        <div className="max-w-5xl mx-auto mb-12">
-          <div className="flex items-center justify-between">
-            {/* Paso 1: Tipo de Evento */}
-            <div className="flex flex-col items-center flex-1">
+            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
               <div
-                className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 mb-2',
-                  bookingData.eventType
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'bg-dark/10 text-dark-light'
-                )}
-              >
-                {bookingData.eventType ? (
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  '1'
-                )}
-              </div>
-              <p className={cn('text-xs font-medium text-center', bookingData.eventType ? 'text-dark' : 'text-dark-light')}>
-                Tipo de Evento
-              </p>
-            </div>
-            <div className={cn('h-0.5 flex-1 transition-all duration-300', bookingData.eventType ? 'bg-primary' : 'bg-dark/10')} />
-
-            {/* Paso 2: Producto */}
-            <div className="flex flex-col items-center flex-1">
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 mb-2',
-                  bookingData.product
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'bg-dark/10 text-dark-light'
-                )}
-              >
-                {bookingData.product ? (
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  '2'
-                )}
-              </div>
-              <p className={cn('text-xs font-medium text-center', bookingData.product ? 'text-dark' : 'text-dark-light')}>
-                Producto
-              </p>
-            </div>
-            <div className={cn('h-0.5 flex-1 transition-all duration-300', bookingData.product ? 'bg-primary' : 'bg-dark/10')} />
-
-            {/* Paso 3: Fecha */}
-            <div className="flex flex-col items-center flex-1">
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 mb-2',
-                  bookingData.eventDate
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'bg-dark/10 text-dark-light'
-                )}
-              >
-                {bookingData.eventDate ? (
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  '3'
-                )}
-              </div>
-              <p className={cn('text-xs font-medium text-center', bookingData.eventDate ? 'text-dark' : 'text-dark-light')}>
-                Fecha
-              </p>
-            </div>
-            <div className={cn('h-0.5 flex-1 transition-all duration-300', bookingData.eventDate ? 'bg-primary' : 'bg-dark/10')} />
-
-            {/* Paso 4: Detalles */}
-            <div className="flex flex-col items-center flex-1">
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 mb-2',
-                  bookingData.portions >= (bookingData.product?.min_portions || 0) && bookingData.deliveryType !== null
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'bg-dark/10 text-dark-light'
-                )}
-              >
-                {bookingData.portions >= (bookingData.product?.min_portions || 0) && bookingData.deliveryType !== null ? (
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  '4'
-                )}
-              </div>
-              <p className={cn('text-xs font-medium text-center', bookingData.portions >= (bookingData.product?.min_portions || 0) && bookingData.deliveryType !== null ? 'text-dark' : 'text-dark-light')}>
-                Detalles
-              </p>
-            </div>
-            <div className={cn('h-0.5 flex-1 transition-all duration-300', bookingData.portions >= (bookingData.product?.min_portions || 0) && bookingData.deliveryType !== null ? 'bg-primary' : 'bg-dark/10')} />
-
-            {/* Paso 5: Contacto */}
-            <div className="flex flex-col items-center flex-1">
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg transition-all duration-300 mb-2',
-                  bookingData.customer.firstName && bookingData.customer.email && bookingData.customer.phone
-                    ? 'bg-primary text-white shadow-lg'
-                    : 'bg-dark/10 text-dark-light'
-                )}
-              >
-                {bookingData.customer.firstName && bookingData.customer.email && bookingData.customer.phone ? (
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                ) : (
-                  '5'
-                )}
-              </div>
-              <p className={cn('text-xs font-medium text-center', bookingData.customer.firstName && bookingData.customer.email && bookingData.customer.phone ? 'text-dark' : 'text-dark-light')}>
-                Contacto
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* 1. Tipo de Evento */}
-          <Card className="relative">
-            <div className="absolute -left-4 -top-4 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
-              1
-            </div>
-            <h2 className="font-display text-2xl font-bold text-dark mb-2">
-              ¿Para qué tipo de evento es?
-            </h2>
-            <p className="text-dark-light mb-6">Selecciona el tipo de evento para ver sabores recomendados</p>
-            <EventTypeSelector
-              selectedEventType={bookingData.eventType}
-              onSelectEventType={setEventType}
-            />
-          </Card>
-
-          {/* 2. Seleccionar Producto */}
-          <Card className={cn('relative', !isProductEnabled && 'opacity-50 pointer-events-none')}>
-            <div className={cn(
-              'absolute -left-4 -top-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg',
-              isProductEnabled ? 'bg-primary text-white' : 'bg-dark/20 text-dark-light'
-            )}>
-              2
-            </div>
-            <h2 className="font-display text-2xl font-bold text-dark mb-2">
-              Selecciona tu Producto
-            </h2>
-            <p className="text-dark-light mb-6">
-              {isProductEnabled
-                ? `${filteredProducts.length} productos disponibles para tu evento`
-                : 'Primero selecciona el tipo de evento'}
-            </p>
-            {isProductEnabled && (
-              <ProductSelector
-                products={filteredProducts}
-                selectedProduct={bookingData.product}
-                onSelectProduct={setProduct}
+                className="h-full bg-gradient-to-r from-primary via-primary-hover to-accent transition-all duration-500 ease-out shadow-sm"
+                style={{ width: `${progressPercentage}%` }}
               />
-            )}
-          </Card>
-
-          {/* 3. Fecha del Evento */}
-          <Card className={cn('relative', !isDateEnabled && 'opacity-50 pointer-events-none')}>
-            <div className={cn(
-              'absolute -left-4 -top-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg',
-              isDateEnabled ? 'bg-primary text-white' : 'bg-dark/20 text-dark-light'
-            )}>
-              3
             </div>
-            <h2 className="font-display text-2xl font-bold text-dark mb-2">
-              ¿Cuándo es tu evento?
-            </h2>
-            <p className="text-dark-light mb-6">
-              {isDateEnabled
-                ? 'Selecciona la fecha de tu evento'
-                : 'Primero selecciona el producto para tu evento'}
+
+            {/* Step Labels */}
+            <div className="grid grid-cols-4 gap-3 mt-5">
+              {[
+                { num: 1, label: 'Evento', icon: '🎊' },
+                { num: 2, label: 'Servicios', icon: '🛍️' },
+                { num: 3, label: 'Detalles', icon: '📋' },
+                { num: 4, label: 'Contacto', icon: '📞' },
+              ].map((step) => (
+                <div
+                  key={step.num}
+                  className={cn(
+                    'text-center py-3 px-4 rounded-xl transition-all duration-300 border-2',
+                    currentStep === step.num
+                      ? 'bg-primary border-primary text-white font-semibold shadow-lg scale-105'
+                      : currentStep > step.num
+                      ? 'bg-accent/10 border-accent text-accent font-medium'
+                      : 'bg-white border-gray-200 text-gray-400'
+                  )}
+                >
+                  <div className="text-lg mb-1">{step.icon}</div>
+                  <div className="text-xs font-semibold">{step.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content with Sidebar Cart */}
+        <div className="max-w-7xl mx-auto">
+          {/* Header - Aligned with form content */}
+          <div className="lg:pr-[420px] mb-8">
+            <h1 className="font-display text-4xl md:text-5xl font-bold text-dark mb-4">
+              Arma Tu Evento Perfecto
+            </h1>
+            <p className="text-lg text-dark-light">
+              Selecciona los servicios que necesitas para tu celebración. Puedes combinar tortas,
+              coctelería y pastelería en un solo pedido.
             </p>
-            {isDateEnabled && (
-              <div className="grid md:grid-cols-2 gap-6">
-                <BookingCalendar
-                  selectedDate={bookingData.eventDate}
-                  onSelectDate={setEventDate}
-                />
-                {bookingData.eventDate && (
+          </div>
+
+          {/* Grid con formulario y cart */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Column - Main Form */}
+          <div className="lg:col-span-7 xl:col-span-8">
+            <Card className="p-6 md:p-8">
+              {/* STEP 1: Event Type */}
+              {currentStep === 1 && (
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-dark mb-2">
-                      Horario del evento (opcional)
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => setEventTime('AM')}
-                        className={cn(
-                          'p-4 rounded-lg border-2 transition-all duration-200',
-                          bookingData.eventTime === 'AM'
-                            ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
-                            : 'border-border hover:border-primary/50'
-                        )}
-                      >
-                        <div className="text-2xl mb-1">☀️</div>
-                        <p className="font-semibold text-dark">Mañana</p>
-                        <p className="text-xs text-dark-light">AM</p>
-                      </button>
-                      <button
-                        onClick={() => setEventTime('PM')}
-                        className={cn(
-                          'p-4 rounded-lg border-2 transition-all duration-200',
-                          bookingData.eventTime === 'PM'
-                            ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
-                            : 'border-border hover:border-primary/50'
-                        )}
-                      >
-                        <div className="text-2xl mb-1">🌙</div>
-                        <p className="font-semibold text-dark">Tarde/Noche</p>
-                        <p className="text-xs text-dark-light">PM</p>
-                      </button>
-                    </div>
-                    <p className="text-xs text-dark-light mt-2">
-                      Esto nos ayuda a coordinar mejor la entrega
+                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                      ¿Para qué tipo de evento?
+                    </h2>
+                    <p className="text-dark-light">
+                      Esto nos ayuda a recomendarte los mejores productos para tu celebración
                     </p>
                   </div>
-                )}
-              </div>
-            )}
-          </Card>
 
-          {/* 4. Porciones */}
-          <Card className={cn('relative', !isPortionsEnabled && 'opacity-50 pointer-events-none')}>
-            <div className={cn(
-              'absolute -left-4 -top-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg',
-              isPortionsEnabled ? 'bg-primary text-white' : 'bg-dark/20 text-dark-light'
-            )}>
-              4
-            </div>
-            <h2 className="font-display text-2xl font-bold text-dark mb-2">
-              ¿Cuántas porciones necesitas?
-            </h2>
-            <p className="text-dark-light mb-6">
-              {isPortionsEnabled
-                ? `Mínimo ${bookingData.product?.min_portions} - Máximo ${bookingData.product?.max_portions} porciones`
-                : 'Primero selecciona la fecha del evento'}
-            </p>
-            {isPortionsEnabled && bookingData.product && (
-              <div className="flex items-center justify-center gap-6">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  onClick={() =>
-                    setPortions(Math.max(bookingData.product!.min_portions, bookingData.portions - 5))
-                  }
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                  </svg>
-                </Button>
-                <div className="text-center min-w-[150px]">
-                  <span className="text-5xl font-bold text-dark block">{bookingData.portions}</span>
-                  <p className="text-dark-light mt-2">porciones</p>
-                </div>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  onClick={() =>
-                    setPortions(Math.min(bookingData.product!.max_portions, bookingData.portions + 5))
-                  }
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </Button>
-              </div>
-            )}
-          </Card>
-
-          {/* 5. Personalización */}
-          <Card className={cn('relative', !isCustomizationEnabled && 'opacity-50 pointer-events-none')}>
-            <div className={cn(
-              'absolute -left-4 -top-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg',
-              isCustomizationEnabled ? 'bg-primary text-white' : 'bg-dark/20 text-dark-light'
-            )}>
-              5
-            </div>
-            <h2 className="font-display text-2xl font-bold text-dark mb-2">
-              Personaliza tu torta
-            </h2>
-            <p className="text-dark-light mb-6">Mensaje y detalles especiales</p>
-            {isCustomizationEnabled && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Mensaje en la torta (opcional)
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Ej: Feliz Cumpleaños María"
-                    value={bookingData.customizations.message || ''}
-                    onChange={(e) => setCustomizations({ message: e.target.value })}
+                  <EventTypeSelector
+                    selectedEventType={bookingData.eventType}
+                    onSelectEventType={(slug) => setEventType(slug)}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">
-                    Solicitudes especiales (opcional)
-                  </label>
-                  <textarea
-                    className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                    rows={4}
-                    placeholder="Alergias, preferencias de decoración, etc."
-                    value={bookingData.customizations.specialRequests || ''}
-                    onChange={(e) => setCustomizations({ specialRequests: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
-          </Card>
 
-          {/* 6. Tipo de Entrega */}
-          <Card className={cn('relative', !isDeliveryEnabled && 'opacity-50 pointer-events-none')}>
-            <div className={cn(
-              'absolute -left-4 -top-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg',
-              isDeliveryEnabled ? 'bg-primary text-white' : 'bg-dark/20 text-dark-light'
-            )}>
-              6
-            </div>
-            <h2 className="font-display text-2xl font-bold text-dark mb-2">
-              ¿Cómo quieres recibir tu torta?
-            </h2>
-            <p className="text-dark-light mb-6">Selecciona el método de entrega</p>
-            {isDeliveryEnabled && (
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => setDeliveryType('pickup')}
-                  className={cn(
-                    'p-6 rounded-xl border-2 transition-all duration-200 hover:scale-105',
-                    bookingData.deliveryType === 'pickup'
-                      ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
-                      : 'border-border hover:border-primary/50'
-                  )}
-                >
-                  <div className="text-4xl mb-3">🏪</div>
-                  <p className="font-semibold text-dark mb-1">Recoger en tienda</p>
-                  <p className="text-sm text-dark-light">Sin costo adicional</p>
-                </button>
-                <button
-                  onClick={() => setDeliveryType('delivery')}
-                  className={cn(
-                    'p-6 rounded-xl border-2 transition-all duration-200 hover:scale-105',
-                    bookingData.deliveryType === 'delivery'
-                      ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
-                      : 'border-border hover:border-primary/50'
-                  )}
-                >
-                  <div className="text-4xl mb-3">🚗</div>
-                  <p className="font-semibold text-dark mb-1">Entrega a domicilio</p>
-                  <p className="text-sm text-dark-light">+{formatCurrency(15000)}</p>
-                </button>
-              </div>
-            )}
-          </Card>
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={nextStep}
+                      disabled={!canContinueStep1}
+                      className="px-8"
+                    >
+                      Continuar
+                      <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-          {/* 7. Información de Contacto */}
-          <Card className={cn('relative', !isContactEnabled && 'opacity-50 pointer-events-none')}>
-            <div className={cn(
-              'absolute -left-4 -top-4 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg',
-              isContactEnabled ? 'bg-primary text-white' : 'bg-dark/20 text-dark-light'
-            )}>
-              7
-            </div>
-            <h2 className="font-display text-2xl font-bold text-dark mb-2">
-              Información de Contacto
-            </h2>
-            <p className="text-dark-light mb-6">Para confirmar y coordinar tu pedido</p>
-            {isContactEnabled && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              {/* STEP 2: Services */}
+              {currentStep === 2 && (
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-dark mb-2">Nombre *</label>
+                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                      Selecciona Tus Servicios
+                    </h2>
+                    <p className="text-dark-light">
+                      Agrega todos los servicios que necesites para tu evento
+                    </p>
+                  </div>
+
+                  {/* Show Service Selector or Form */}
+                  {!showServiceForm && (
+                    <>
+                      {showServiceSelector ? (
+                        <ServiceCategorySelector
+                          selectedCategory={selectedServiceType}
+                          onSelectCategory={handleSelectCategory}
+                        />
+                      ) : (
+                        <div className="text-center py-12">
+                          <div className="text-6xl mb-4">🎉</div>
+                          <p className="text-dark-light mb-6">
+                            {bookingData.services.length === 0
+                              ? 'Comienza agregando tu primer servicio'
+                              : `Tienes ${bookingData.services.length} ${
+                                  bookingData.services.length === 1 ? 'servicio agregado' : 'servicios agregados'
+                                }`}
+                          </p>
+                          <Button onClick={() => setShowServiceSelector(true)} variant="primary">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            {bookingData.services.length === 0 ? 'Agregar Servicio' : 'Agregar Otro Servicio'}
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Service Forms */}
+                  {showServiceForm && selectedServiceType === 'torta' && (
+                    <>
+                      {isLoadingProducts ? (
+                        <Card className="p-8 text-center">
+                          <div className="animate-pulse">
+                            <div className="text-lg text-dark-light">Cargando productos...</div>
+                          </div>
+                        </Card>
+                      ) : productsError ? (
+                        <Card className="p-8 text-center">
+                          <div className="text-red-600 mb-4">{productsError}</div>
+                          <Button onClick={() => window.location.reload()}>
+                            Reintentar
+                          </Button>
+                        </Card>
+                      ) : (
+                        <TortaServiceForm
+                          eventType={bookingData.eventType || ''}
+                          availableProducts={cakeProducts}
+                          onAddService={handleAddService}
+                          onCancel={handleCancelServiceForm}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {showServiceForm && selectedServiceType === 'cocteleria' && (
+                    <>
+                      {isLoadingProducts ? (
+                        <Card className="p-8 text-center">
+                          <div className="animate-pulse">
+                            <div className="text-lg text-dark-light">Cargando productos...</div>
+                          </div>
+                        </Card>
+                      ) : (
+                        <CocktailServiceForm
+                          availableProducts={cocktailProducts}
+                          onAddService={handleAddService}
+                          onCancel={handleCancelServiceForm}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {showServiceForm && selectedServiceType === 'pasteleria' && (
+                    <>
+                      {isLoadingProducts ? (
+                        <Card className="p-8 text-center">
+                          <div className="animate-pulse">
+                            <div className="text-lg text-dark-light">Cargando productos...</div>
+                          </div>
+                        </Card>
+                      ) : (
+                        <PastryServiceForm
+                          availableProducts={pastryProducts}
+                          onAddService={handleAddService}
+                          onCancel={handleCancelServiceForm}
+                        />
+                      )}
+                    </>
+                  )}
+
+                  {/* Navigation Buttons */}
+                  {!showServiceForm && !showServiceSelector && (
+                    <div className="flex justify-between pt-4">
+                      <Button onClick={prevStep} variant="ghost">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                        </svg>
+                        Atrás
+                      </Button>
+                      <Button onClick={nextStep} disabled={!canContinueStep2}>
+                        Continuar
+                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* STEP 3: Event Details & Delivery */}
+              {currentStep === 3 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                      Detalles del Evento
+                    </h2>
+                    <p className="text-dark-light">
+                      Cuéntanos cuándo y dónde necesitas tu pedido
+                    </p>
+                  </div>
+
+                  {/* Event Date */}
+                  <div>
+                    <label className="block text-sm font-semibold text-dark mb-3">
+                      Fecha del Evento *
+                    </label>
+                    <BookingCalendar
+                      selectedDate={bookingData.eventDate}
+                      onSelectDate={(date) => setEventDate(date)}
+                    />
+                  </div>
+
+                  {/* Event Time */}
+                  <div>
+                    <label className="block text-sm font-semibold text-dark mb-3">
+                      Horario del Evento *
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      {['AM', 'PM'].map((time) => (
+                        <button
+                          key={time}
+                          onClick={() => setEventTime(time as 'AM' | 'PM')}
+                          className={cn(
+                            'py-4 px-6 rounded-xl border-2 font-semibold transition-all duration-200',
+                            bookingData.eventTime === time
+                              ? 'border-primary bg-primary text-white shadow-lg'
+                              : 'border-border hover:border-primary/50 text-dark'
+                          )}
+                        >
+                          {time === 'AM' ? 'Mañana (6:00 AM - 12:00 PM)' : 'Tarde (12:00 PM - 10:00 PM)'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Delivery Type */}
+                  <div>
+                    <label className="block text-sm font-semibold text-dark mb-3">
+                      Tipo de Entrega *
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => setDeliveryType('pickup')}
+                        className={cn(
+                          'py-6 px-6 rounded-xl border-2 transition-all duration-200 text-left',
+                          bookingData.deliveryType === 'pickup'
+                            ? 'border-primary bg-primary/10 shadow-lg'
+                            : 'border-border hover:border-primary/50'
+                        )}
+                      >
+                        <div className="text-3xl mb-2">🏪</div>
+                        <div className="font-semibold text-dark mb-1">Recoger en Tienda</div>
+                        <div className="text-sm text-dark-light">Sin costo adicional</div>
+                      </button>
+                      <button
+                        onClick={() => setDeliveryType('delivery')}
+                        className={cn(
+                          'py-6 px-6 rounded-xl border-2 transition-all duration-200 text-left',
+                          bookingData.deliveryType === 'delivery'
+                            ? 'border-primary bg-primary/10 shadow-lg'
+                            : 'border-border hover:border-primary/50'
+                        )}
+                      >
+                        <div className="text-3xl mb-2">🚚</div>
+                        <div className="font-semibold text-dark mb-1">Delivery</div>
+                        <div className="text-sm text-accent font-semibold">+{formatCurrency(15000)}</div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between pt-4">
+                    <Button onClick={prevStep} variant="ghost">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                      </svg>
+                      Atrás
+                    </Button>
+                    <Button onClick={nextStep} disabled={!canContinueStep3}>
+                      Continuar
+                      <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 4: Contact Information */}
+              {currentStep === 4 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                      Información de Contacto
+                    </h2>
+                    <p className="text-dark-light">
+                      Para finalizar necesitamos tus datos de contacto
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
                     <Input
-                      type="text"
-                      placeholder="Tu nombre"
+                      label="Nombre *"
                       value={bookingData.customer.firstName}
-                      onChange={(e) => setCustomer({ firstName: e.target.value })}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      onBlur={() => handleInputBlur('firstName')}
+                      error={formErrors.firstName}
+                      placeholder="Tu nombre"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-dark mb-2">Apellido *</label>
                     <Input
-                      type="text"
-                      placeholder="Tu apellido"
+                      label="Apellido *"
                       value={bookingData.customer.lastName}
-                      onChange={(e) => setCustomer({ lastName: e.target.value })}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      onBlur={() => handleInputBlur('lastName')}
+                      error={formErrors.lastName}
+                      placeholder="Tu apellido"
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">Email *</label>
-                  <Input
-                    type="email"
-                    placeholder="tu@email.com"
-                    value={bookingData.customer.email}
-                    onChange={(e) => setCustomer({ email: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-2">Teléfono/WhatsApp *</label>
-                  <Input
-                    type="tel"
-                    placeholder="+57 300 123 4567"
-                    value={bookingData.customer.phone}
-                    onChange={(e) => setCustomer({ phone: e.target.value })}
-                  />
-                </div>
 
-                {bookingData.deliveryType === 'delivery' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">Dirección *</label>
-                      <Input
-                        type="text"
-                        placeholder="Calle, número, apartamento"
-                        value={bookingData.customer.address || ''}
-                        onChange={(e) => setCustomer({ address: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-dark mb-2">Ciudad *</label>
-                      <Input
-                        type="text"
-                        placeholder="Tu ciudad"
-                        value={bookingData.customer.city || ''}
-                        onChange={(e) => setCustomer({ city: e.target.value })}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </Card>
-
-          {/* Resumen en Mobile */}
-          {bookingData.product && (
-            <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-2 border-primary/20 lg:hidden">
-              <h3 className="font-display text-2xl font-bold text-dark mb-4">Resumen del Pedido</h3>
-              <div className="space-y-3">
-                <div className="flex justify-between text-dark-light">
-                  <span>Subtotal ({bookingData.portions} porciones)</span>
-                  <span className="font-semibold">{formatCurrency(bookingData.subtotal)}</span>
-                </div>
-                {bookingData.deliveryFee > 0 && (
-                  <div className="flex justify-between text-dark-light">
-                    <span>Envío</span>
-                    <span className="font-semibold">{formatCurrency(bookingData.deliveryFee)}</span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      label="Email *"
+                      type="email"
+                      value={bookingData.customer.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      onBlur={() => handleInputBlur('email')}
+                      error={formErrors.email}
+                      placeholder="tu@email.com"
+                    />
+                    <Input
+                      label="Teléfono *"
+                      type="tel"
+                      value={bookingData.customer.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      onBlur={() => handleInputBlur('phone')}
+                      error={formErrors.phone}
+                      placeholder="+56 9 1234 5678"
+                    />
                   </div>
-                )}
-                <div className="pt-3 border-t border-primary/20 flex justify-between items-center">
-                  <span className="text-xl font-bold text-dark">Total</span>
-                  <span className="text-3xl font-bold text-accent font-display">
-                    {formatCurrency(bookingData.total)}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          )}
 
-          {/* Submit Button */}
-          <div className="text-center pt-6">
-            <Button
-              size="lg"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-              className="px-12"
-            >
-              {canSubmit ? 'Confirmar Pedido →' : 'Completa todos los campos'}
-            </Button>
-            {!canSubmit && (
-              <p className="text-sm text-dark-light mt-3">
-                Completa toda la información para continuar
-              </p>
-            )}
+                  {bookingData.deliveryType === 'delivery' && (
+                    <>
+                      <Input
+                        label="Dirección de Entrega *"
+                        value={bookingData.customer.address || ''}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                        onBlur={() => handleInputBlur('address')}
+                        error={formErrors.address}
+                        placeholder="Calle, número, depto/casa"
+                      />
+                      <Input
+                        label="Ciudad *"
+                        value={bookingData.customer.city || ''}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        onBlur={() => handleInputBlur('city')}
+                        error={formErrors.city}
+                        placeholder="Santiago, Valparaíso, etc."
+                      />
+                    </>
+                  )}
+
+                  {/* Error Message */}
+                  {submitError && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-red-700 text-sm">
+                        <strong>Error:</strong> {submitError}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between pt-4">
+                    <Button onClick={prevStep} variant="ghost">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                      </svg>
+                      Atrás
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        // Validar antes de continuar
+                        if (!validateContactForm()) {
+                          return
+                        }
+
+                        setIsSubmitting(true)
+                        setSubmitError(null)
+
+                        try {
+                          // Guardar pedido en la base de datos
+                          const result = await createBooking(bookingData)
+
+                          if (!result.success) {
+                            setSubmitError(result.error || 'Error al crear el pedido')
+                            setIsSubmitting(false)
+                            return
+                          }
+
+                          // Redirigir a confirmación con el número de orden real
+                          router.push(`/agendar/confirmacion?order=${result.orderNumber}`)
+                        } catch (error) {
+                          setSubmitError('Error inesperado. Por favor intenta nuevamente.')
+                          setIsSubmitting(false)
+                        }
+                      }}
+                      disabled={!canContinueStep4 || isSubmitting}
+                      isLoading={isSubmitting}
+                      className="bg-accent hover:bg-accent-light"
+                    >
+                      {isSubmitting ? 'Guardando...' : 'Confirmar Pedido'}
+                      {!isSubmitting && (
+                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          </div>
+
+          {/* Right Column - Service Cart (Desktop Only) */}
+          <div className="lg:col-span-5 xl:col-span-4">
+            <div className="sticky top-20">
+              <ServiceCart
+                services={bookingData.services}
+                subtotal={bookingData.subtotal}
+                deliveryFee={bookingData.deliveryFee}
+                total={bookingData.total}
+                onRemoveService={removeService}
+                onAddAnother={handleAddAnother}
+                onContinue={handleContinueToCheckout}
+              />
+            </div>
           </div>
         </div>
       </div>
 
+      {/* WhatsApp Button */}
       <WhatsAppButton />
-      <OrderSummaryFloat />
-    </>
+      </div>
+    </div>
   )
 }
