@@ -106,7 +106,7 @@ export function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative min-h-[calc(100vh-5rem)] flex items-center overflow-hidden"
+      className="relative min-h-[calc(100vh-72px)] lg:min-h-[calc(100vh-88px)] flex items-center overflow-hidden"
     >
       {/* Refined background */}
       <div className="absolute inset-0 bg-gradient-to-br from-secondary via-white to-primary/[0.03]" />
@@ -121,7 +121,7 @@ export function Hero() {
         backgroundSize: '48px 48px',
       }} />
 
-      <div className="relative container mx-auto px-4 lg:px-8 py-12 lg:py-0">
+      <div className="relative container mx-auto px-4 lg:px-8 py-16 lg:py-12">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Content */}
           <div ref={contentRef} className="text-center lg:text-left order-2 lg:order-1">
