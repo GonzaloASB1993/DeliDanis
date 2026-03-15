@@ -116,32 +116,54 @@ export function FeaturedProducts() {
     return () => ctx.revert()
   }, [isLoading, products])
 
-  // Carousel navigation
-  const maxIndex = Math.max(0, products.length - itemsToShow)
+  // Infinite carousel navigation
+  const totalSlides = products.length
+
+  // Position the carousel at the correct offset (accounting for cloned slides at the start)
+  const getTranslateX = useCallback((index: number) => {
+    // Each slide is (100 / itemsToShow)% of the visible container
+    // We have `totalSlides` clones prepended, so offset by totalSlides
+    const slideWidth = 100 / itemsToShow
+    return -((index + totalSlides) * slideWidth)
+  }, [itemsToShow, totalSlides])
+
+  // Set initial position without animation once products load
+  useEffect(() => {
+    if (!carouselRef.current || products.length === 0) return
+    gsap.set(carouselRef.current, { x: `${getTranslateX(0)}%` })
+  }, [products, getTranslateX])
 
   const goToSlide = useCallback((index: number) => {
     if (isAnimating || !carouselRef.current) return
 
     setIsAnimating(true)
-    const newIndex = Math.max(0, Math.min(index, maxIndex))
 
     gsap.to(carouselRef.current, {
-      x: `${-newIndex * (100 / itemsToShow)}%`,
+      x: `${getTranslateX(index)}%`,
       duration: 0.6,
       ease: 'power2.inOut',
       onComplete: () => {
-        setCurrentIndex(newIndex)
+        // If we went past the end or before the start, snap back to the real slide
+        let resetIndex = index
+        if (index >= totalSlides) {
+          resetIndex = index - totalSlides
+          gsap.set(carouselRef.current, { x: `${getTranslateX(resetIndex)}%` })
+        } else if (index < 0) {
+          resetIndex = index + totalSlides
+          gsap.set(carouselRef.current, { x: `${getTranslateX(resetIndex)}%` })
+        }
+        setCurrentIndex(resetIndex)
         setIsAnimating(false)
       }
     })
-  }, [isAnimating, maxIndex, itemsToShow])
+  }, [isAnimating, totalSlides, getTranslateX])
 
   const goNext = useCallback(() => {
-    if (currentIndex < maxIndex) goToSlide(currentIndex + 1)
-  }, [currentIndex, maxIndex, goToSlide])
+    goToSlide(currentIndex + 1)
+  }, [currentIndex, goToSlide])
 
   const goPrev = useCallback(() => {
-    if (currentIndex > 0) goToSlide(currentIndex - 1)
+    goToSlide(currentIndex - 1)
   }, [currentIndex, goToSlide])
 
   // Loading skeleton
@@ -173,6 +195,13 @@ export function FeaturedProducts() {
   if (products.length === 0) return null
 
   const showNavigation = products.length > itemsToShow
+
+  // Also reset position on itemsToShow change (responsive)
+  useEffect(() => {
+    if (!carouselRef.current || products.length === 0) return
+    setCurrentIndex(0)
+    gsap.set(carouselRef.current, { x: `${getTranslateX(0)}%` })
+  }, [itemsToShow])
 
   return (
     <section
@@ -212,12 +241,7 @@ export function FeaturedProducts() {
             <>
               <button
                 onClick={goPrev}
-                disabled={currentIndex === 0}
-                className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 lg:-translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 ${
-                  currentIndex === 0
-                    ? 'opacity-30 cursor-not-allowed'
-                    : 'hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105'
-                }`}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 lg:-translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105"
                 aria-label="Anterior"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,12 +250,7 @@ export function FeaturedProducts() {
               </button>
               <button
                 onClick={goNext}
-                disabled={currentIndex >= maxIndex}
-                className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 lg:translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 ${
-                  currentIndex >= maxIndex
-                    ? 'opacity-30 cursor-not-allowed'
-                    : 'hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105'
-                }`}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 lg:translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105"
                 aria-label="Siguiente"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,22 +266,23 @@ export function FeaturedProducts() {
               ref={carouselRef}
               className="flex"
               style={{
-                width: showNavigation ? `${(products.length / itemsToShow) * 100}%` : '100%',
+                // 3 sets of products: clones before + real + clones after
+                width: `${((products.length * 3) / itemsToShow) * 100}%`,
                 gap: '1.25rem',
               }}
             >
-              {products.map((product) => {
+              {/* Render 3 sets: cloned (before) + real + cloned (after) for infinite loop */}
+              {[...products, ...products, ...products].map((product, i) => {
                 const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0]
+                const isRealSet = i >= products.length && i < products.length * 2
 
                 return (
                   <div
-                    key={product.id}
-                    data-product-card
+                    key={`${product.id}-${i}`}
+                    data-product-card={isRealSet ? '' : undefined}
                     className="group cursor-pointer flex-shrink-0"
                     style={{
-                      width: showNavigation
-                        ? `calc(${100 / products.length}% - 1rem)`
-                        : `calc(${100 / itemsToShow}% - 1rem)`
+                      width: `calc(${100 / (products.length * 3)}% - 1rem)`
                     }}
                     onClick={() => setSelectedProduct(product)}
                   >
@@ -345,7 +365,7 @@ export function FeaturedProducts() {
           {/* Pagination dots */}
           {showNavigation && (
             <div className="flex justify-center gap-2 mt-8">
-              {Array.from({ length: maxIndex + 1 }).map((_, i) => (
+              {products.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => goToSlide(i)}

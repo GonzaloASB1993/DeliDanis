@@ -26,9 +26,12 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
   const navRef = useRef<HTMLDivElement>(null)
 
   // Close on route change
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
+
   useEffect(() => {
-    onClose()
-  }, [pathname, onClose])
+    onCloseRef.current()
+  }, [pathname])
 
   // Prevent body scroll when open
   useEffect(() => {
