@@ -127,9 +127,10 @@ export function FeaturedProducts() {
     return -((index + totalSlides) * slideWidth)
   }, [itemsToShow, totalSlides])
 
-  // Set initial position without animation once products load
+  // Set initial position without animation once products load, and reset on responsive change
   useEffect(() => {
     if (!carouselRef.current || products.length === 0) return
+    setCurrentIndex(0)
     gsap.set(carouselRef.current, { x: `${getTranslateX(0)}%` })
   }, [products, getTranslateX])
 
@@ -195,13 +196,6 @@ export function FeaturedProducts() {
   if (products.length === 0) return null
 
   const showNavigation = products.length > itemsToShow
-
-  // Also reset position on itemsToShow change (responsive)
-  useEffect(() => {
-    if (!carouselRef.current || products.length === 0) return
-    setCurrentIndex(0)
-    gsap.set(carouselRef.current, { x: `${getTranslateX(0)}%` })
-  }, [itemsToShow])
 
   return (
     <section
