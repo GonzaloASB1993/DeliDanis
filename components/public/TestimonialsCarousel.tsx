@@ -3,8 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { getTestimonialsPublic, type Testimonial as DBTestimonial } from '@/lib/supabase/testimonial-queries'
 
 gsap.registerPlugin(ScrollTrigger)
+
+// ─── Shape used internally by this component ──────────────────────────────────
 
 interface Testimonial {
   id: string
@@ -15,7 +18,9 @@ interface Testimonial {
   initials: string
 }
 
-const testimonials: Testimonial[] = [
+// ─── Hardcoded fallback (shown while loading or if DB is empty / unreachable) ─
+
+const FALLBACK_TESTIMONIALS: Testimonial[] = [
   {
     id: '1',
     name: 'Maria Gonzalez',
@@ -63,6 +68,31 @@ const testimonials: Testimonial[] = [
   },
 ]
 
+// ─── Map a DB row to the component's internal shape ───────────────────────────
+
+function mapDbToTestimonial(db: DBTestimonial): Testimonial {
+  const initials =
+    db.customer_initials?.trim() ||
+    db.customer_name
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0].toUpperCase())
+      .join('')
+
+  return {
+    id: db.id,
+    name: db.customer_name,
+    event: db.event_type ?? '',
+    comment: db.comment,
+    rating: db.rating,
+    initials,
+  }
+}
+
+// ─── Star rating ──────────────────────────────────────────────────────────────
+
 function StarRating({ count }: { count: number }) {
   return (
     <div className="flex gap-1" role="img" aria-label={`${count} de 5 estrellas`}>
@@ -75,7 +105,10 @@ function StarRating({ count }: { count: number }) {
   )
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export function TestimonialsCarousel() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(FALLBACK_TESTIMONIALS)
   const [featuredIndex, setFeaturedIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [isInView, setIsInView] = useState(false)
@@ -87,7 +120,22 @@ export function TestimonialsCarousel() {
   const quoteIconRef = useRef<SVGSVGElement>(null)
   const isAnimatingRef = useRef(false)
 
-  const featured = testimonials[featuredIndex]
+  // ── Fetch from Supabase; fall back to hardcoded if empty or errored ─────────
+  useEffect(() => {
+    getTestimonialsPublic()
+      .then((data) => {
+        if (data && data.length > 0) {
+          setTestimonials(data.map(mapDbToTestimonial))
+          setFeaturedIndex(0)
+        }
+        // else: keep the fallback array already set in useState initial value
+      })
+      .catch(() => {
+        // Network failure — fallback already in state, do nothing
+      })
+  }, [])
+
+  const featured = testimonials[featuredIndex] ?? testimonials[0]
 
   // Get side cards: all testimonials except the featured one
   const sideCards = testimonials.filter((_, i) => i !== featuredIndex)
@@ -247,7 +295,7 @@ export function TestimonialsCarousel() {
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [isPaused, isInView, featuredIndex, animateFeaturedChange])
+  }, [isPaused, isInView, featuredIndex, animateFeaturedChange, testimonials.length])
 
   const handleSideCardClick = (testimonialId: string) => {
     const newIndex = testimonials.findIndex((t) => t.id === testimonialId)
@@ -255,6 +303,8 @@ export function TestimonialsCarousel() {
       animateFeaturedChange(newIndex)
     }
   }
+
+  if (!featured) return null
 
   return (
     <section

@@ -55,8 +55,10 @@
 - [x] Página Galería (/galeria) — grid masonry con lightbox, filtros por categoría, animaciones GSAP, datos desde BD con fallback estático
 - [x] Página Contacto (/contacto) — formulario, info de contacto, FAQ, CTA WhatsApp
 - [x] Página Nosotros (/nosotros) — historia, equipo, valores
+- [x] Página Testimonios (/testimonios) — grid de testimonios aprobados + formulario público con upload de imágenes, flujo pending→approved/rejected
 - [x] WhatsAppButton flotante — componente reutilizable en todas las páginas
 - [x] Número de contacto actualizado (+56 9 3928 2764) en todo el frontend (Footer, catálogo, modales, WhatsApp)
+- [x] Navbar actualizado con link a Testimonios
 
 ### Pendientes Sitio Público
 - [ ] Página Cotizar (/cotizar) — formulario detallado + subida imágenes
@@ -87,25 +89,27 @@
 ### Admin Pendiente
 - [ ] Calendario visual (CalendarView) — vista mes/semana/día, drag & drop
 - [ ] Cotizaciones admin — lista, respuesta, conversión a pedido (QuoteBuilder)
-- [ ] Clientes CRM (ClientsTable) — historial, etiquetas, notas
-- [ ] Finanzas (FinanceCharts) — ingresos/egresos, reportes, gráficos
-- [ ] Gestión de usuarios — roles y permisos
-- [ ] Configuración del negocio — capacidad, mensajes, notificaciones
+- [x] Clientes CRM — lista con búsqueda/tags/paginación, detalle con historial de pedidos, CRUD completo, estadísticas
+- [x] Finanzas — dashboard con resumen mensual, gráficos CSS, tabs ingresos/egresos, CRUD transacciones, distribución por categoría
+- [x] Gestión de usuarios — CRUD con API route server-side, roles/permisos, toggle activo, visor de permisos
+- [x] Configuración del negocio — persistencia Supabase, info negocio, capacidad/horarios, notificaciones, pagos, días bloqueados
 
 ---
 
 ## Milestone 4: Admin Avanzado
 
-- [ ] Reportes exportables (PDF, Excel)
-- [ ] Configuración avanzada del negocio (settings)
-- [ ] Plantillas de mensajes WhatsApp/Email (admin)
+- [x] Reportes exportables (CSV) — 5 tabs con datos reales Supabase, exportar CSV por tab, gráficos CSS, P&L
+- [x] Configuración avanzada del negocio (settings) — persistencia Supabase, completada en M3
+- [x] Plantillas de mensajes WhatsApp/Email (admin) — 6 templates con variables, preview en vivo, inserción de variables, toggle activo
 - [x] Gestión de galería desde admin — CRUD completo con upload, edición, toggle activo, eliminación (admin/galeria)
 - [x] Migración BD gallery_images (014_gallery_images.sql) — tabla, índices, RLS
 - [x] Queries/mutations galería (lib/supabase/gallery-queries.ts) — 7 funciones CRUD
 - [x] Galería pública conectada a BD con fallback a imágenes estáticas
-- [ ] Gestión de testimonios desde admin
-- [ ] Capacidad diaria (daily_capacity) — UI admin
-- [ ] Notificaciones internas (alertas stock, pedidos nuevos)
+- [x] Gestión de testimonios desde admin — CRUD completo, toggle activo/destacado, reordenar, rating con estrellas, migración BD con seed data, flujo aprobación/rechazo con badges de estado
+- [x] Testimonios públicos conectados a BD con fallback a datos estáticos
+- [x] Envío público de testimonios — formulario con imágenes, status pending/approved/rejected, RLS para inserts anónimos
+- [x] Capacidad diaria (daily_capacity) — calendario visual, bloquear fechas, editar capacidad por día, bulk block
+- [x] Notificaciones internas — centro de notificaciones con alertas urgentes, stock bajo, entregas próximas, actividad reciente
 
 ---
 
@@ -199,9 +203,9 @@
 | Milestone | Estado | Completado |
 |-----------|--------|------------|
 | 1. Setup y Base | DONE | 100% |
-| 2. Sitio Público | Mayormente done | ~95% |
-| 3. Panel Admin Core | Parcial | ~50% |
-| 4. Admin Avanzado | En progreso | ~30% |
+| 2. Sitio Público | Mayormente done | ~97% |
+| 3. Panel Admin Core | Mayormente done | ~90% |
+| 4. Admin Avanzado | DONE | 100% |
 | 5. UI Faltantes | Pendiente | 0% |
 | 6. Pagos | Pendiente | 0% |
 | 7. Email | En progreso | ~70% |

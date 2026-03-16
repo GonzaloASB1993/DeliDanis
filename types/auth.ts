@@ -34,6 +34,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'inventory.view', 'inventory.edit',
     'gallery.view', 'gallery.edit',
     'testimonials.view', 'testimonials.edit',
+    'transactions.view', 'transactions.edit', 'transactions.create',
+    'users.view',
   ],
   production: [
     'dashboard.view',

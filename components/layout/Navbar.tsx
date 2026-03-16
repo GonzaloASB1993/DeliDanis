@@ -26,6 +26,7 @@ const navigation: NavigationItem[] = [
   },
   { name: 'Nosotros', href: '/nosotros' },
   { name: 'Galeria', href: '/galeria' },
+  { name: 'Testimonios', href: '/testimonios' },
   { name: 'Contacto', href: '/contacto' },
 ]
 
