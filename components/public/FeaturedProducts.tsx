@@ -90,22 +90,19 @@ export function FeaturedProducts() {
         )
       }
 
-      // Cards stagger
-      const cards = carouselRef.current?.querySelectorAll('[data-product-card]')
-      if (cards && cards.length > 0) {
+      // Carousel fade in
+      if (carouselRef.current) {
         gsap.fromTo(
-          cards,
-          { opacity: 0, y: 50, scale: 0.96 },
+          carouselRef.current.parentElement,
+          { opacity: 0, y: 30 },
           {
             opacity: 1,
             y: 0,
-            scale: 1,
-            duration: 0.7,
-            stagger: 0.08,
+            duration: 0.8,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: carouselRef.current,
-              start: 'top 82%',
+              start: 'top 85%',
               toggleActions: 'play none none none',
             },
           }
