@@ -215,6 +215,68 @@ export async function getOrderById(orderId: string): Promise<OrderWithDetails | 
   } as OrderWithDetails
 }
 
+// Buscar pedido por número de orden (para seguimiento público)
+export async function getOrderByNumber(orderNumber: string): Promise<OrderWithDetails | null> {
+  const { data: order, error } = await supabase
+    .from('orders')
+    .select(`
+      *,
+      customers (
+        id,
+        first_name,
+        last_name,
+        email,
+        phone,
+        address,
+        city
+      ),
+      order_items (
+        id,
+        service_type,
+        product_name,
+        service_data,
+        unit_price,
+        quantity,
+        portions,
+        total_price
+      ),
+      order_payments (
+        id,
+        amount,
+        payment_method,
+        reference,
+        notes,
+        created_at,
+        created_by
+      ),
+      order_history (
+        id,
+        old_status,
+        new_status,
+        notes,
+        created_at,
+        created_by
+      )
+    `)
+    .eq('order_number', orderNumber.toUpperCase())
+    .single()
+
+  if (error || !order) return null
+
+  const customer = Array.isArray(order.customers) ? order.customers[0] : order.customers
+
+  return {
+    ...order,
+    customer,
+    items: order.order_items || [],
+    payments: order.order_payments || [],
+    history: (order.order_history || []).sort(
+      (a: OrderHistoryEntry, b: OrderHistoryEntry) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+  } as OrderWithDetails
+}
+
 // Actualizar estado del pedido
 export async function updateOrderStatus(
   orderId: string,

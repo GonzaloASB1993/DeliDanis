@@ -60,7 +60,9 @@
 
 ### Pendientes Sitio Público
 - [ ] Página Cotizar (/cotizar) — formulario detallado + subida imágenes
-- [ ] Seguimiento de pedido (/seguimiento/[codigo]) — timeline estado
+- [x] Seguimiento de pedido (/seguimiento) — búsqueda por número de pedido con validación, GSAP animations
+- [x] Seguimiento detalle (/seguimiento/[codigo]) — timeline estado, progress stepper, detalles evento/entrega, items, pagos, historial, CTA WhatsApp
+- [x] Query getOrderByNumber en orders-queries.ts para seguimiento público
 
 ---
 
@@ -197,7 +199,7 @@
 | Milestone | Estado | Completado |
 |-----------|--------|------------|
 | 1. Setup y Base | DONE | 100% |
-| 2. Sitio Público | Mayormente done | ~90% |
+| 2. Sitio Público | Mayormente done | ~95% |
 | 3. Panel Admin Core | Parcial | ~50% |
 | 4. Admin Avanzado | En progreso | ~30% |
 | 5. UI Faltantes | Pendiente | 0% |

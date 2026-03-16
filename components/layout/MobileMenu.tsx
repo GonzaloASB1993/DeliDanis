@@ -198,8 +198,17 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
             ))}
           </div>
 
-          {/* CTA Button */}
-          <div data-menu-cta className="mt-8 pt-6 border-t border-border/40">
+          {/* CTA Buttons */}
+          <div data-menu-cta className="mt-8 pt-6 border-t border-border/40 space-y-3">
+            <Link
+              href="/seguimiento"
+              className="flex items-center justify-center gap-2 w-full py-3.5 px-6 border-2 border-dark/15 text-dark rounded-full font-semibold text-[15px] hover:border-primary hover:text-primary transition-colors duration-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Mi Pedido</span>
+            </Link>
             <Link
               href="/agendar"
               className="flex items-center justify-center gap-2 w-full py-3.5 px-6 bg-primary text-white rounded-full font-semibold text-[15px] hover:bg-primary-hover transition-colors duration-200 shadow-sm"
