@@ -107,7 +107,39 @@ export async function getCustomers(
     return { data: [], count: 0 }
   }
 
-  return { data: data || [], count: count || 0 }
+  const customers = data || []
+
+  // Compute total_orders and total_spent from orders (static columns are never updated)
+  const { data: orderRows } = await supabase
+    .from('orders')
+    .select('customer_id, total')
+    .neq('status', 'cancelled')
+
+  const stats: Record<string, { count: number; total: number }> = {}
+  for (const o of orderRows ?? []) {
+    if (!o.customer_id) continue
+    if (!stats[o.customer_id]) stats[o.customer_id] = { count: 0, total: 0 }
+    stats[o.customer_id].count++
+    stats[o.customer_id].total += parseFloat(o.total) || 0
+  }
+
+  const enriched = customers.map(c => ({
+    ...c,
+    total_orders: stats[c.id]?.count ?? 0,
+    total_spent: stats[c.id]?.total ?? 0,
+  }))
+
+  // JS sort for total_orders / total_spent (can't use PostgREST .order() on computed values)
+  // NOTE: JS sort only re-orders the current page (pagination already applied above)
+  if (sortBy === 'total_spent' || sortBy === 'total_orders') {
+    enriched.sort((a, b) => {
+      const valA = sortBy === 'total_spent' ? a.total_spent : a.total_orders
+      const valB = sortBy === 'total_spent' ? b.total_spent : b.total_orders
+      return sortDir === 'asc' ? valA - valB : valB - valA
+    })
+  }
+
+  return { data: enriched, count: count || 0 }
 }
 
 export async function getCustomerById(id: string): Promise<CustomerWithOrders | null> {
@@ -191,19 +223,19 @@ export async function getCustomerStats(): Promise<CustomerStats> {
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
 
-  const [totalRes, newRes, revenueRes] = await Promise.all([
+  const [totalRes, newRes, ordersRes] = await Promise.all([
     supabase.from('customers').select('id', { count: 'exact', head: true }),
     supabase
       .from('customers')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', startOfMonth),
-    supabase.from('customers').select('total_spent'),
+    supabase.from('orders').select('total').neq('status', 'cancelled'),
   ])
 
   const totalCustomers = totalRes.count || 0
   const newThisMonth = newRes.count || 0
-  const totalRevenue = (revenueRes.data || []).reduce(
-    (sum, c) => sum + (c.total_spent || 0),
+  const totalRevenue = (ordersRes.data || []).reduce(
+    (sum, o) => sum + (parseFloat(o.total) || 0),
     0
   )
   const averagePerCustomer = totalCustomers > 0 ? totalRevenue / totalCustomers : 0
