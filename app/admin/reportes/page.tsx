@@ -1067,8 +1067,8 @@ export default function ReportesPage() {
                     ) : ordersByStatus.length === 0 ? (
                       <p className="text-sm text-[#5D5D5D]">Sin pedidos en este período</p>
                     ) : (
-                      <div className="overflow-hidden rounded-xl border border-[#E8E4E0]">
-                        <table className="w-full text-sm">
+                      <div className="overflow-x-auto rounded-xl border border-[#E8E4E0]">
+                        <table className="w-full text-sm min-w-[320px]">
                           <thead>
                             <tr className="bg-[#F7F3EF] text-[#5D5D5D] text-xs font-medium">
                               <th className="px-4 py-3 text-left">Estado</th>
@@ -1105,8 +1105,8 @@ export default function ReportesPage() {
                     ) : eventTypeStats.length === 0 ? (
                       <p className="text-sm text-[#5D5D5D]">Sin datos de tipo de evento</p>
                     ) : (
-                      <div className="overflow-hidden rounded-xl border border-[#E8E4E0]">
-                        <table className="w-full text-sm">
+                      <div className="overflow-x-auto rounded-xl border border-[#E8E4E0]">
+                        <table className="w-full text-sm min-w-[320px]">
                           <thead>
                             <tr className="bg-[#F7F3EF] text-[#5D5D5D] text-xs font-medium">
                               <th className="px-4 py-3 text-left">Tipo de Evento</th>
@@ -1181,8 +1181,8 @@ export default function ReportesPage() {
                     {Array.from({ length: 10 }).map((_, i) => <SkeletonBlock key={i} className="h-10" />)}
                   </div>
                 ) : (
-                  <div className="overflow-hidden rounded-xl border border-[#E8E4E0]">
-                    <table className="w-full text-sm">
+                  <div className="overflow-x-auto rounded-xl border border-[#E8E4E0]">
+                    <table className="w-full text-sm min-w-[360px]">
                       <thead>
                         <tr className="bg-[#F7F3EF] text-[#5D5D5D] text-xs font-medium">
                           <th className="px-5 py-3 text-left">Concepto</th>

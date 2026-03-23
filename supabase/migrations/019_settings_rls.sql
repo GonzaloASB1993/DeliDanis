@@ -1,3 +1,11 @@
+-- Create settings table if it doesn't exist
+CREATE TABLE IF NOT EXISTS settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key VARCHAR(100) UNIQUE NOT NULL,
+  value JSONB NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Ensure RLS is enabled on settings table
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
 

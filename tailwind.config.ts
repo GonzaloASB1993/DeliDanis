@@ -73,10 +73,21 @@ const config: Config = {
             opacity: '1',
           },
         },
+        'fadeScaleIn': {
+          '0%': {
+            opacity: '0',
+            transform: 'scale(0.95)',
+          },
+          '100%': {
+            opacity: '1',
+            transform: 'scale(1)',
+          },
+        },
       },
       animation: {
         'bounce-gentle': 'bounce-gentle 1s infinite',
         'slide-up': 'slide-up 0.3s ease-out',
+        'fadeScaleIn': 'fadeScaleIn 0.2s ease-out',
       },
     },
   },

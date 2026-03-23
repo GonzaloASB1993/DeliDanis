@@ -147,7 +147,7 @@
 - [x] Header admin — notification dropdown max-w-[calc(100vw-2rem)], actions flex-wrap
 - [x] OrderDetailModal — padding p-4 sm:p-6
 - [x] Inventario — tablas con overflow-x-auto, stats grid-cols-1 sm:grid-cols-2 lg:grid-cols-5
-- [x] Reportes — overflow-x-auto en todas las tablas, grids responsivos
+- [x] Reportes — overflow-x-auto en todas las tablas (verificado y corregido: tablas "Pedidos por Estado", "Tipo de Evento" y P&L tenían overflow-hidden, cambiadas a overflow-x-auto + min-w)
 - [x] Catálogo admin — lista de productos responsive, sin tablas fijas
 
 ### Breakpoints (Tailwind)
