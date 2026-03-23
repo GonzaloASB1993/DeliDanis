@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -279,11 +280,11 @@ export async function getActiveProductSlugs(): Promise<{ slug: string }[]> {
  * Fetches a single cake product by slug for server-side metadata generation.
  * Returns null if not found.
  */
-export async function getProductBySlug(slug: string) {
+export const getProductBySlug = cache(async function(slug: string) {
   const { data } = await supabase
     .from('cake_products')
     .select('id, name, slug, description, short_description, base_price, is_active')
     .eq('slug', slug)
     .single()
   return data
-}
+})

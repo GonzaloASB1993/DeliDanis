@@ -3,6 +3,8 @@ import { BASE_URL } from '@/lib/utils/seo'
 import { getActiveProductSlugs } from '@/lib/supabase/product-queries'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Only cake products have individual /catalogo/[slug] detail pages.
+  // Pastelería and coctelería category pages are covered by static routes above.
   const products = await getActiveProductSlugs()
 
   const staticRoutes: MetadataRoute.Sitemap = [

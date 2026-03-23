@@ -3,5 +3,5 @@
 // eslint-disable-next-line react/no-danger
 export function JsonLd({ data }: { data: object }) {
   const __html = JSON.stringify(data)
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html }} />
+  return <script type="application/ld+json" suppressHydrationWarning dangerouslySetInnerHTML={{ __html }} />
 }
