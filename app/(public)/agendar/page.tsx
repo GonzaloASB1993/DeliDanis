@@ -62,6 +62,23 @@ export default function AgendarPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  const [deliveryCost, setDeliveryCost] = useState(15000) // fallback to default
+
+  useEffect(() => {
+    import('@/lib/supabase/client').then(({ supabase }) => {
+      supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'payments')
+        .single()
+        .then(({ data }) => {
+          if (typeof data?.value?.delivery_cost === 'number') {
+            setDeliveryCost(data.value.delivery_cost)
+          }
+        })
+    })
+  }, [])
+
   // Estado para productos cargados desde BD
   const [cakeProducts, setCakeProducts] = useState<ProductWithImages[]>([])
   const [cocktailProducts, setCocktailProducts] = useState<any[]>([])
@@ -574,7 +591,7 @@ export default function AgendarPage() {
                       >
                         <div className="text-3xl mb-2">🚚</div>
                         <div className="font-semibold text-dark mb-1">Delivery</div>
-                        <div className="text-sm text-accent font-semibold">+{formatCurrency(15000)}</div>
+                        <div className="text-sm text-accent font-semibold">+{formatCurrency(deliveryCost)}</div>
                       </button>
                     </div>
                   </div>

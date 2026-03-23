@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ContactForm } from '@/components/public/ContactForm'
@@ -15,6 +15,23 @@ export default function ContactoPage() {
   const heroRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const subtitleRef = useRef<HTMLParagraphElement>(null)
+
+  const [deliveryCost, setDeliveryCost] = useState<number | null>(null)
+
+  useEffect(() => {
+    import('@/lib/supabase/client').then(({ supabase }) => {
+      supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'payments')
+        .single()
+        .then(({ data }) => {
+          if (data?.value?.delivery_cost) {
+            setDeliveryCost(data.value.delivery_cost)
+          }
+        })
+    })
+  }, [])
 
   useEffect(() => {
     // Animación del hero
@@ -220,9 +237,11 @@ export default function ContactoPage() {
                 </svg>
               </summary>
               <p className="mt-4 text-dark-light">
-                Sí, realizamos entregas a domicilio dentro de la ciudad. El costo
-                de envío varía según la distancia. También puedes optar por retirar
-                tu pedido en nuestra tienda sin costo adicional.
+                Sí, realizamos entregas a domicilio dentro de la ciudad.
+                {deliveryCost !== null && deliveryCost > 0
+                  ? ` El costo de envío es de $${deliveryCost.toLocaleString('es-CL')}.`
+                  : ' El costo de envío varía según la distancia.'}
+                {' '}También puedes optar por retirar tu pedido en nuestra tienda sin costo adicional.
               </p>
             </details>
 
