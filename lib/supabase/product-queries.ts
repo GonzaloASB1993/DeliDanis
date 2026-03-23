@@ -261,3 +261,29 @@ export async function getPastryCategoriesWithProducts() {
     return { success: false, categories: [] }
   }
 }
+
+/**
+ * Slugs of all active cake products — used in sitemap generation.
+ * Throws on DB error so build fails loudly.
+ */
+export async function getActiveProductSlugs(): Promise<{ slug: string }[]> {
+  const { data, error } = await supabase
+    .from('cake_products')
+    .select('slug')
+    .eq('is_active', true)
+  if (error) throw new Error(`getActiveProductSlugs: ${error.message}`)
+  return data ?? []
+}
+
+/**
+ * Fetches a single cake product by slug for server-side metadata generation.
+ * Returns null if not found.
+ */
+export async function getProductBySlug(slug: string) {
+  const { data } = await supabase
+    .from('cake_products')
+    .select('id, name, slug, description, short_description, base_price, is_active')
+    .eq('slug', slug)
+    .single()
+  return data
+}
