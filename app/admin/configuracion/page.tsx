@@ -14,14 +14,6 @@ interface BusinessSettings {
   description: string
 }
 
-interface CapacitySettings {
-  max_daily_orders: number
-  min_advance_days: number
-  opening_time: string
-  closing_time: string
-  blocked_days: string[] // e.g. ['monday']
-}
-
 interface NotificationSettings {
   email_on_order: boolean
   whatsapp_to_client: boolean
@@ -47,14 +39,6 @@ const DEFAULT_BUSINESS: BusinessSettings = {
   description: 'Pastelería artesanal especializada en tortas para eventos',
 }
 
-const DEFAULT_CAPACITY: CapacitySettings = {
-  max_daily_orders: 5,
-  min_advance_days: 5,
-  opening_time: '09:00',
-  closing_time: '19:00',
-  blocked_days: [],
-}
-
 const DEFAULT_NOTIFICATIONS: NotificationSettings = {
   email_on_order: true,
   whatsapp_to_client: true,
@@ -71,19 +55,8 @@ const DEFAULT_PAYMENTS: PaymentSettings = {
   accept_mercadopago: false,
 }
 
-const DAYS_OF_WEEK = [
-  { key: 'monday', label: 'Lunes' },
-  { key: 'tuesday', label: 'Martes' },
-  { key: 'wednesday', label: 'Miércoles' },
-  { key: 'thursday', label: 'Jueves' },
-  { key: 'friday', label: 'Viernes' },
-  { key: 'saturday', label: 'Sábado' },
-  { key: 'sunday', label: 'Domingo' },
-]
-
 export default function ConfiguracionPage() {
   const [business, setBusiness] = useState<BusinessSettings>(DEFAULT_BUSINESS)
-  const [capacity, setCapacity] = useState<CapacitySettings>(DEFAULT_CAPACITY)
   const [notifications, setNotifications] = useState<NotificationSettings>(DEFAULT_NOTIFICATIONS)
   const [payments, setPayments] = useState<PaymentSettings>(DEFAULT_PAYMENTS)
   const [isLoading, setIsLoading] = useState(true)
@@ -105,9 +78,6 @@ export default function ConfiguracionPage() {
             switch (setting.key) {
               case 'business':
                 setBusiness({ ...DEFAULT_BUSINESS, ...setting.value })
-                break
-              case 'capacity':
-                setCapacity({ ...DEFAULT_CAPACITY, ...setting.value })
                 break
               case 'notifications':
                 setNotifications({ ...DEFAULT_NOTIFICATIONS, ...setting.value })
@@ -148,22 +118,13 @@ export default function ConfiguracionPage() {
     }
   }, [])
 
-  const toggleBlockedDay = useCallback((day: string) => {
-    setCapacity(prev => ({
-      ...prev,
-      blocked_days: prev.blocked_days.includes(day)
-        ? prev.blocked_days.filter(d => d !== day)
-        : [...prev.blocked_days, day],
-    }))
-  }, [])
-
   if (isLoading) {
     return (
       <div className="min-h-screen">
         <Header title="Configuración" subtitle="Ajustes del sistema" />
         <div className="p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[1, 2, 3, 4].map(i => (
+            {[1, 2, 3].map(i => (
               <div key={i} className="bg-white rounded-xl border border-border p-6 animate-pulse">
                 <div className="h-6 w-48 bg-gray-200 rounded mb-4" />
                 <div className="space-y-3">
@@ -253,79 +214,6 @@ export default function ConfiguracionPage() {
                 disabled={saving === 'business'}
               >
                 {saving === 'business' ? 'Guardando...' : savedSection === 'business' ? 'Guardado' : 'Guardar Cambios'}
-              </Button>
-            </div>
-          </div>
-
-          {/* Capacidad y Horarios */}
-          <div className="bg-white rounded-xl border border-border p-6">
-            <h3 className="font-semibold text-dark mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Capacidad y Horarios
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Pedidos máximos por día</label>
-                <input
-                  type="number"
-                  value={capacity.max_daily_orders}
-                  onChange={e => setCapacity(prev => ({ ...prev, max_daily_orders: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Días de anticipación mínima</label>
-                <input
-                  type="number"
-                  value={capacity.min_advance_days}
-                  onChange={e => setCapacity(prev => ({ ...prev, min_advance_days: parseInt(e.target.value) || 0 }))}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Horario de atención</label>
-                <div className="flex gap-2">
-                  <input
-                    type="time"
-                    value={capacity.opening_time}
-                    onChange={e => setCapacity(prev => ({ ...prev, opening_time: e.target.value }))}
-                    className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                  <span className="self-center text-dark-light">a</span>
-                  <input
-                    type="time"
-                    value={capacity.closing_time}
-                    onChange={e => setCapacity(prev => ({ ...prev, closing_time: e.target.value }))}
-                    className="flex-1 px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-2">Días sin atención</label>
-                <div className="flex flex-wrap gap-2">
-                  {DAYS_OF_WEEK.map(day => (
-                    <button
-                      key={day.key}
-                      onClick={() => toggleBlockedDay(day.key)}
-                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                        capacity.blocked_days.includes(day.key)
-                          ? 'bg-red-100 text-red-700 border border-red-200'
-                          : 'bg-secondary text-dark-light border border-border hover:bg-gray-100'
-                      }`}
-                    >
-                      {day.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Button
-                className="w-full"
-                onClick={() => saveSetting('capacity', capacity as unknown as Record<string, unknown>)}
-                disabled={saving === 'capacity'}
-              >
-                {saving === 'capacity' ? 'Guardando...' : savedSection === 'capacity' ? 'Guardado' : 'Guardar Cambios'}
               </Button>
             </div>
           </div>
@@ -446,12 +334,10 @@ export default function ConfiguracionPage() {
                 onClick={() => {
                   if (confirm('¿Estás seguro de restablecer toda la configuración? Esta acción no se puede deshacer.')) {
                     setBusiness(DEFAULT_BUSINESS)
-                    setCapacity(DEFAULT_CAPACITY)
                     setNotifications(DEFAULT_NOTIFICATIONS)
                     setPayments(DEFAULT_PAYMENTS)
                     Promise.all([
                       saveSetting('business', DEFAULT_BUSINESS as unknown as Record<string, unknown>),
-                      saveSetting('capacity', DEFAULT_CAPACITY as unknown as Record<string, unknown>),
                       saveSetting('notifications', DEFAULT_NOTIFICATIONS as unknown as Record<string, unknown>),
                       saveSetting('payments', DEFAULT_PAYMENTS as unknown as Record<string, unknown>),
                     ])
