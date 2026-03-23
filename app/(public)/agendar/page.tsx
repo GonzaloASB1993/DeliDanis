@@ -543,7 +543,7 @@ export default function AgendarPage() {
                     <label className="block text-sm font-semibold text-dark mb-3">
                       Horario del Evento *
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {['AM', 'PM'].map((time) => (
                         <button
                           key={time}
@@ -566,7 +566,7 @@ export default function AgendarPage() {
                     <label className="block text-sm font-semibold text-dark mb-3">
                       Tipo de Entrega *
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <button
                         onClick={() => setDeliveryType('pickup')}
                         className={cn(
@@ -625,7 +625,7 @@ export default function AgendarPage() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                       label="Nombre *"
                       value={bookingData.customer.firstName}
@@ -644,7 +644,7 @@ export default function AgendarPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                       label="Email *"
                       type="email"

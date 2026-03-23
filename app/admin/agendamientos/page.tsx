@@ -226,7 +226,7 @@ export default function AgendamientosPage() {
 
       <div className="p-6 space-y-6">
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-orange-400 rounded-xl p-5 text-white">
             <div className="flex items-center justify-center mb-2">
               <svg className="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -539,7 +539,8 @@ function CalendarView({
   }
 
   return (
-    <div>
+    <div className="overflow-x-auto">
+    <div className="min-w-[700px]">
       {/* Header días de la semana */}
       <div className="grid grid-cols-7 gap-1 mb-2">
         {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
@@ -592,6 +593,7 @@ function CalendarView({
           </div>
         ))}
       </div>
+    </div>
     </div>
   )
 }

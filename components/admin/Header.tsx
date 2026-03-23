@@ -60,7 +60,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
 
   return (
     <header className="bg-white border-b border-border sticky top-0 z-30">
-      <div className="flex items-center justify-between h-16 px-6">
+      <div className="flex items-center justify-between min-h-16 px-4 sm:px-6 py-2 flex-wrap gap-2">
         {/* Titulo */}
         <div>
           <h1 className="font-display text-xl font-bold text-dark">{title}</h1>
@@ -99,7 +99,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
                   className="fixed inset-0 z-40"
                   onClick={() => setShowNotifications(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg border border-border z-50 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-lg shadow-lg border border-border z-50 overflow-hidden">
                   <div className="px-4 py-3 border-b border-border">
                     <h3 className="font-semibold text-dark text-sm">Notificaciones</h3>
                   </div>

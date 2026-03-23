@@ -320,7 +320,7 @@ export default function AdminDashboardPage() {
               {/* Resumen de estados */}
               <div className="bg-white rounded-xl p-5 border border-border lg:col-span-2">
                 <h3 className="font-semibold text-dark mb-4">Resumen de Pedidos</h3>
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="text-center p-3 bg-orange-50 rounded-lg">
                     <p className="text-2xl font-bold text-orange-600">{metrics?.pedidosPendientes || 0}</p>
                     <p className="text-xs text-orange-700">Pendientes</p>

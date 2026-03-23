@@ -242,7 +242,8 @@ export default function SeguimientoDetallePage() {
 
           {/* Progress Stepper */}
           {!isCancelled && (
-            <div className="relative">
+            <div className="overflow-x-auto">
+            <div className="relative min-w-[420px]">
               {/* Progress bar background */}
               <div className="absolute top-4 left-0 right-0 h-1 bg-border/60 rounded-full mx-6" />
               {/* Progress bar fill */}
@@ -281,6 +282,7 @@ export default function SeguimientoDetallePage() {
                   )
                 })}
               </div>
+            </div>
             </div>
           )}
 

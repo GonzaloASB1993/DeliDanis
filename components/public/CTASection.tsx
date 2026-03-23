@@ -223,13 +223,7 @@ export function CTASection() {
           {trustIndicators.map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-2.5 px-6 lg:px-8 py-2"
-              style={{
-                borderRight:
-                  i < trustIndicators.length - 1
-                    ? '1px solid rgba(255, 255, 255, 0.15)'
-                    : 'none',
-              }}
+              className={`flex items-center gap-2.5 px-6 lg:px-8 py-2${i < trustIndicators.length - 1 ? ' border-r border-white/15' : ''}`}
             >
               <svg
                 className="w-5 h-5 text-accent-light flex-shrink-0"

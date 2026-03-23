@@ -246,7 +246,7 @@ function ConfirmacionContent() {
               </div>
 
               {/* Fecha y hora */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-dark-light mb-1">
                     Fecha del evento

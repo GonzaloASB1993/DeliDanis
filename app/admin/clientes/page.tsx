@@ -128,9 +128,9 @@ function CustomerFormModal({ customer, onClose, onSave, isSaving }: CustomerForm
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
           {/* Name Row */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-dark mb-1.5">Nombre</label>
               <input
@@ -172,7 +172,7 @@ function CustomerFormModal({ customer, onClose, onSave, isSaving }: CustomerForm
           </div>
 
           {/* Phone & City */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-dark mb-1.5">Teléfono</label>
               <input
@@ -196,7 +196,7 @@ function CustomerFormModal({ customer, onClose, onSave, isSaving }: CustomerForm
           </div>
 
           {/* Birthday & Address */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-dark mb-1.5">Cumpleaños</label>
               <input

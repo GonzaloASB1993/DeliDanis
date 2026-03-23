@@ -140,9 +140,10 @@ const bottomNavItems: NavItem[] = [
 interface SidebarProps {
   collapsed?: boolean
   onToggle?: () => void
+  isMobile?: boolean
 }
 
-export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
+export function Sidebar({ collapsed = false, onToggle, isMobile = false }: SidebarProps) {
   const pathname = usePathname()
   const { profile, signOut, hasPermission } = useAuth()
 
@@ -162,7 +163,13 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     <aside
       className={cn(
         'fixed left-0 top-0 z-40 h-screen bg-dark transition-all duration-300 flex flex-col',
-        collapsed ? 'w-[70px]' : 'w-[260px]'
+        isMobile
+          ? collapsed
+            ? '-translate-x-full w-[260px]'
+            : 'translate-x-0 w-[260px]'
+          : collapsed
+            ? 'w-[70px]'
+            : 'w-[260px]'
       )}
     >
       {/* Header */}

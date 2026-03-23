@@ -63,6 +63,7 @@ export default function AdminLayout({
       {/* Sidebar */}
       <Sidebar
         collapsed={isMobile ? !mobileMenuOpen : sidebarCollapsed}
+        isMobile={isMobile}
         onToggle={() => {
           if (isMobile) {
             setMobileMenuOpen(!mobileMenuOpen)
@@ -84,7 +85,7 @@ export default function AdminLayout({
       {isMobile && (
         <button
           onClick={() => setMobileMenuOpen(true)}
-          className="fixed top-4 left-4 z-20 p-2 bg-white rounded-lg shadow-md lg:hidden"
+          className="fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md lg:hidden"
         >
           <svg className="w-6 h-6 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />

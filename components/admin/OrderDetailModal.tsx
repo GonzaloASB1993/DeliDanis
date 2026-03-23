@@ -355,7 +355,7 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               {activeTab === 'detail' && (
                 <div className="space-y-6">
                   {/* Estado y Pago */}

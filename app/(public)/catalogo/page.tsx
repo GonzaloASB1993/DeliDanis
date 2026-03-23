@@ -24,6 +24,9 @@ export default function CatalogoPage() {
   const [selectedEventType, setSelectedEventType] = useState<string | null>(null)
   const [priceRange, setPriceRange] = useState({ min: 0, max: Infinity })
   const [sortBy, setSortBy] = useState<'price-asc' | 'price-desc' | 'name'>('name')
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+
+  const activeFiltersCount = (selectedEventType ? 1 : 0) + (priceRange.max !== Infinity || priceRange.min > 0 ? 1 : 0)
 
   // Estado para productos cargados desde BD
   const [products, setProducts] = useState<ProductWithImages[]>([])
@@ -188,8 +191,8 @@ export default function CatalogoPage() {
 
       <div className="container mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar Filters */}
-          <aside className="lg:col-span-1 space-y-6">
+          {/* Sidebar Filters — hidden on mobile */}
+          <aside className="hidden lg:block lg:col-span-1 space-y-6">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <EventTypeFilter
                 eventTypes={eventTypesWithCount}
@@ -224,6 +227,21 @@ export default function CatalogoPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                {/* Mobile filter button */}
+                <button
+                  onClick={() => setMobileFiltersOpen(true)}
+                  className="lg:hidden flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg bg-white text-dark text-sm hover:border-primary/50 transition-colors relative"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  Filtros
+                  {activeFiltersCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </button>
                 <label htmlFor="sort" className="text-sm text-dark-light whitespace-nowrap">
                   Ordenar por:
                 </label>
@@ -259,6 +277,49 @@ export default function CatalogoPage() {
       </div>
 
       <WhatsAppButton />
+
+      {/* Mobile filter drawer */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-dark/40 backdrop-blur-sm"
+            onClick={() => setMobileFiltersOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="relative bg-white rounded-t-2xl shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border sticky top-0 bg-white">
+              <span className="font-display text-lg font-bold text-dark">Filtros</span>
+              <button
+                onClick={() => setMobileFiltersOpen(false)}
+                className="p-2 rounded-lg hover:bg-secondary text-dark-light hover:text-dark transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-5 space-y-6">
+              <EventTypeFilter
+                eventTypes={eventTypesWithCount}
+                selectedEventType={selectedEventType}
+                onSelectEventType={(v) => { setSelectedEventType(v); setMobileFiltersOpen(false) }}
+              />
+              <PriceFilter priceRange={priceRange} onPriceChange={setPriceRange} />
+            </div>
+            {activeFiltersCount > 0 && (
+              <div className="px-5 pb-5">
+                <button
+                  onClick={() => { setSelectedEventType(null); setPriceRange({ min: 0, max: Infinity }); setMobileFiltersOpen(false) }}
+                  className="w-full py-2.5 border border-border rounded-full text-sm font-medium text-dark-light hover:text-dark hover:border-dark/40 transition-colors"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 }

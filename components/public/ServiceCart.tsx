@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { formatCurrency } from '@/lib/utils/format'
 import { cn } from '@/lib/utils/cn'
 import type { ServiceItem, TortaService, CocktailService, PastryService } from '@/stores/bookingStoreMulti'
@@ -157,9 +158,20 @@ export function ServiceCart({
   onContinue,
 }: ServiceCartProps) {
   const hasServices = services.length > 0
+  const [mobileCartOpen, setMobileCartOpen] = useState(false)
 
-  return (
-    <div className="fixed right-6 top-24 w-96 bg-white rounded-2xl shadow-2xl border border-border z-40 max-h-[calc(100vh-120px)] overflow-hidden flex flex-col hidden lg:flex">
+  // Lock body scroll when mobile cart is open
+  useEffect(() => {
+    if (mobileCartOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileCartOpen])
+
+  const cartContent = (
+    <>
       {/* Header */}
       <div className="p-6 border-b border-border bg-gradient-to-br from-primary/5 to-accent/5">
         <h3 className="font-display text-2xl font-bold text-dark flex items-center gap-2">
@@ -195,12 +207,7 @@ export function ServiceCart({
                 title="Eliminar"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
 
@@ -260,12 +267,7 @@ export function ServiceCart({
             >
               <span>Continuar</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 7l5 5m0 0l-5 5m5-5H6"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
 
@@ -274,25 +276,72 @@ export function ServiceCart({
               className="w-full px-6 py-2.5 border-2 border-primary text-primary rounded-full font-medium hover:bg-primary/10 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               <span>Agregar Otro Servicio</span>
             </button>
           </div>
         </div>
       )}
+    </>
+  )
 
-      {/* Mobile version indicator */}
-      <div className="lg:hidden p-4 bg-info/10 border-t border-info/20">
-        <p className="text-xs text-center text-info">
-          El resumen del pedido se muestra en la parte inferior en móvil
-        </p>
+  return (
+    <>
+      {/* Desktop cart — fixed panel */}
+      <div className="fixed right-6 top-24 w-96 bg-white rounded-2xl shadow-2xl border border-border z-40 max-h-[calc(100vh-120px)] overflow-hidden flex-col hidden lg:flex">
+        {cartContent}
       </div>
-    </div>
+
+      {/* Mobile sticky bar — only when there are services */}
+      {hasServices && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
+          <div className="bg-white border-t border-border shadow-2xl px-4 py-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🛒</span>
+              <div>
+                <p className="text-xs text-dark-light">
+                  {services.length} {services.length === 1 ? 'servicio' : 'servicios'}
+                </p>
+                <p className="font-bold text-accent font-display text-lg leading-tight">
+                  {formatCurrency(total)}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setMobileCartOpen(true)}
+              className="flex-1 max-w-[160px] px-4 py-2.5 bg-primary text-white rounded-full font-semibold text-sm hover:bg-primary-hover transition-colors flex items-center justify-center gap-1.5"
+            >
+              Ver Pedido
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile fullscreen overlay */}
+      {mobileCartOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col bg-white">
+          {/* Overlay header with close button */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <span className="font-display text-lg font-bold text-dark">Tu Pedido</span>
+            <button
+              onClick={() => setMobileCartOpen(false)}
+              className="p-2 rounded-lg hover:bg-secondary text-dark-light hover:text-dark transition-colors"
+              aria-label="Cerrar"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {cartContent}
+          </div>
+        </div>
+      )}
+    </>
   )
 }

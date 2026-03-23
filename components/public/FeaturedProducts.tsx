@@ -18,6 +18,7 @@ export function FeaturedProducts() {
   const [products, setProducts] = useState<ProductWithImages[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [, forceUpdate] = useState(0)
 
   const sectionRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
@@ -86,6 +87,20 @@ export function FeaturedProducts() {
   const goPrev = useCallback(() => {
     setCurrentIndex(prev => (prev <= 0 ? maxIndex : prev - 1))
   }, [maxIndex])
+
+  // Resize listener: recalculate itemsToShow and clamp currentIndex
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>
+    const handleResize = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        forceUpdate(n => n + 1)
+        setCurrentIndex(prev => Math.min(prev, Math.max(0, products.length - getItemsToShow())))
+      }, 150)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => { window.removeEventListener('resize', handleResize); clearTimeout(timer) }
+  }, [products, getItemsToShow])
 
   // Auto-play
   useEffect(() => {

@@ -96,7 +96,7 @@ export function MobileMenu({ isOpen, onClose, navigation }: MobileMenuProps) {
       <div
         ref={menuRef}
         className={cn(
-          'fixed top-0 right-0 bottom-0 w-[300px] bg-white z-50 shadow-2xl transition-transform duration-400 ease-out lg:hidden',
+          'fixed top-0 right-0 bottom-0 w-[300px] max-w-[85vw] bg-white z-50 shadow-2xl transition-transform duration-400 ease-out lg:hidden',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
