@@ -392,28 +392,31 @@ export default function AdminDashboardPage() {
                 <h3 className="font-semibold text-dark mb-4">Ingresos Mensuales {selectedYear}</h3>
                 {chartData ? (
                   <div className="flex items-end gap-1 h-48">
-                    {chartData.labels.map((label, index) => {
-                      const value = chartData.ingresos[index]
+                    {(() => {
                       const maxValue = Math.max(...chartData.ingresos, 1)
-                      const heightPercent = (value / maxValue) * 100
-                      const isSelected = index === selectedMonth - 1
-                      return (
-                        <div key={label} className="flex-1 flex flex-col items-center gap-1 group relative">
-                          <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-dark text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                            {formatCurrency(value)}
+                      const CHART_PX = 176 // h-48 (192px) minus ~16px for label
+                      return chartData.labels.map((label, index) => {
+                        const value = chartData.ingresos[index]
+                        const barPx = Math.max((value / maxValue) * CHART_PX, 4)
+                        const isSelected = index === selectedMonth - 1
+                        return (
+                          <div key={label} className="flex-1 flex flex-col items-center gap-1 group relative">
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-dark text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                              {formatCurrency(value)}
+                            </div>
+                            <div
+                              className={cn(
+                                'w-full rounded-t transition-all',
+                                isSelected ? 'bg-primary' : 'bg-primary/30',
+                                'group-hover:bg-primary/70'
+                              )}
+                              style={{ height: `${barPx}px` }}
+                            />
+                            <span className="text-[10px] text-dark-light">{label}</span>
                           </div>
-                          <div
-                            className={cn(
-                              'w-full rounded-t transition-all',
-                              isSelected ? 'bg-primary' : 'bg-primary/30',
-                              'group-hover:bg-primary/70'
-                            )}
-                            style={{ height: `${Math.max(heightPercent, 2)}%` }}
-                          />
-                          <span className="text-[10px] text-dark-light">{label}</span>
-                        </div>
-                      )
-                    })}
+                        )
+                      })
+                    })()}
                   </div>
                 ) : (
                   <div className="h-48 flex items-center justify-center text-dark-light">
