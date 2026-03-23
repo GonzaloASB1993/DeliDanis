@@ -115,16 +115,50 @@
 
 ## Milestone 5: Componentes UI Faltantes
 
-- [ ] Modal component (components/ui/Modal.tsx)
-- [ ] Select component (components/ui/Select.tsx)
-- [ ] Toast/notifications system (components/ui/Toast.tsx)
-- [ ] Avatar component (components/ui/Avatar.tsx)
-- [ ] Calendar picker component (components/ui/Calendar.tsx)
-- [ ] CategoryFilter component (components/public/CategoryFilter.tsx)
+- [x] Modal component (components/ui/Modal.tsx)
+- [x] Select component (components/ui/Select.tsx)
+- [x] Toast/notifications system (components/ui/Toast.tsx + stores/toastStore.ts)
+- [x] Avatar component (components/ui/Avatar.tsx)
+- [x] Calendar picker component (components/ui/Calendar.tsx)
+- [x] CategoryFilter component (components/public/CategoryFilter.tsx) — ya existía
 
 ---
 
-## Milestone 6: Integración Pagos
+## Milestone 6: Responsive Design
+
+### Sitio Público
+- [x] Home — FeaturedProducts resize listener debounced, CTASection border classes Tailwind
+- [x] Navbar — MobileMenu max-w-[85vw] para pantallas muy pequeñas
+- [x] Catálogo — filtros sidebar hidden en mobile, botón "Filtros" con badge de activos, drawer desde abajo
+- [x] Detalle de producto — layout lg:grid-cols-2, acciones flex-col sm:flex-row, thumbnails responsivos
+- [x] Agendamiento — grids nombre/apellido, email/teléfono, AM/PM, tipo entrega → grid-cols-1 sm:grid-cols-2; ServiceCart sticky bar mobile + overlay fullscreen
+- [x] Agendamiento confirmación — grid fecha/entrega → grid-cols-1 sm:grid-cols-2
+- [x] Galería — masonry columns-2 md:columns-3 lg:columns-4, lightbox con navegación responsive
+- [x] Contacto — grid-cols-1 lg:grid-cols-2, FAQ con details/summary responsive
+- [x] Nosotros — md:grid-cols-2 historia, md:grid-cols-3 valores, CTA flex-col sm:flex-row, sueño flex-col sm:flex-row
+- [x] Testimonios — grid-cols-1 md:grid-cols-2 lg:grid-cols-3, formulario p-6 md:p-8, success card p-6 sm:p-10
+- [x] Seguimiento — stepper envuelto en overflow-x-auto con min-w-[420px]
+
+### Panel Admin
+- [x] Sidebar — mobile: -translate-x-full cuando oculto (en vez de 70px), hamburger z-50
+- [x] Dashboard — Resumen de Pedidos grid-cols-2 sm:grid-cols-4
+- [x] Agendamientos — stats grid-cols-2 md:grid-cols-4, tabla overflow-x-auto, calendario overflow-x-auto min-w-[700px]
+- [x] Clientes — formulario grids grid-cols-1 sm:grid-cols-2, padding p-4 sm:p-6
+- [x] Header admin — notification dropdown max-w-[calc(100vw-2rem)], actions flex-wrap
+- [x] OrderDetailModal — padding p-4 sm:p-6
+- [x] Inventario — tablas con overflow-x-auto, stats grid-cols-1 sm:grid-cols-2 lg:grid-cols-5
+- [x] Reportes — overflow-x-auto en todas las tablas, grids responsivos
+- [x] Catálogo admin — lista de productos responsive, sin tablas fijas
+
+### Breakpoints (Tailwind)
+- `sm` (640px): ajustes menores de tipografía y espaciado
+- `md` (768px): tablet — cambio de columnas, sidebar oculto
+- `lg` (1024px): escritorio — layout completo
+- `xl` (1280px): pantallas grandes — máximo aprovechamiento de espacio
+
+---
+
+## Milestone 7: Integración Pagos
 
 - [ ] MercadoPago — Checkout Pro para señas/pagos
 - [ ] Stripe — alternativa internacional
@@ -136,7 +170,7 @@
 
 ---
 
-## Milestone 7: Integración Email
+## Milestone 8: Integración Email
 
 - [x] Configurar Resend (lib/email/client.ts)
 - [x] Dominio delidanis.cl verificado en Resend (DNS SPF/DKIM en Cloudflare)
@@ -160,7 +194,7 @@
 
 ---
 
-## Milestone 8: Integración WhatsApp
+## Milestone 9: Integración WhatsApp
 
 - [ ] Configurar Twilio (lib/twilio/client.ts)
 - [ ] Templates WhatsApp (lib/twilio/templates.ts):
@@ -174,7 +208,7 @@
 
 ---
 
-## Milestone 9: Auth Público (Clientes)
+## Milestone 10: Auth Público (Clientes)
 
 - [ ] Página Login (/login)
 - [ ] Página Registro (/registro)
@@ -184,12 +218,12 @@
 
 ---
 
-## Milestone 10: Polish y Deploy
+## Milestone 11: Polish y Deploy
 
-- [ ] SEO — metadata, Open Graph, sitemap.xml, robots.txt
+- [x] SEO — metadata, Open Graph, sitemap.xml, robots.txt
 - [ ] Optimización de imágenes — next/image, formatos modernos
 - [ ] Testing — unit tests, integration tests
-- [ ] Analytics — Google Analytics o Vercel Analytics
+- [x] Analytics — Google Analytics o Vercel Analytics
 - [ ] Performance — Lighthouse audit, lazy loading
 - [ ] Accesibilidad — ARIA, contraste, navegación teclado
 - [ ] Deploy producción en Vercel
@@ -206,9 +240,10 @@
 | 2. Sitio Público | Mayormente done | ~97% |
 | 3. Panel Admin Core | Mayormente done | ~90% |
 | 4. Admin Avanzado | DONE | 100% |
-| 5. UI Faltantes | Pendiente | 0% |
-| 6. Pagos | Pendiente | 0% |
-| 7. Email | En progreso | ~70% |
-| 8. WhatsApp | Pendiente | 0% |
-| 9. Auth Público | Pendiente | 0% |
-| 10. Polish y Deploy | Pendiente | 0% |
+| 5. UI Faltantes | DONE | 100% |
+| 6. Responsive Design | DONE | 100% |
+| 7. Pagos | Pendiente | 0% |
+| 8. Email | En progreso | ~70% |
+| 9. WhatsApp | Pendiente | 0% |
+| 10. Auth Público | Pendiente | 0% |
+| 11. Polish y Deploy | Pendiente | 0% |
