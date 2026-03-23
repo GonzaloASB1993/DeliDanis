@@ -527,7 +527,7 @@ export default function TestimoniosPage() {
           {/* Form card */}
           {submitted ? (
             /* Success state */
-            <div className="form-card bg-white rounded-2xl shadow-sm p-10 text-center">
+            <div className="form-card bg-white rounded-2xl shadow-sm p-6 sm:p-10 text-center">
               <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 {/* Check icon */}
                 <svg className="w-10 h-10 text-success-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

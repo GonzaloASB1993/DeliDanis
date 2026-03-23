@@ -299,7 +299,7 @@ export default function NosotrosPage() {
       <section className="py-12 md:py-16 bg-white">
         <div className="container mx-auto px-4 md:px-6 max-w-3xl">
           <div className="bg-gradient-to-br from-accent/10 via-primary/5 to-transparent rounded-2xl p-8 md:p-12 border border-accent/20">
-            <div className="flex items-start gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
               <span className="text-5xl">☕</span>
               <div>
                 <h3 className="font-display text-2xl font-bold text-dark mb-3">
