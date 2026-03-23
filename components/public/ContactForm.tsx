@@ -77,24 +77,23 @@ export function ContactForm() {
     setIsLoading(true)
 
     try {
-      // TODO: Integrar con Resend o API de email
-      // Por ahora simulamos el envío
-      await new Promise(resolve => setTimeout(resolve, 1500))
-
-      setIsSuccess(true)
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
+      const { supabase } = await import('@/lib/supabase/client')
+      const { error } = await supabase.from('contact_messages').insert({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        subject: formData.subject || null,
+        message: formData.message,
       })
 
-      // Resetear mensaje de éxito después de 5 segundos
+      if (error) throw error
+
+      setIsSuccess(true)
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
       setTimeout(() => setIsSuccess(false), 5000)
     } catch (error) {
       console.error('Error al enviar formulario:', error)
-      // TODO: Mostrar mensaje de error
+      alert('Hubo un error al enviar el mensaje. Intenta de nuevo o contáctanos por WhatsApp.')
     } finally {
       setIsLoading(false)
     }
