@@ -45,7 +45,6 @@ export async function createPreference(
           title: `${labelMap[paymentType]} — Pedido DeliDanis #${orderNumber}`,
           quantity: 1,
           unit_price: amount,
-          currency_id: 'CLP',
         },
       ],
       external_reference: orderNumber,
