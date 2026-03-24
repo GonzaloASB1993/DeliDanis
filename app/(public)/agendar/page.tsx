@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useBookingStoreMulti } from '@/stores/bookingStoreMulti'
 import { getCakeProducts, getCocktailProducts, getPastryProducts } from '@/lib/supabase/product-queries'
 import { ServiceCategorySelector } from '@/components/public/ServiceCategorySelector'
@@ -27,7 +26,6 @@ import {
 import { createBooking } from '@/lib/supabase/booking-mutations'
 
 export default function AgendarPage() {
-  const router = useRouter()
   const {
     bookingData,
     currentStep,
@@ -58,9 +56,8 @@ export default function AgendarPage() {
     city?: string
   }>({})
 
-  // Estado para el envío del formulario
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   const [deliveryCost, setDeliveryCost] = useState(15000) // fallback to default
 
@@ -294,8 +291,45 @@ export default function AgendarPage() {
     return hasRequiredFields && hasDeliveryFields && hasNoErrors
   }, [bookingData.customer, bookingData.deliveryType, formErrors])
 
+  const handlePay = async (paymentType: 'deposit' | 'full') => {
+    setIsPaymentLoading(true)
+    setPaymentError(null)
+
+    try {
+      // 1. Crear el pedido con status pending_payment
+      const result = await createBooking(bookingData)
+
+      if (!result.success || !result.orderId) {
+        setPaymentError(result.error || 'Error al registrar el pedido')
+        setIsPaymentLoading(false)
+        return
+      }
+
+      // 2. Crear preferencia de pago en MP
+      const prefResponse = await fetch('/api/payments/preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: result.orderId, paymentType }),
+      })
+
+      const prefData = await prefResponse.json()
+
+      if (!prefResponse.ok || !prefData.initPoint) {
+        setPaymentError('Error al iniciar el pago. Intenta nuevamente.')
+        setIsPaymentLoading(false)
+        return
+      }
+
+      // 3. Redirigir a MercadoPago
+      window.location.href = prefData.initPoint
+    } catch {
+      setPaymentError('Error inesperado. Por favor intenta nuevamente.')
+      setIsPaymentLoading(false)
+    }
+  }
+
   // Progress percentage
-  const progressPercentage = (currentStep / 4) * 100
+  const progressPercentage = (currentStep / 5) * 100
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-secondary via-white to-primary/5 py-12">
@@ -304,7 +338,7 @@ export default function AgendarPage() {
         <div className="max-w-7xl mx-auto mb-8">
           <div className="lg:pr-[420px]">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-dark">Paso {currentStep} de 4</span>
+              <span className="text-sm font-semibold text-dark">Paso {currentStep} de 5</span>
               <span className="text-sm text-dark-light font-medium">{Math.round(progressPercentage)}% completado</span>
             </div>
             <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
@@ -315,12 +349,13 @@ export default function AgendarPage() {
             </div>
 
             {/* Step Labels */}
-            <div className="grid grid-cols-4 gap-3 mt-5">
+            <div className="grid grid-cols-5 gap-3 mt-5">
               {[
                 { num: 1, label: 'Evento', icon: '🎊' },
                 { num: 2, label: 'Servicios', icon: '🛍️' },
                 { num: 3, label: 'Detalles', icon: '📋' },
                 { num: 4, label: 'Contacto', icon: '📞' },
+                { num: 5, label: 'Pago', icon: '💳' },
               ].map((step) => (
                 <div
                   key={step.num}
@@ -686,15 +721,6 @@ export default function AgendarPage() {
                     </>
                   )}
 
-                  {/* Error Message */}
-                  {submitError && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                      <p className="text-red-700 text-sm">
-                        <strong>Error:</strong> {submitError}
-                      </p>
-                    </div>
-                  )}
-
                   <div className="flex justify-between pt-4">
                     <Button onClick={prevStep} variant="ghost">
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -703,42 +729,142 @@ export default function AgendarPage() {
                       Atrás
                     </Button>
                     <Button
-                      onClick={async () => {
-                        // Validar antes de continuar
-                        if (!validateContactForm()) {
-                          return
-                        }
-
-                        setIsSubmitting(true)
-                        setSubmitError(null)
-
-                        try {
-                          // Guardar pedido en la base de datos
-                          const result = await createBooking(bookingData)
-
-                          if (!result.success) {
-                            setSubmitError(result.error || 'Error al crear el pedido')
-                            setIsSubmitting(false)
-                            return
-                          }
-
-                          // Redirigir a confirmación con el número de orden real
-                          router.push(`/agendar/confirmacion?order=${result.orderNumber}`)
-                        } catch (error) {
-                          setSubmitError('Error inesperado. Por favor intenta nuevamente.')
-                          setIsSubmitting(false)
-                        }
+                      onClick={() => {
+                        if (!validateContactForm()) return
+                        nextStep()
                       }}
-                      disabled={!canContinueStep4 || isSubmitting}
-                      isLoading={isSubmitting}
+                      disabled={!canContinueStep4}
                       className="bg-accent hover:bg-accent-light"
                     >
-                      {isSubmitting ? 'Guardando...' : 'Confirmar Pedido'}
-                      {!isSubmitting && (
-                        <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      )}
+                      Continuar al Pago
+                      <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {/* STEP 5: Pago */}
+              {currentStep === 5 && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                      Confirmar y Pagar
+                    </h2>
+                    <p className="text-dark-light">
+                      Elige cómo quieres pagar para confirmar tu pedido
+                    </p>
+                  </div>
+
+                  {/* Trust Signals */}
+                  <div className="flex flex-wrap items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span className="text-sm font-medium text-green-800">Pago 100% Seguro</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium text-green-800">Datos protegidos</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">MercadoPago</span>
+                      <span className="text-sm text-green-800">Procesado por</span>
+                    </div>
+                  </div>
+
+                  {/* Resumen de pago */}
+                  <div className="bg-secondary/50 rounded-xl p-5 space-y-3">
+                    <h3 className="font-semibold text-dark">Resumen de pago</h3>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-dark-light">Subtotal servicios</span>
+                      <span className="text-dark font-medium">{formatCurrency(bookingData.subtotal)}</span>
+                    </div>
+                    {bookingData.deliveryFee > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-dark-light">Envío</span>
+                        <span className="text-dark font-medium">{formatCurrency(bookingData.deliveryFee)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold text-base pt-2 border-t border-border">
+                      <span className="text-dark">Total del pedido</span>
+                      <span className="text-accent font-display text-xl">{formatCurrency(bookingData.total)}</span>
+                    </div>
+                  </div>
+
+                  {/* Error */}
+                  {paymentError && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                      {paymentError}
+                    </div>
+                  )}
+
+                  {/* Opciones de pago */}
+                  <div className="space-y-3">
+                    {/* Pagar depósito */}
+                    <button
+                      onClick={() => handlePay('deposit')}
+                      disabled={isPaymentLoading}
+                      className="w-full p-5 bg-white border-2 border-primary rounded-2xl text-left hover:bg-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-dark group-hover:text-primary transition-colors">
+                          Pagar depósito ahora
+                        </span>
+                        <span className="text-xl font-bold font-display text-primary">
+                          {formatCurrency(Math.round(bookingData.total * 0.5))}
+                        </span>
+                      </div>
+                      <p className="text-sm text-dark-light">
+                        50% ahora para reservar tu fecha · El saldo lo pagas más adelante
+                      </p>
+                    </button>
+
+                    {/* Pagar total */}
+                    <button
+                      onClick={() => handlePay('full')}
+                      disabled={isPaymentLoading}
+                      className="w-full p-5 bg-white border-2 border-gray-200 rounded-2xl text-left hover:border-accent hover:bg-accent/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-dark">
+                          Pagar monto completo
+                        </span>
+                        <span className="text-xl font-bold font-display text-accent">
+                          {formatCurrency(bookingData.total)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-dark-light">
+                        Pago único · Sin saldo pendiente
+                      </p>
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-center text-dark-light">
+                    Serás redirigido al sitio oficial de MercadoPago para completar tu pago de forma segura.
+                  </p>
+
+                  {isPaymentLoading && (
+                    <div className="text-center py-4">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <p className="text-sm text-dark-light mt-2">Preparando tu pago...</p>
+                    </div>
+                  )}
+
+                  {/* Botón atrás */}
+                  <div className="flex justify-start pt-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => prevStep()}
+                      disabled={isPaymentLoading}
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                      </svg>
+                      Atrás
                     </Button>
                   </div>
                 </div>
