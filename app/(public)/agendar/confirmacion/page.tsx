@@ -445,7 +445,7 @@ function ConfirmacionContent() {
               ¿Tienes alguna pregunta sobre tu pedido?
             </p>
             <a
-              href="https://wa.me/573001234567"
+              href="https://wa.me/56939282764"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-primary font-semibold hover:text-primary-hover transition-colors"

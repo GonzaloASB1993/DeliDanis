@@ -17,6 +17,7 @@ const MONTHS = [
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos' },
+  { value: 'pending_payment', label: 'Pago Pendiente' },
   { value: 'pending', label: 'Pendientes' },
   { value: 'confirmed', label: 'Confirmados' },
   { value: 'in_production', label: 'En Producción' },
@@ -26,6 +27,7 @@ const STATUS_OPTIONS = [
 ]
 
 const statusColors: Record<string, string> = {
+  pending_payment: 'bg-yellow-100 text-yellow-700 border-yellow-200',
   pending: 'bg-orange-100 text-orange-700 border-orange-200',
   confirmed: 'bg-green-100 text-green-700 border-green-200',
   in_production: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -36,6 +38,7 @@ const statusColors: Record<string, string> = {
 }
 
 const statusLabels: Record<string, string> = {
+  pending_payment: 'Pago Pendiente',
   pending: 'Pendiente',
   confirmed: 'Confirmado',
   in_production: 'En Producción',

@@ -359,7 +359,7 @@ export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
 
   nextStep: () =>
     set((state) => ({
-      currentStep: Math.min(state.currentStep + 1, 4),
+      currentStep: Math.min(state.currentStep + 1, 5),
     })),
 
   prevStep: () =>

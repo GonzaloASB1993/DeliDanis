@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Enviar email de confirmación al cliente (fire and forget)
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || ''
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     fetch(`${appUrl}/api/email/confirm-order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

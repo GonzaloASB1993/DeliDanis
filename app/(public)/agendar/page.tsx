@@ -58,6 +58,7 @@ export default function AgendarPage() {
 
   const [isPaymentLoading, setIsPaymentLoading] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [depositPercentage, setDepositPercentage] = useState(50)
 
   const [deliveryCost, setDeliveryCost] = useState(15000) // fallback to default
 
@@ -318,6 +319,11 @@ export default function AgendarPage() {
         setPaymentError('Error al iniciar el pago. Intenta nuevamente.')
         setIsPaymentLoading(false)
         return
+      }
+
+      // Actualizar el porcentaje mostrado si viene diferente al default
+      if (prefData.depositPercentage) {
+        setDepositPercentage(prefData.depositPercentage)
       }
 
       // 3. Redirigir a MercadoPago
@@ -815,11 +821,11 @@ export default function AgendarPage() {
                           Pagar depósito ahora
                         </span>
                         <span className="text-xl font-bold font-display text-primary">
-                          {formatCurrency(Math.round(bookingData.total * 0.5))}
+                          {formatCurrency(Math.round(bookingData.total * depositPercentage / 100))}
                         </span>
                       </div>
                       <p className="text-sm text-dark-light">
-                        50% ahora para reservar tu fecha · El saldo lo pagas más adelante
+                        {depositPercentage}% ahora para reservar tu fecha · El saldo lo pagas más adelante
                       </p>
                     </button>
 
