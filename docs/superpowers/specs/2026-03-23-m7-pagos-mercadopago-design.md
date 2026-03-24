@@ -45,16 +45,28 @@ La preferencia de MP incluye el `order_number` como `external_reference` (ej. `D
 ## Flujo de pago al agendar
 
 ```
-1. Cliente llena formulario de agendamiento
-2. Click "Ir a pagar" → se crean pedido (pending_payment) + preferencia MP
-3. Redirección a checkout.mercadopago.com
-   ├── Pago exitoso → MP redirige a /agendar/confirmacion?order=XXX&status=approved
-   └── Pago fallido/abandono → MP redirige a /agendar/confirmacion?order=XXX&status=failure
-4. Webhook /api/webhooks/mercadopago recibe notificación:
-   ├── Depósito (50%) pagado → status: pending, payment_status: partial, deposit_paid: true
-   └── Total (100%) pagado  → status: pending, payment_status: paid
-5. Se registra transacción en tabla transactions
-6. Se envía email de confirmación al cliente
+1. Cliente llena formulario → click "Ir a pagar"
+2. createBooking() → pedido en BD (status: pending_payment, payment_status: pending)
+3. POST /api/payments/preference → obtiene init_point de MP
+4. window.location.href = init_point  (redirección a MP)
+5. En MP, cliente elige pagar depósito (50%) o monto completo (100%)
+6. MP redirige a back_url según resultado:
+   ├── success → /agendar/confirmacion?order=DD-XXXX&status=approved
+   ├── failure → /agendar/confirmacion?order=DD-XXXX&status=failure
+   └── pending → /agendar/confirmacion?order=DD-XXXX&status=pending
+7. Webhook /api/webhooks/mercadopago recibe notificación (asíncrono, puede llegar antes o después del redirect):
+   ├── Depósito (50%) aprobado → status: pending, payment_status: partial, deposit_paid: true
+   └── Total (100%) aprobado  → status: pending, payment_status: paid
+8. Se registra transacción + order_history
+9. Se envía email de confirmación al cliente
+
+PÁGINA /agendar/confirmacion maneja ?status:
+- "approved" → "¡Pago recibido! Tu pedido está confirmado. Recibirás un email con los detalles."
+- "failure"  → "El pago no pudo procesarse. Tu pedido fue registrado. Contáctanos para coordinar."
+              + botón "Reintentar pago" (llama a POST /api/payments/preference nuevamente)
+              + botón WhatsApp
+- "pending"  → "Tu pago está en proceso. Te notificaremos cuando se confirme."
+- (sin status) → comportamiento actual (legacy, no debería ocurrir con nuevo flujo)
 ```
 
 ---
@@ -75,12 +87,16 @@ La preferencia de MP incluye el `order_number` como `external_reference` (ej. `D
 
 ## Estados de pago
 
+`pending_payment` es un **nuevo status** que se agrega a `ORDER_STATUS` en `lib/utils/constants.ts` y es compatible con el schema de BD existente (`orders.status VARCHAR(50)`). No requiere migración de columna.
+
 | `status` del pedido | `payment_status` | Descripción |
 |---|---|---|
-| `pending_payment` | `pending` | En checkout MP, esperando |
+| `pending_payment` | `pending` | Creado, redirigido a MP, esperando pago |
 | `pending` | `partial` | Depósito pagado (50%), saldo pendiente |
 | `pending` | `paid` | Pago completo (100%) |
-| `pending` | `pending` | Pedido sin pago (abandonado, admin contacta) |
+| `pending` | `pending` | Pedido abandonado — admin contacta al cliente |
+
+El status `pending_payment` **no se muestra en el panel de pedidos activos** por defecto (filtro excluye este status). Aparece en una vista separada "Pagos pendientes" para que el admin pueda hacer seguimiento.
 
 ---
 
@@ -121,16 +137,29 @@ Responsabilidades:
 // Input
 { orderId: string, paymentType: 'deposit' | 'full' }
 
+// Errores
+- 400 si orderId falta o paymentType inválido
+- 404 si pedido no existe
+- 400 si pedido no está en status 'pending_payment'
+- 500 si falla Supabase o MP
+
 // Lógica
-1. Obtener pedido + setting deposit_percentage
-2. Calcular monto: deposit → total * (percentage/100), full → total
-3. Crear preferencia MP con:
-   - items: [{ title: "Pedido DeliDanis #XXX", unit_price: monto, quantity: 1 }]
-   - external_reference: order_number
-   - back_urls: { success, failure, pending } → /agendar/confirmacion?order=XXX
+1. Obtener pedido por orderId
+2. Obtener deposit_percentage desde settings
+   → Si no existe en BD → usar DEFAULT = 50 (y loguear warning)
+3. Calcular monto:
+   - 'deposit' → Math.round(total * depositPercentage / 100)  // CLP, sin decimales
+   - 'full'    → total
+4. Crear preferencia MP:
+   - items: [{ title: "Pedido DeliDanis #DD-XXXX", unit_price: monto, quantity: 1, currency_id: "CLP" }]
+   - external_reference: order_number  // formato DD-XXXX
+   - back_urls:
+       success: NEXT_PUBLIC_APP_URL/agendar/confirmacion?order=DD-XXXX&status=approved
+       failure: NEXT_PUBLIC_APP_URL/agendar/confirmacion?order=DD-XXXX&status=failure
+       pending: NEXT_PUBLIC_APP_URL/agendar/confirmacion?order=DD-XXXX&status=pending
    - auto_return: "approved"
    - notification_url: NEXT_PUBLIC_APP_URL/api/webhooks/mercadopago
-4. Retornar { init_point, preference_id }
+5. Retornar { init_point, preference_id }
 ```
 
 ---
@@ -139,19 +168,38 @@ Responsabilidades:
 
 ```typescript
 // MP envía: { type: "payment", data: { id: "123456" } }
-1. Verificar x-signature (HMAC SHA256 con MP_WEBHOOK_SECRET)
-2. GET https://api.mercadopago.com/v1/payments/{id}
-3. Extraer external_reference → buscar pedido por order_number
-4. Según status del pago:
+1. Verificar x-signature (HMAC SHA256 con MERCADOPAGO_WEBHOOK_SECRET)
+2. Si type !== "payment" → return 200 (ignorar otros eventos)
+3. GET https://api.mercadopago.com/v1/payments/{id}
+4. IDEMPOTENCIA: buscar pedido por payment_reference = paymentId
+   - Si ya existe → return 200 (ya procesado, no duplicar)
+5. Extraer external_reference → buscar pedido por order_number (formato DD-XXXX)
+6. Si pedido no existe → log error, return 200
+7. Si pedido payment_status === "paid" → return 200 (ya está pagado)
+8. Según status del pago:
    - "approved":
-     - Calcular si monto ~= depósito o ~= total (±1% tolerancia)
-     - Actualizar pedido en BD (status, payment_status, deposit_paid, payment_reference)
-     - Incrementar daily_capacity si aplica
-     - Insertar en transactions
-     - Enviar email confirmación
-   - "rejected" / "cancelled": log, no hacer nada
-5. Retornar 200 OK siempre (MP reintenta si no recibe 200)
+     - Calcular si monto ≈ depósito o ≈ total
+       (tolerancia: abs(pagado - esperado) <= 10 CLP, dado que CLP no tiene decimales)
+     - Si monto ≈ depósito:
+       → UPDATE orders SET status='pending', payment_status='partial',
+         deposit_paid=true, deposit_amount=monto, payment_reference=paymentId
+       → Si status era 'pending_payment': incrementar daily_capacity para event_date
+     - Si monto ≈ total:
+       → UPDATE orders SET status='pending', payment_status='paid',
+         payment_reference=paymentId
+       → Si status era 'pending_payment': incrementar daily_capacity para event_date
+       → Si status era 'pending' (ya tenía depósito): NO incrementar (ya se contó)
+     - Insertar en transactions:
+       { type: 'income', category: 'order', amount: monto,
+         reference_id: order.id, reference_type: 'order_payment',
+         payment_method: 'mercadopago', transaction_date: today }
+     - Insertar en order_history: { status: nuevo_status, notes: 'Pago confirmado vía MercadoPago' }
+     - Enviar email de confirmación al cliente (template existente confirm-order)
+   - "rejected" / "cancelled" / "refunded": log, no hacer nada
+9. Retornar 200 OK siempre (MP reintenta si no recibe 200)
 ```
+
+**Obtener MERCADOPAGO_WEBHOOK_SECRET:** En el panel de MP → Tus integraciones → Webhooks → crear webhook con URL `https://tudominio.com/api/webhooks/mercadopago` → MP muestra la clave secreta.
 
 ---
 
@@ -185,11 +233,16 @@ Link: https://mpago.la/xxxx  [Copiar]
 [📱 Enviar por WhatsApp]
 ```
 
-Mensaje WhatsApp pre-escrito:
+Mensaje WhatsApp pre-escrito (interpolado en frontend antes de abrir wa.me):
 ```
-Hola [nombre], te enviamos el link de pago del saldo de tu pedido [número] por $[monto]:
-[link]
+Hola {customer.first_name}, te compartimos el link de pago del saldo
+de tu pedido {order_number} por {formatCurrency(balance)}:
+
+{payment_url}
+
+¿Tienes preguntas? Escríbenos 🎂
 ```
+URL: `wa.me/56939282764?text=encodeURIComponent(mensaje)`
 
 ---
 
