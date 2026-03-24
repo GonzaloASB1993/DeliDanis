@@ -12,6 +12,9 @@
     "db:reset": "supabase db reset",
     "email:dev": "email dev --port 3001"
   },
+  "engines": {
+    "node": "20.x"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
