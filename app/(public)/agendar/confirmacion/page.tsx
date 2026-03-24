@@ -48,6 +48,8 @@ function ConfirmacionContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  const paymentStatus = searchParams.get('status') // 'approved' | 'failure' | 'pending' | null
+
   useEffect(() => {
     const orderNumber = searchParams.get('order')
 
@@ -160,29 +162,53 @@ function ConfirmacionContent() {
     <div className="min-h-screen bg-gradient-to-br from-secondary to-white py-16">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
-          {/* Success Animation */}
+          {/* Success/Failure/Pending Animation y título */}
           <div className="text-center mb-8">
-            <div className="inline-block p-6 bg-primary/10 rounded-full mb-4 animate-bounce">
-              <svg
-                className="w-16 h-16 text-primary"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            </div>
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-dark mb-3">
-              ¡Pedido Confirmado!
-            </h1>
-            <p className="text-xl text-dark-light">
-              Hemos recibido tu pedido correctamente
-            </p>
+            {paymentStatus === 'failure' ? (
+              <>
+                <div className="inline-block p-6 bg-red-100 rounded-full mb-4">
+                  <svg className="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl font-bold text-dark mb-3">
+                  Pago no procesado
+                </h1>
+                <p className="text-xl text-dark-light">
+                  Tu pedido fue registrado. Te contactaremos para coordinar el pago.
+                </p>
+              </>
+            ) : paymentStatus === 'pending' ? (
+              <>
+                <div className="inline-block p-6 bg-yellow-100 rounded-full mb-4">
+                  <svg className="w-16 h-16 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl font-bold text-dark mb-3">
+                  Pago en proceso
+                </h1>
+                <p className="text-xl text-dark-light">
+                  Tu pago está siendo procesado. Te notificaremos cuando se confirme.
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="inline-block p-6 bg-primary/10 rounded-full mb-4 animate-bounce">
+                  <svg className="w-16 h-16 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h1 className="font-display text-4xl md:text-5xl font-bold text-dark mb-3">
+                  ¡Pedido Confirmado!
+                </h1>
+                <p className="text-xl text-dark-light">
+                  {paymentStatus === 'approved'
+                    ? '¡Pago recibido! Tu pedido está confirmado.'
+                    : 'Hemos recibido tu pedido correctamente'}
+                </p>
+              </>
+            )}
           </div>
 
           {/* Order Number */}
@@ -311,6 +337,38 @@ function ConfirmacionContent() {
               </div>
             </div>
           </Card>
+
+          {/* Opciones para pago fallido */}
+          {paymentStatus === 'failure' && orderData && (
+            <Card className="mb-6 border border-red-200 bg-red-50">
+              <h3 className="font-semibold text-dark mb-3">¿Quieres intentarlo de nuevo?</h3>
+              <p className="text-sm text-dark-light mb-4">
+                Puedes reintentar el pago o contactarnos por WhatsApp para coordinar.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={async () => {
+                    const res = await fetch('/api/payments/preference', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ orderId: orderData.id, paymentType: 'deposit' }),
+                    })
+                    const data = await res.json()
+                    if (data.initPoint) window.location.href = data.initPoint
+                  }}
+                >
+                  💳 Reintentar pago
+                </Button>
+                <a
+                  href={`https://wa.me/56939282764?text=${encodeURIComponent(`Hola, tuve problemas para pagar mi pedido ${orderData.order_number}. ¿Pueden ayudarme?`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="secondary">📱 Contactar por WhatsApp</Button>
+                </a>
+              </div>
+            </Card>
+          )}
 
           {/* Next Steps */}
           <Card className="mb-6 bg-secondary/50">
