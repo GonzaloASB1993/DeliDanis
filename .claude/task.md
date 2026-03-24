@@ -160,13 +160,13 @@
 
 ## Milestone 7: Integración Pagos
 
-- [ ] MercadoPago — Checkout Pro para señas/pagos
-- [ ] Stripe — alternativa internacional
-- [ ] Webhook MercadoPago (api/webhooks/mercadopago)
-- [ ] Webhook Stripe (api/webhooks/stripe)
-- [ ] Flujo de pago en agendamiento
-- [ ] Confirmación de pago automática
-- [ ] Registro de transacciones en tabla transactions
+- [x] MercadoPago — Checkout Pro para señas/pagos (depósito configurable + pago total)
+- [ ] Stripe — alternativa internacional (fuera de scope, mercado chileno)
+- [x] Webhook MercadoPago (api/webhooks/mercadopago) — con idempotencia y firma
+- [ ] Webhook Stripe (api/webhooks/stripe) — fuera de scope
+- [x] Flujo de pago en agendamiento — paso 5 con trust signals
+- [x] Confirmación de pago automática — webhook actualiza status automáticamente
+- [x] Registro de transacciones en tabla transactions
 
 ---
 

@@ -52,7 +52,7 @@ const DEFAULT_PAYMENTS: PaymentSettings = {
   delivery_cost: 15000,
   accept_cash: true,
   accept_transfer: true,
-  accept_mercadopago: false,
+  accept_mercadopago: true,
 }
 
 export default function ConfiguracionPage() {
