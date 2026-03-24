@@ -120,7 +120,7 @@ export async function createBooking(
       .insert({
         order_number: orderNumber,
         customer_id: customerId,
-        status: 'pending',
+        status: 'pending_payment',
         event_type: bookingData.eventType,
         event_date: bookingData.eventDate.toLocaleDateString('en-CA'), // YYYY-MM-DD in local timezone
         event_time: bookingData.eventTime,

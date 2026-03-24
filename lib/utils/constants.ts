@@ -1,5 +1,6 @@
 // Order Status
 export const ORDER_STATUS = {
+  PENDING_PAYMENT: 'pending_payment',
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
   IN_PRODUCTION: 'in_production',
