@@ -37,6 +37,9 @@ export async function createPreference(
 
   const preference = new Preference(client)
 
+  console.log('[MP createPreference] appUrl:', appUrl)
+  console.log('[MP createPreference] back_urls success:', `${appUrl}/agendar/confirmacion?order=${orderNumber}&status=approved`)
+
   const response = await preference.create({
     body: {
       items: [
@@ -53,9 +56,8 @@ export async function createPreference(
         failure: `${appUrl}/agendar/confirmacion?order=${orderNumber}&status=failure`,
         pending: `${appUrl}/agendar/confirmacion?order=${orderNumber}&status=pending`,
       },
-      ...(appUrl.includes('localhost') ? {} : { auto_return: 'approved' }),
+      // auto_return removido — puede disparar PolicyAgent en cuentas sin esta feature habilitada
       // notification_url no se envía en la preferencia — se configura en el panel de MP
-      // para evitar PA_UNAUTHORIZED_RESULT_FROM_POLICIES
     },
   })
 
