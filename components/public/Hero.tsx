@@ -11,15 +11,15 @@ gsap.registerPlugin(ScrollTrigger)
 
 const SLIDES = [
   { src: '/images/hero-1.jpg', alt: 'Torta artesanal elegante de DeliDanis' },
-  { src: '/images/hero-2.jpg', alt: 'Decoracion premium de torta personalizada' },
-  { src: '/images/hero-3.jpg', alt: 'Torta de celebracion con detalles unicos' },
-  { src: '/images/hero-4.jpg', alt: 'Creacion artesanal para evento especial' },
+  { src: '/images/hero-2.jpg', alt: 'Decoración premium de torta personalizada' },
+  { src: '/images/hero-3.jpg', alt: 'Torta de celebración con detalles únicos' },
+  { src: '/images/hero-4.jpg', alt: 'Creación artesanal para evento especial' },
 ] as const
 
 const STATS = [
-  { value: '500+', label: 'Eventos Celebrados' },
-  { value: '5.0', label: 'Calificacion' },
-  { value: '10+', label: 'Anos de Experiencia' },
+  { value: '150+', label: 'Eventos Celebrados' },
+  { value: '5.0', label: 'Calificación' },
+  { value: '3 años', label: 'De Experiencia' },
 ] as const
 
 const SLIDE_DURATION = 6000
@@ -379,7 +379,7 @@ export function Hero() {
               >
                 Pasteleria artesanal premium con{' '}
                 <span className="text-white font-medium">ingredientes selectos</span>,{' '}
-                <span className="text-white font-medium">diseno unico</span> y el sabor que dejara
+                <span className="text-white font-medium">diseño único</span> y el sabor que dejará
                 huella en tu evento especial.
               </p>
 
@@ -457,7 +457,7 @@ export function Hero() {
               </svg>
             </div>
             <div>
-              <p className="font-bold text-dark text-lg leading-tight">500+</p>
+              <p className="font-bold text-dark text-lg leading-tight">200+</p>
               <p className="text-xs text-dark-light">Clientes Felices</p>
             </div>
           </div>

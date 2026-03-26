@@ -7,8 +7,8 @@ import { WhatsAppButton } from '@/components/public/WhatsAppButton'
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'DeliDanis - Pasteleria Premium en Chile',
-  description: 'Tortas artesanales para matrimonios, quinceaneros y eventos. Disenos unicos, sabores memorables.',
+  title: 'DeliDanis - Pastelería Premium en Chile',
+  description: 'Tortas artesanales para matrimonios, quinceañeros y eventos. Diseños únicos, sabores memorables.',
   path: '/',
 })
 

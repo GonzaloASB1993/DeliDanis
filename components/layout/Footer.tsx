@@ -3,9 +3,9 @@ import Image from 'next/image'
 
 const navigation = {
   productos: [
-    { name: 'Catalogo Completo', href: '/catalogo' },
-    { name: 'Cocteleria Premium', href: '/catalogo/cocteleria' },
-    { name: 'Pasteleria Artesanal', href: '/catalogo/pasteleria' },
+    { name: 'Catálogo Completo', href: '/catalogo' },
+    { name: 'Coctelería Premium', href: '/catalogo/cocteleria' },
+    { name: 'Pastelería Artesanal', href: '/catalogo/pasteleria' },
   ],
   empresa: [
     { name: 'Nuestra Historia', href: '/nosotros' },
@@ -15,14 +15,14 @@ const navigation = {
   ],
   servicios: [
     { name: 'Agendar Pedido', href: '/agendar' },
-    { name: 'Cotizacion Personalizada', href: '/cotizar' },
+    { name: 'Cotización Personalizada', href: '/cotizar' },
     { name: 'Seguimiento de Pedido', href: '/seguimiento' },
     { name: 'Contacto', href: '/contacto' },
   ],
   legal: [
-    { name: 'Terminos y Condiciones', href: '/terminos' },
-    { name: 'Politica de Privacidad', href: '/privacidad' },
-    { name: 'Politica de Devoluciones', href: '/devoluciones' },
+    { name: 'Términos y Condiciones', href: '/terminos' },
+    { name: 'Política de Privacidad', href: '/privacidad' },
+    { name: 'Política de Devoluciones', href: '/devoluciones' },
   ],
 }
 
@@ -118,7 +118,7 @@ export function Footer() {
                 <div className="relative h-20 lg:h-24 w-auto transition-all duration-300 group-hover:opacity-80">
                   <Image
                     src="/logo.png"
-                    alt="DeliDanis - Pasteleria Artesanal Premium"
+                    alt="DeliDanis - Pastelería Artesanal Premium"
                     width={320}
                     height={96}
                     className="h-full w-auto object-contain filter brightness-0 invert opacity-90"
@@ -127,12 +127,12 @@ export function Footer() {
               </Link>
 
               <p className="font-accent text-lg text-primary-light/80 mb-5 italic">
-                Creaciones unicas para momentos inolvidables
+                Creaciones únicas para momentos inolvidables
               </p>
 
               <p className="text-light/55 text-[15px] leading-relaxed mb-8 max-w-sm">
-                Pasteleria artesanal premium especializada en eventos especiales.
-                Cada creacion es elaborada con dedicacion y los ingredientes mas finos.
+                Pastelería artesanal premium especializada en eventos especiales.
+                Cada creación es elaborada con dedicación y los ingredientes más finos.
               </p>
 
               {/* Contact Info */}
@@ -162,7 +162,7 @@ export function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 bg-light/[0.04] rounded-full flex items-center justify-center hover:bg-primary/20 transition-all duration-300 border border-light/[0.06] hover:border-primary/30 text-light/50 hover:text-primary-light"
-                    aria-label={`Siguenos en ${item.name}`}
+                    aria-label={`Síguenos en ${item.name}`}
                   >
                     {item.icon}
                   </a>
@@ -258,10 +258,10 @@ export function Footer() {
               <div className="mt-12 pt-8 border-t border-light/[0.06]">
                 <div className="max-w-md">
                   <h4 className="font-display text-white text-base font-semibold mb-2">
-                    Suscribete a nuestra newsletter
+                    Suscríbete a nuestra newsletter
                   </h4>
                   <p className="text-light/50 text-sm mb-4">
-                    Recibe ofertas exclusivas y nuevos disenos
+                    Recibe ofertas exclusivas y nuevos diseños
                   </p>
                   <form className="flex gap-2.5">
                     <input

@@ -96,7 +96,7 @@ export function PastryServiceForm({ availableProducts, onAddService, onCancel }:
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-display text-2xl font-bold text-dark">
-            Pasteleria Artesanal
+            Pastelería Artesanal
           </h3>
           <p className="text-dark-light">
             {availableProducts.length} productos disponibles
@@ -239,7 +239,7 @@ export function PastryServiceForm({ availableProducts, onAddService, onCancel }:
       {availableProducts.length === 0 && (
         <div className="text-center py-12">
           <div className="text-5xl mb-4">🥧</div>
-          <p className="text-dark-light">No hay productos de pasteleria disponibles</p>
+          <p className="text-dark-light">No hay productos de pastelería disponibles</p>
         </div>
       )}
 
@@ -257,8 +257,8 @@ export function PastryServiceForm({ availableProducts, onAddService, onCancel }:
             <div className="flex-1">
               <p className="text-sm font-semibold text-dark mb-1">Productos frescos</p>
               <p className="text-xs text-dark-light">
-                Todos los productos se hornean y preparan el dia del evento para garantizar
-                maxima frescura y calidad.
+                Todos los productos se hornean y preparan el día del evento para garantizar
+                máxima frescura y calidad.
               </p>
             </div>
           </div>

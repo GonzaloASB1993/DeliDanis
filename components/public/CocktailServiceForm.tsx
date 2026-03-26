@@ -25,7 +25,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
   const [selectedItems, setSelectedItems] = useState<Record<string, number>>({})
   const [specialRequests, setSpecialRequests] = useState('')
 
-  // Obtener categorias unicas de los productos
+  // Obtener categorías únicas de los productos
   const categories = useMemo(() => {
     const cats = new Set<string>()
     availableProducts.forEach((p) => {
@@ -37,7 +37,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
     return Array.from(cats)
   }, [availableProducts])
 
-  // Obtener subcategorias segun categoria seleccionada
+  // Obtener subcategorías según categoría seleccionada
   const subcategories = useMemo(() => {
     if (!selectedCategory) return []
     const subs = new Set<string>()
@@ -50,7 +50,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
     return Array.from(subs)
   }, [availableProducts, selectedCategory])
 
-  // Obtener productos segun categoria y subcategoria
+  // Obtener productos según categoría y subcategoría
   const filteredProducts = useMemo(() => {
     if (!selectedSubcategory) return []
     return availableProducts.filter((p) => {
@@ -179,10 +179,10 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
         <div>
           <h3 className="font-display text-2xl md:text-3xl font-bold text-dark flex items-center gap-3">
             <span className="text-3xl">🥂</span>
-            Cocteleria para Eventos
+            Coctelería para Eventos
           </h3>
           <p className="text-dark-light mt-1">
-            Pedido minimo: {formatCurrency(MIN_ORDER_AMOUNT)}
+            Pedido mínimo: {formatCurrency(MIN_ORDER_AMOUNT)}
           </p>
         </div>
         <button
@@ -202,7 +202,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
             <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-sm mr-2">
               1
             </span>
-            Selecciona el tipo de cocteleria
+            Selecciona el tipo de coctelería
           </label>
           <div className="grid grid-cols-2 gap-4">
             {categories.map((cat) => (
@@ -239,7 +239,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
             <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-white text-sm mr-2">
               2
             </span>
-            Selecciona la categoria de productos
+            Selecciona la categoría de productos
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {subcategories.map((sub) => (
@@ -344,7 +344,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
       {availableProducts.length === 0 && (
         <div className="text-center py-12">
           <div className="text-5xl mb-4">🥂</div>
-          <p className="text-dark-light">No hay productos de cocteleria disponibles</p>
+          <p className="text-dark-light">No hay productos de coctelería disponibles</p>
         </div>
       )}
 
@@ -435,7 +435,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
                   <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
-                  Faltan {formatCurrency(MIN_ORDER_AMOUNT - totalAmount)} para alcanzar el pedido minimo
+                  Faltan {formatCurrency(MIN_ORDER_AMOUNT - totalAmount)} para alcanzar el pedido mínimo
                 </p>
               </div>
             )}
@@ -451,7 +451,7 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
         <textarea
           className="w-full px-4 py-3 border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none bg-white"
           rows={3}
-          placeholder="Ej: Sin gluten, vegetariano, alergias especificas..."
+          placeholder="Ej: Sin gluten, vegetariano, alergias específicas..."
           value={specialRequests}
           onChange={(e) => setSpecialRequests(e.target.value)}
           maxLength={200}
@@ -482,11 +482,11 @@ export function CocktailServiceForm({ availableProducts, onAddService, onCancel 
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform animate-scaleIn">
             <h4 className="font-display text-2xl font-bold text-dark mb-2">
-              Cuantas unidades?
+              ¿Cuántas unidades?
             </h4>
             <p className="text-dark mb-2 font-semibold">{selectedProduct.name}</p>
             <p className="text-dark-light mb-6 text-sm">
-              {formatCurrency(selectedProduct.price || selectedProduct.base_price || 0)}/unidad - Minimo: {selectedProduct.min_order_quantity || 15} unidades
+              {formatCurrency(selectedProduct.price || selectedProduct.base_price || 0)}/unidad - Mínimo: {selectedProduct.min_order_quantity || 15} unidades
             </p>
 
             <div className="flex items-center justify-center gap-6 mb-8">

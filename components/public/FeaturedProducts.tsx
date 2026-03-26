@@ -166,7 +166,7 @@ export function FeaturedProducts() {
           </h2>
 
           <p className="text-dark-light max-w-lg mx-auto text-lg">
-            Descubre nuestras tortas mas solicitadas, elaboradas con pasion y los mejores ingredientes
+            Descubre nuestras tortas más solicitadas, elaboradas con pasión y los mejores ingredientes
           </p>
         </div>
 
@@ -316,7 +316,7 @@ export function FeaturedProducts() {
         <div className="text-center mt-12 lg:mt-14">
           <Link href="/catalogo">
             <Button variant="secondary" size="lg" className="group">
-              Explorar Catalogo Completo
+              Explorar Catálogo Completo
               <svg className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
