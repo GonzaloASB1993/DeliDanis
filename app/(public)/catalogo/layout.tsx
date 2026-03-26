@@ -1,8 +1,8 @@
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'Catalogo - DeliDanis',
-  description: 'Explora nuestra coleccion de tortas, pasteleria y cocteleria para eventos especiales.',
+  title: 'Catálogo - DeliDanis',
+  description: 'Explora nuestra colección de tortas, pastelería y coctelería para eventos especiales.',
   path: '/catalogo',
 })
 

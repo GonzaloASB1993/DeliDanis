@@ -19,15 +19,15 @@ interface GalleryImage {
 
 const fallbackImages: GalleryImage[] = [
   { src: '/images/hero-1.jpg', alt: 'Torta decorada para evento especial', category: 'tortas' },
-  { src: '/kaouther-djouada-xMsrnA0C4sg-unsplash.jpg', alt: 'Pasteleria artesanal variada', category: 'pasteleria' },
+  { src: '/kaouther-djouada-xMsrnA0C4sg-unsplash.jpg', alt: 'Pastelería artesanal variada', category: 'pasteleria' },
   { src: '/images/hero-2.jpg', alt: 'Torta elegante de bodas', category: 'tortas' },
-  { src: '/images/service-cocteleria.jpg', alt: 'Cocteleria gourmet para eventos', category: 'cocteleria' },
-  { src: '/Delidanis.jpg', alt: 'Creacion especial DeliDanis', category: 'tortas' },
-  { src: '/images/hero-3.jpg', alt: 'Torta personalizada con decoracion floral', category: 'tortas' },
-  { src: '/images/service-pasteleria.jpg', alt: 'Seleccion de pasteleria fina', category: 'pasteleria' },
+  { src: '/images/service-cocteleria.jpg', alt: 'Coctelería gourmet para eventos', category: 'cocteleria' },
+  { src: '/Delidanis.jpg', alt: 'Creación especial DeliDanis', category: 'tortas' },
+  { src: '/images/hero-3.jpg', alt: 'Torta personalizada con decoración floral', category: 'tortas' },
+  { src: '/images/service-pasteleria.jpg', alt: 'Selección de pastelería fina', category: 'pasteleria' },
   { src: '/toa-heftiba-aVQBP7mxddw-unsplash.jpg', alt: 'Torta artesanal premium', category: 'tortas' },
-  { src: '/images/hero-4.jpg', alt: 'Torta tematica para celebracion', category: 'tortas' },
-  { src: '/images/service-tortas.jpg', alt: 'Torta clasica de cumpleanos', category: 'tortas' },
+  { src: '/images/hero-4.jpg', alt: 'Torta temática para celebración', category: 'tortas' },
+  { src: '/images/service-tortas.jpg', alt: 'Torta clásica de cumpleaños', category: 'tortas' },
 ]
 
 function mapDBImages(dbImages: DBGalleryImage[]): GalleryImage[] {
@@ -41,8 +41,8 @@ function mapDBImages(dbImages: DBGalleryImage[]): GalleryImage[] {
 const categories: { key: Category; label: string }[] = [
   { key: 'todos', label: 'Todos' },
   { key: 'tortas', label: 'Tortas' },
-  { key: 'pasteleria', label: 'Pasteleria' },
-  { key: 'cocteleria', label: 'Cocteleria' },
+  { key: 'pasteleria', label: 'Pastelería' },
+  { key: 'cocteleria', label: 'Coctelería' },
 ]
 
 export default function GaleriaPage() {
@@ -152,7 +152,7 @@ export default function GaleriaPage() {
               Nuestra <span className="text-primary">Galeria</span>
             </h1>
             <p className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
-              Cada creacion cuenta una historia. Explora nuestras tortas, pasteleria y cocteleria que han sido parte de momentos inolvidables.
+              Cada creación cuenta una historia. Explora nuestras tortas, pastelería y coctelería que han sido parte de momentos inolvidables.
             </p>
           </div>
         </div>

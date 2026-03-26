@@ -20,14 +20,14 @@ type CategoryFilter = 'todas' | 'tortas' | 'pasteleria' | 'cocteleria'
 const CATEGORIES: { key: CategoryFilter; label: string }[] = [
   { key: 'todas', label: 'Todas' },
   { key: 'tortas', label: 'Tortas' },
-  { key: 'pasteleria', label: 'Pasteleria' },
-  { key: 'cocteleria', label: 'Cocteleria' },
+  { key: 'pasteleria', label: 'Pastelería' },
+  { key: 'cocteleria', label: 'Coctelería' },
 ]
 
 const CATEGORY_OPTIONS = [
   { value: 'tortas', label: 'Tortas' },
-  { value: 'pasteleria', label: 'Pasteleria' },
-  { value: 'cocteleria', label: 'Cocteleria' },
+  { value: 'pasteleria', label: 'Pastelería' },
+  { value: 'cocteleria', label: 'Coctelería' },
 ]
 
 export default function GaleriaAdminPage() {
