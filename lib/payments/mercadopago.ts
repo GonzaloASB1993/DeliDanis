@@ -54,7 +54,8 @@ export async function createPreference(
         pending: `${appUrl}/agendar/confirmacion?order=${orderNumber}&status=pending`,
       },
       ...(appUrl.includes('localhost') ? {} : { auto_return: 'approved' }),
-      notification_url: `${appUrl}/api/webhooks/mercadopago`,
+      // notification_url no se envía en la preferencia — se configura en el panel de MP
+      // para evitar PA_UNAUTHORIZED_RESULT_FROM_POLICIES
     },
   })
 
