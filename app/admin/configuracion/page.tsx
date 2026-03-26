@@ -317,6 +317,9 @@ export default function ConfiguracionPage() {
             </div>
           </div>
 
+          {/* Activación MercadoPago Producción */}
+          <MercadoPagoActivation />
+
           {/* Zona de peligro */}
           <div className="bg-white rounded-xl border border-red-200 p-6 lg:col-span-2">
             <h3 className="font-semibold text-red-600 mb-4 flex items-center gap-2">
@@ -351,6 +354,99 @@ export default function ConfiguracionPage() {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function MercadoPagoActivation() {
+  const [amount, setAmount] = useState(1000)
+  const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState<{ initPoint: string; preferenceId: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const handleGenerate = async () => {
+    setLoading(true)
+    setError(null)
+    setResult(null)
+    try {
+      const res = await fetch('/api/payments/test-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Error generando link')
+      setResult(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCopy = () => {
+    if (!result) return
+    navigator.clipboard.writeText(result.initPoint)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-blue-200 p-6">
+      <h3 className="font-semibold text-dark mb-1 flex items-center gap-2">
+        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        Activación MercadoPago Producción
+      </h3>
+      <p className="text-sm text-dark-light mb-4">
+        Para activar las credenciales productivas, MP requiere procesar un pago real. Genera un link de cobro, paga el monto definido y usa el Payment ID resultante en el panel de MP.
+      </p>
+      <div className="flex items-end gap-3 mb-4">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-dark mb-1">Monto a cobrar (CLP)</label>
+          <input
+            type="number"
+            value={amount}
+            onChange={e => setAmount(parseInt(e.target.value) || 0)}
+            min={1}
+            className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
+        <Button onClick={handleGenerate} disabled={loading || amount < 1}>
+          {loading ? 'Generando...' : 'Generar link de pago'}
+        </Button>
+      </div>
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {result && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-3">
+          <p className="text-sm font-medium text-dark">✅ Link generado — Preference ID: <span className="font-mono text-xs">{result.preferenceId}</span></p>
+          <div className="flex gap-2">
+            <a
+              href={result.initPoint}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg text-center hover:bg-blue-700 transition-colors"
+            >
+              Ir a pagar en MercadoPago →
+            </a>
+            <button
+              onClick={handleCopy}
+              className="px-4 py-2 bg-white border border-blue-300 text-blue-700 text-sm font-medium rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              {copied ? '✓ Copiado' : 'Copiar link'}
+            </button>
+          </div>
+          <p className="text-xs text-dark-light">Después de pagar, copia el Payment ID desde MP y úsalo para activar tu cuenta productiva.</p>
+        </div>
+      )}
     </div>
   )
 }
