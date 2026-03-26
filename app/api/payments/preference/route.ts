@@ -82,9 +82,13 @@ export async function POST(request: NextRequest) {
       depositPercentage,
     })
   } catch (error) {
-    console.error('[Payments] Error creando preferencia:', error)
+    const errMsg = error instanceof Error ? error.message : JSON.stringify(error)
+    const errStack = error instanceof Error ? error.stack : undefined
+    console.error('[Payments] Error creando preferencia - message:', errMsg)
+    console.error('[Payments] Error creando preferencia - stack:', errStack)
+    console.error('[Payments] Error creando preferencia - raw:', error)
     return NextResponse.json(
-      { error: 'Error interno al crear preferencia de pago' },
+      { error: 'Error interno al crear preferencia de pago', detail: errMsg },
       { status: 500 }
     )
   }
