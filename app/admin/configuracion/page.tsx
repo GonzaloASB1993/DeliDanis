@@ -358,12 +358,43 @@ export default function ConfiguracionPage() {
   )
 }
 
+interface MPPayment {
+  id: number
+  status: string
+  amount: number
+  date: string
+  description: string
+}
+
 function MercadoPagoActivation() {
   const [amount, setAmount] = useState(1000)
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{ initPoint: string; preferenceId: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [recentPayments, setRecentPayments] = useState<MPPayment[] | null>(null)
+  const [loadingPayments, setLoadingPayments] = useState(false)
+  const [copiedId, setCopiedId] = useState<number | null>(null)
+
+  const handleFetchRecent = async () => {
+    setLoadingPayments(true)
+    try {
+      const res = await fetch('/api/payments/recent')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      setRecentPayments(data.payments)
+    } catch (err) {
+      setRecentPayments([])
+    } finally {
+      setLoadingPayments(false)
+    }
+  }
+
+  const handleCopyId = (id: number) => {
+    navigator.clipboard.writeText(String(id))
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   const handleGenerate = async () => {
     setLoading(true)
@@ -444,9 +475,48 @@ function MercadoPagoActivation() {
               {copied ? '✓ Copiado' : 'Copiar link'}
             </button>
           </div>
-          <p className="text-xs text-dark-light">Después de pagar, copia el Payment ID desde MP y úsalo para activar tu cuenta productiva.</p>
+          <p className="text-xs text-dark-light">Después de pagar, usa el botón de abajo para ver el Payment ID.</p>
         </div>
       )}
+
+      {/* Pagos recientes */}
+      <div className="border-t border-border pt-4 mt-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-medium text-dark">Pagos recientes en tu cuenta MP</p>
+          <button
+            onClick={handleFetchRecent}
+            disabled={loadingPayments}
+            className="px-3 py-1.5 bg-white border border-border text-dark text-xs font-medium rounded-lg hover:bg-secondary transition-colors disabled:opacity-50"
+          >
+            {loadingPayments ? 'Consultando...' : '🔄 Ver Payment IDs'}
+          </button>
+        </div>
+
+        {recentPayments !== null && recentPayments.length === 0 && (
+          <p className="text-sm text-dark-light">No se encontraron pagos recientes.</p>
+        )}
+
+        {recentPayments && recentPayments.length > 0 && (
+          <div className="space-y-2">
+            {recentPayments.map(p => (
+              <div key={p.id} className="flex items-center justify-between p-3 bg-secondary rounded-lg">
+                <div>
+                  <p className="text-xs font-mono font-bold text-dark">ID: {p.id}</p>
+                  <p className="text-xs text-dark-light">
+                    ${p.amount?.toLocaleString('es-CL')} · {p.status} · {p.date ? new Date(p.date).toLocaleDateString('es-CL') : ''}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleCopyId(p.id)}
+                  className="px-3 py-1 bg-white border border-border text-dark text-xs rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  {copiedId === p.id ? '✓ Copiado' : 'Copiar ID'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
