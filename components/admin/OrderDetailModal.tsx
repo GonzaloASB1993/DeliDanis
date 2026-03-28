@@ -184,10 +184,16 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
   // Costos de producción
   const [productionCost, setProductionCost] = useState<number | null>(null)
 
-  // Balance link
+  // Balance link (saldo pendiente cuando payment_status === 'partial')
   const [balanceLink, setBalanceLink] = useState<string | null>(null)
   const [isGeneratingLink, setIsGeneratingLink] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+
+  // Deposit/full link (cuando payment_status === 'pending')
+  const [depositLink, setDepositLink] = useState<string | null>(null)
+  const [depositLinkAmount, setDepositLinkAmount] = useState<number>(0)
+  const [isGeneratingDepositLink, setIsGeneratingDepositLink] = useState(false)
+  const [depositLinkCopied, setDepositLinkCopied] = useState(false)
 
   // Edición
   const [isEditing, setIsEditing] = useState(false)
@@ -199,6 +205,8 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
       loadOrder()
       setBalanceLink(null)
       setLinkCopied(false)
+      setDepositLink(null)
+      setDepositLinkCopied(false)
     }
   }, [isOpen, orderId])
 
@@ -335,9 +343,50 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
     window.open(`https://wa.me/56939282764?text=${encodeURIComponent(msg)}`, '_blank')
   }
 
+  const handleGenerateDepositLink = async (paymentType: 'deposit' | 'full') => {
+    if (!order) return
+    setIsGeneratingDepositLink(true)
+    setDepositLink(null)
+    try {
+      const res = await fetch('/api/payments/preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.id, paymentType }),
+      })
+      const data = await res.json()
+      if (data.initPoint) {
+        setDepositLink(data.initPoint)
+        setDepositLinkAmount(data.amount || 0)
+      }
+    } catch {
+      console.error('Error generando link de pago')
+    } finally {
+      setIsGeneratingDepositLink(false)
+    }
+  }
+
+  const handleCopyDepositLink = () => {
+    if (!depositLink) return
+    navigator.clipboard.writeText(depositLink)
+    setDepositLinkCopied(true)
+    setTimeout(() => setDepositLinkCopied(false), 2000)
+  }
+
+  const handleWhatsAppDeposit = () => {
+    if (!order || !depositLink) return
+    const customerName = order.customer?.first_name || 'Cliente'
+    const msg = `Hola ${customerName}, te compartimos el link de pago para tu pedido ${order.order_number} por $${Math.round(depositLinkAmount).toLocaleString('es-CL')}:\n\n${depositLink}\n\n¿Tienes preguntas? Escríbenos 🎂`
+    window.open(`https://wa.me/56939282764?text=${encodeURIComponent(msg)}`, '_blank')
+  }
+
   if (!isOpen) return null
 
-  const totalPaid = order?.payments?.reduce((sum, p) => sum + (parseFloat(String(p.amount)) || 0), 0) || 0
+  const paymentsTableTotal = order?.payments?.reduce((sum, p) => sum + (parseFloat(String(p.amount)) || 0), 0) || 0
+  // Si el pago fue vía MP y order_payments aún no refleja el depósito, usar deposit_amount como fallback
+  const depositFallback = (order?.payment_status === 'partial' || order?.payment_status === 'paid') && paymentsTableTotal === 0
+    ? (order?.deposit_amount || 0)
+    : 0
+  const totalPaid = paymentsTableTotal > 0 ? paymentsTableTotal : depositFallback
   const pendingAmount = (order?.total || 0) - totalPaid
 
   return (
@@ -613,7 +662,64 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
                         )}
                       </div>
 
-                      {/* Generar link de saldo */}
+                      {/* Generar link de pago inicial (sin depósito aún) */}
+                      {order.payment_status === 'pending' && (
+                        <div className="space-y-3">
+                          {!depositLink ? (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleGenerateDepositLink('deposit')}
+                                disabled={isGeneratingDepositLink}
+                                isLoading={isGeneratingDepositLink}
+                                className="flex-1"
+                              >
+                                🔗 Link depósito
+                              </Button>
+                              <Button
+                                onClick={() => handleGenerateDepositLink('full')}
+                                disabled={isGeneratingDepositLink}
+                                isLoading={isGeneratingDepositLink}
+                                variant="secondary"
+                                className="flex-1"
+                              >
+                                🔗 Link pago total
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p className="text-xs text-dark-light">
+                                Link generado por <span className="font-semibold text-dark">{formatCurrency(depositLinkAmount)}</span>
+                              </p>
+                              <div className="flex items-center gap-2 p-3 bg-white border border-border rounded-xl">
+                                <span className="text-xs text-dark-light flex-1 truncate">{depositLink}</span>
+                                <button
+                                  onClick={handleCopyDepositLink}
+                                  className="text-xs font-medium text-primary hover:text-primary-hover shrink-0"
+                                >
+                                  {depositLinkCopied ? '✓ Copiado' : 'Copiar'}
+                                </button>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={handleWhatsAppDeposit}
+                                  className="flex-1 bg-green-600 hover:bg-green-700"
+                                >
+                                  📱 Enviar por WhatsApp
+                                </Button>
+                                <Button
+                                  onClick={() => setDepositLink(null)}
+                                  variant="secondary"
+                                  className="shrink-0"
+                                >
+                                  Nuevo link
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Generar link de saldo (ya pagó depósito) */}
                       {order.payment_status === 'partial' && (
                         <div className="space-y-3">
                           {!balanceLink ? (

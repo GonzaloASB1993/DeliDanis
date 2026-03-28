@@ -26,7 +26,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener datos del pago desde la API de MP
-    const payment = await getPayment(paymentId)
+    let payment: Awaited<ReturnType<typeof getPayment>>
+    try {
+      payment = await getPayment(paymentId)
+    } catch (mpError: unknown) {
+      const status = (mpError as { status?: number })?.status
+      if (status === 401) {
+        console.error('[MP Webhook] Credenciales no autorizadas (401) — verifica activación de cuenta productiva en MP')
+      } else {
+        console.error('[MP Webhook] Error al obtener pago:', mpError)
+      }
+      // Retornar 200 para que MP no reintente; el pago quedará pendiente hasta resolución manual
+      return NextResponse.json({ ok: true }, { status: 200 })
+    }
 
     if (payment.status !== 'approved') {
       return NextResponse.json({ ok: true }, { status: 200 })
@@ -127,6 +139,17 @@ export async function POST(request: NextRequest) {
         console.warn('[MP Webhook] RPC increment_daily_capacity no disponible:', err)
       }
     }
+
+    // Registrar en order_payments (para que el modal admin muestre el pago correctamente)
+    await supabase.from('order_payments').insert({
+      order_id: order.id,
+      amount: paidAmount,
+      payment_method: 'mercadopago',
+      reference: paymentId,
+      notes: isFullPayment
+        ? `Pago completo vía MercadoPago (ID: ${paymentId})`
+        : `Depósito vía MercadoPago (ID: ${paymentId})`,
+    })
 
     // Registrar en transactions
     const today = new Date().toISOString().split('T')[0]

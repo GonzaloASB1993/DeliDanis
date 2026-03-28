@@ -46,6 +46,8 @@ export async function createPreference(
         {
           id: orderNumber,
           title: `${labelMap[paymentType]} — Pedido DeliDanis #${orderNumber}`,
+          description: `Pastelería para eventos — ${labelMap[paymentType]} pedido #${orderNumber}`,
+          category_id: 'food_and_drink',
           quantity: 1,
           unit_price: amount,
         },
@@ -56,8 +58,8 @@ export async function createPreference(
         failure: `${appUrl}/agendar/confirmacion?order=${orderNumber}&status=failure`,
         pending: `${appUrl}/agendar/confirmacion?order=${orderNumber}&status=pending`,
       },
-      // auto_return removido — puede disparar PolicyAgent en cuentas sin esta feature habilitada
-      // notification_url no se envía en la preferencia — se configura en el panel de MP
+      auto_return: 'approved',
+      notification_url: `${appUrl}/api/webhooks/mercadopago`,
     },
   })
 

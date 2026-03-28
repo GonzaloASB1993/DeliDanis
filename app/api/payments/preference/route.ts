@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Obtener pedido
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, order_number, total, status, payment_status')
+      .select('id, order_number, total, status, payment_status, deposit_amount')
       .eq('id', orderId)
       .single()
 
@@ -39,9 +39,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
     }
 
-    if (order.status !== 'pending_payment') {
+    if (['cancelled', 'completed'].includes(order.status)) {
       return NextResponse.json(
-        { error: 'El pedido no está en estado pending_payment' },
+        { error: 'No se puede generar link para un pedido cancelado o completado' },
+        { status: 400 }
+      )
+    }
+
+    if (order.payment_status === 'paid') {
+      return NextResponse.json(
+        { error: 'El pedido ya está completamente pagado' },
         { status: 400 }
       )
     }
@@ -60,11 +67,20 @@ export async function POST(request: NextRequest) {
       console.warn('[Payments] deposit_percentage no encontrado en settings, usando default 50%')
     }
 
+    // Si tiene pago parcial, calcular solo el saldo pendiente
+    const alreadyPaid = Math.round(order.deposit_amount || 0)
+    const remaining = Math.round(order.total) - alreadyPaid
+
     // Calcular monto (CLP = enteros, sin decimales)
-    const amount =
-      paymentType === 'deposit'
+    let amount: number
+    if (order.payment_status === 'partial') {
+      // Ya pagó depósito — solo puede pagar el saldo
+      amount = remaining
+    } else {
+      amount = paymentType === 'deposit'
         ? Math.round((order.total * depositPercentage) / 100)
         : Math.round(order.total)
+    }
 
     // Crear preferencia en MP
     const result = await createPreference({
@@ -80,6 +96,7 @@ export async function POST(request: NextRequest) {
       preferenceId: result.preferenceId,
       amount,
       depositPercentage,
+      paymentStatus: order.payment_status,
     })
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : JSON.stringify(error)
