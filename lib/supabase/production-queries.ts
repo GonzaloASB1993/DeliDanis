@@ -265,9 +265,36 @@ export async function getProductionOrderById(id: string): Promise<ProductionOrde
     console.error('Error fetching production movements:', movError)
   }
 
+  // Fallback: if no movements exist (recipe was configured after order creation),
+  // fetch from the recipes table and format as pseudo-movements for display
+  let resolvedMovements = movements || []
+  if (resolvedMovements.length === 0) {
+    const { data: recipeItems } = await supabase
+      .from('recipes')
+      .select('*, ingredient:ingredients(id, name, unit, current_stock, unit_cost, calories, protein, fat, saturated_fat, carbohydrates, sugar, fiber, sodium)')
+      .eq('product_id', data.product_id)
+      .eq('product_type', data.product_type)
+      .order('created_at')
+
+    if (recipeItems && recipeItems.length > 0) {
+      resolvedMovements = recipeItems.map(item => ({
+        id: item.id,
+        production_order_id: id,
+        ingredient_id: item.ingredient_id,
+        planned_quantity: item.quantity_needed * data.quantity * (1 + item.waste_percentage / 100),
+        actual_quantity: null,
+        waste_quantity: 0,
+        movement_id: null,
+        waste_movement_id: null,
+        created_at: item.created_at,
+        ingredient: item.ingredient,
+      }))
+    }
+  }
+
   return {
     ...data,
-    movements: movements || [],
+    movements: resolvedMovements,
   }
 }
 
