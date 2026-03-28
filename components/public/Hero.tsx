@@ -366,7 +366,7 @@ export function Hero() {
                 </span>
                 <span className="block overflow-hidden">
                   <span data-hero-title-inner className="block will-change-transform">
-                    <span className="text-primary-light">tu Celebracion</span>{' '}
+                    <span className="text-primary-light">tu Celebración</span>{' '}
                     en Arte
                   </span>
                 </span>
@@ -377,7 +377,7 @@ export function Hero() {
                 data-hero-subtitle
                 className="text-lg lg:text-xl text-white/80 mb-8 max-w-lg leading-relaxed"
               >
-                Pasteleria artesanal premium con{' '}
+                Pastelería artesanal premium con{' '}
                 <span className="text-white font-medium">ingredientes selectos</span>,{' '}
                 <span className="text-white font-medium">diseño único</span> y el sabor que dejará
                 huella en tu evento especial.
