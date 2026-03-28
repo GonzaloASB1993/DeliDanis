@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase/admin'
 import { getPayment, verifyWebhookSignature } from '@/lib/payments/mercadopago'
 
 const TOLERANCE_CLP = 10 // tolerancia de $10 CLP por redondeos
@@ -50,7 +50,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true }, { status: 200 })
     }
 
-    const supabase = await createServerSupabaseClient()
+    // Usar cliente admin (service role) para bypass de RLS — el webhook no tiene sesión de usuario
+    const supabase = supabaseAdmin
 
     // IDEMPOTENCIA: verificar si este payment_id ya fue procesado
     const { data: existingOrder } = await supabase

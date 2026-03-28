@@ -408,7 +408,28 @@ export async function completeProduction(
 
   if (!po) return false
 
-  // 2. For each movement, create inventory movements and update production_movement
+  // 2. Ensure production_movements exist — they may be missing if the recipe was
+  //    configured after the order was created (fallback path from getProductionOrderById)
+  const { data: existingMovements } = await supabase
+    .from('production_movements')
+    .select('id, ingredient_id')
+    .eq('production_order_id', id)
+
+  const existingIngredientIds = new Set((existingMovements || []).map(m => m.ingredient_id))
+  const missingMovements = movements.filter(m => !existingIngredientIds.has(m.ingredient_id))
+
+  if (missingMovements.length > 0) {
+    await supabase
+      .from('production_movements')
+      .insert(missingMovements.map(m => ({
+        production_order_id: id,
+        ingredient_id: m.ingredient_id,
+        planned_quantity: m.actual_quantity, // best-effort: use actual as planned
+      })))
+  }
+
+  // 3. For each movement, create inventory movements and update production_movement
+  //    Match by (production_order_id + ingredient_id) to handle both real and fallback IDs
   for (const mov of movements) {
     // Create 'out' movement for actual quantity used
     if (mov.actual_quantity > 0) {
@@ -423,7 +444,6 @@ export async function completeProduction(
         .select('id')
         .single()
 
-      // Update production_movement with movement_id
       if (outMov) {
         await supabase
           .from('production_movements')
@@ -431,7 +451,8 @@ export async function completeProduction(
             actual_quantity: mov.actual_quantity,
             movement_id: outMov.id,
           })
-          .eq('id', mov.id)
+          .eq('production_order_id', id)
+          .eq('ingredient_id', mov.ingredient_id)
       }
     }
 
@@ -455,7 +476,8 @@ export async function completeProduction(
             waste_quantity: mov.waste_quantity,
             waste_movement_id: wasteMov.id,
           })
-          .eq('id', mov.id)
+          .eq('production_order_id', id)
+          .eq('ingredient_id', mov.ingredient_id)
       }
     }
   }

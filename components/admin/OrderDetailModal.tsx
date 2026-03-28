@@ -32,13 +32,13 @@ const STATUS_OPTIONS = [
 
 // Todos los estados (para historial y labels)
 const ALL_STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending_payment: { label: 'Pago Pendiente', color: 'bg-yellow-100 text-yellow-700' },
+  pending_payment: { label: 'Pendiente', color: 'bg-orange-100 text-orange-700' },
   pending: { label: 'Pendiente', color: 'bg-orange-100 text-orange-700' },
   confirmed: { label: 'Confirmado', color: 'bg-green-100 text-green-700' },
   in_production: { label: 'En Producción', color: 'bg-blue-100 text-blue-700' },
   ready: { label: 'Listo', color: 'bg-cyan-100 text-cyan-700' },
   delivered: { label: 'Entregado', color: 'bg-emerald-100 text-emerald-700' },
-  completed: { label: 'Completado', color: 'bg-gray-100 text-gray-700' },
+  completed: { label: 'Entregado', color: 'bg-emerald-100 text-emerald-700' },
   cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-700' },
 }
 
@@ -637,123 +637,32 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
                     </div>
                   </div>
 
-                  {/* Sección Pago — solo visible si no está completamente pagado */}
-                  {order.payment_status !== 'paid' && (
-                    <div className="mt-6 pt-6 border-t border-border">
-                      <h3 className="font-semibold text-dark mb-4">Estado de Pago</h3>
-
-                      {/* Resumen montos */}
-                      <div className="bg-secondary/50 rounded-xl p-4 space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-dark-light">Total del pedido</span>
-                          <span className="font-semibold text-dark">{formatCurrency(order.total)}</span>
-                        </div>
-                        {order.deposit_paid && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-dark-light">Depósito pagado ✓</span>
-                            <span className="font-semibold text-green-700">{formatCurrency(order.deposit_amount || 0)}</span>
-                          </div>
-                        )}
-                        {order.payment_status === 'partial' && (
-                          <div className="flex justify-between text-sm font-bold border-t border-border pt-2 mt-2">
-                            <span className="text-dark">Saldo pendiente</span>
-                            <span className="text-accent">{formatCurrency(order.total - (order.deposit_amount || 0))}</span>
-                          </div>
-                        )}
+                  {/* Resumen de pago — solo informativo */}
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <h3 className="font-semibold text-dark mb-3">Estado de Pago</h3>
+                    <div className="bg-secondary/50 rounded-xl p-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-dark-light">Total del pedido</span>
+                        <span className="font-semibold text-dark">{formatCurrency(order.total)}</span>
                       </div>
-
-                      {/* Generar link de pago inicial (sin depósito aún) */}
-                      {order.payment_status === 'pending' && (
-                        <div className="space-y-3">
-                          {!depositLink ? (
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={() => handleGenerateDepositLink('deposit')}
-                                disabled={isGeneratingDepositLink}
-                                isLoading={isGeneratingDepositLink}
-                                className="flex-1"
-                              >
-                                🔗 Link depósito
-                              </Button>
-                              <Button
-                                onClick={() => handleGenerateDepositLink('full')}
-                                disabled={isGeneratingDepositLink}
-                                isLoading={isGeneratingDepositLink}
-                                variant="secondary"
-                                className="flex-1"
-                              >
-                                🔗 Link pago total
-                              </Button>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              <p className="text-xs text-dark-light">
-                                Link generado por <span className="font-semibold text-dark">{formatCurrency(depositLinkAmount)}</span>
-                              </p>
-                              <div className="flex items-center gap-2 p-3 bg-white border border-border rounded-xl">
-                                <span className="text-xs text-dark-light flex-1 truncate">{depositLink}</span>
-                                <button
-                                  onClick={handleCopyDepositLink}
-                                  className="text-xs font-medium text-primary hover:text-primary-hover shrink-0"
-                                >
-                                  {depositLinkCopied ? '✓ Copiado' : 'Copiar'}
-                                </button>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={handleWhatsAppDeposit}
-                                  className="flex-1 bg-green-600 hover:bg-green-700"
-                                >
-                                  📱 Enviar por WhatsApp
-                                </Button>
-                                <Button
-                                  onClick={() => setDepositLink(null)}
-                                  variant="secondary"
-                                  className="shrink-0"
-                                >
-                                  Nuevo link
-                                </Button>
-                              </div>
-                            </div>
-                          )}
+                      <div className="flex justify-between text-sm">
+                        <span className="text-dark-light">Pagado</span>
+                        <span className="font-semibold text-green-700">{formatCurrency(totalPaid)}</span>
+                      </div>
+                      {pendingAmount > 0 && (
+                        <div className="flex justify-between text-sm font-bold border-t border-border pt-2">
+                          <span className="text-dark">Pendiente</span>
+                          <span className="text-accent">{formatCurrency(pendingAmount)}</span>
                         </div>
                       )}
-
-                      {/* Generar link de saldo (ya pagó depósito) */}
-                      {order.payment_status === 'partial' && (
-                        <div className="space-y-3">
-                          {!balanceLink ? (
-                            <Button
-                              onClick={handleGenerateBalanceLink}
-                              disabled={isGeneratingLink}
-                              isLoading={isGeneratingLink}
-                              className="w-full"
-                            >
-                              {isGeneratingLink ? 'Generando...' : '🔗 Generar link de saldo'}
-                            </Button>
-                          ) : (
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 p-3 bg-white border border-border rounded-xl">
-                                <span className="text-xs text-dark-light flex-1 truncate">{balanceLink}</span>
-                                <button
-                                  onClick={handleCopyLink}
-                                  className="text-xs font-medium text-primary hover:text-primary-hover shrink-0"
-                                >
-                                  {linkCopied ? '✓ Copiado' : 'Copiar'}
-                                </button>
-                              </div>
-                              <Button
-                                onClick={handleWhatsAppBalance}
-                                className="w-full bg-green-600 hover:bg-green-700"
-                              >
-                                📱 Enviar por WhatsApp
-                              </Button>
-                            </div>
-                          )}
+                      {pendingAmount <= 0 && (
+                        <div className="flex justify-between text-sm font-bold border-t border-border pt-2">
+                          <span className="text-green-700">Pagado completo ✓</span>
                         </div>
                       )}
                     </div>
-                  )}
+                    <p className="text-xs text-dark-light mt-2">Para generar links de pago, ve al tab <strong>Pagos</strong>.</p>
+                  </div>
 
                   {/* Costos de producción */}
                   {productionCost != null && productionCost > 0 && (
@@ -846,21 +755,65 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
 
               {activeTab === 'payments' && (
                 <div className="space-y-6">
-                  {/* Botón agregar pago */}
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-dark-light">
-                        Pagado: <span className="font-semibold text-green-600">{formatCurrency(totalPaid)}</span>
-                        {' / '}
-                        Total: <span className="font-semibold">{formatCurrency(order.total)}</span>
-                      </p>
+                  {/* Resumen + acciones de pago */}
+                  <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-dark-light">Total del pedido</span>
+                      <span className="font-semibold text-dark">{formatCurrency(order.total)}</span>
                     </div>
-                    {pendingAmount > 0 && (
-                      <Button onClick={() => setShowPaymentForm(true)}>
-                        + Registrar Pago
-                      </Button>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-dark-light">Pagado</span>
+                      <span className="font-semibold text-green-700">{formatCurrency(totalPaid)}</span>
+                    </div>
+                    {pendingAmount > 0 ? (
+                      <div className="flex justify-between text-sm font-bold border-t border-border pt-2">
+                        <span className="text-dark">Pendiente</span>
+                        <span className="text-accent">{formatCurrency(pendingAmount)}</span>
+                      </div>
+                    ) : (
+                      <div className="border-t border-border pt-2">
+                        <span className="text-sm font-bold text-green-700">Pagado completo ✓</span>
+                      </div>
                     )}
                   </div>
+
+                  {/* Acciones */}
+                  {pendingAmount > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      <Button onClick={() => setShowPaymentForm(true)} variant="secondary">
+                        + Registrar Pago Manual
+                      </Button>
+                      {!depositLink ? (
+                        <Button
+                          onClick={() => handleGenerateDepositLink('full')}
+                          disabled={isGeneratingDepositLink}
+                          isLoading={isGeneratingDepositLink}
+                        >
+                          🔗 Generar link de pago ({formatCurrency(pendingAmount)} pendiente)
+                        </Button>
+                      ) : (
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2 p-3 bg-white border border-border rounded-xl">
+                            <span className="text-xs text-dark-light flex-1 truncate">{depositLink}</span>
+                            <button
+                              onClick={handleCopyDepositLink}
+                              className="text-xs font-medium text-primary hover:text-primary-hover shrink-0"
+                            >
+                              {depositLinkCopied ? '✓ Copiado' : 'Copiar'}
+                            </button>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={handleWhatsAppDeposit} className="flex-1 bg-green-600 hover:bg-green-700">
+                              📱 Enviar por WhatsApp
+                            </Button>
+                            <Button onClick={() => setDepositLink(null)} variant="secondary" className="shrink-0">
+                              Nuevo link
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Formulario de pago */}
                   {showPaymentForm && (

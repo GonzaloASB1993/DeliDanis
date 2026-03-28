@@ -17,7 +17,6 @@ const MONTHS = [
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos' },
-  { value: 'pending_payment', label: 'Pago Pendiente' },
   { value: 'pending', label: 'Pendientes' },
   { value: 'confirmed', label: 'Confirmados' },
   { value: 'in_production', label: 'En Producción' },
@@ -27,24 +26,24 @@ const STATUS_OPTIONS = [
 ]
 
 const statusColors: Record<string, string> = {
-  pending_payment: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  pending_payment: 'bg-orange-100 text-orange-700 border-orange-200',
   pending: 'bg-orange-100 text-orange-700 border-orange-200',
   confirmed: 'bg-green-100 text-green-700 border-green-200',
   in_production: 'bg-blue-100 text-blue-700 border-blue-200',
   ready: 'bg-cyan-100 text-cyan-700 border-cyan-200',
   delivered: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  completed: 'bg-gray-100 text-gray-700 border-gray-200',
+  completed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
   cancelled: 'bg-red-100 text-red-700 border-red-200',
 }
 
 const statusLabels: Record<string, string> = {
-  pending_payment: 'Pago Pendiente',
+  pending_payment: 'Pendiente',
   pending: 'Pendiente',
   confirmed: 'Confirmado',
   in_production: 'En Producción',
   ready: 'Listo',
   delivered: 'Entregado',
-  completed: 'Completado',
+  completed: 'Entregado',
   cancelled: 'Cancelado',
 }
 
@@ -356,6 +355,7 @@ export default function AgendamientosPage() {
                 <table className="w-full">
                   <thead className="bg-secondary text-sm text-dark-light border-b border-border">
                     <tr>
+                      <th className="text-left px-5 py-3 font-medium">ID</th>
                       <th className="text-left px-5 py-3 font-medium">Cliente</th>
                       <th className="text-left px-5 py-3 font-medium">Servicio</th>
                       <th className="text-left px-5 py-3 font-medium">Fecha</th>
@@ -374,6 +374,9 @@ export default function AgendamientosPage() {
                         className="hover:bg-secondary/50 transition-colors cursor-pointer"
                         onClick={() => openOrderDetail(order.id)}
                       >
+                        <td className="px-5 py-4">
+                          <span className="font-mono text-sm font-semibold text-dark">{order.order_number}</span>
+                        </td>
                         <td className="px-5 py-4">
                           <p className="font-medium text-dark">
                             {order.customer?.first_name} {order.customer?.last_name}

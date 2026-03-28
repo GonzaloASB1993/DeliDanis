@@ -108,9 +108,13 @@ export async function getOrders(filters: {
     query = query.gte('event_date', startDate).lte('event_date', endDate)
   }
 
-  // Filtro por estado
+  // Filtro por estado — 'pending' incluye 'pending_payment' (mismo estado visual)
   if (status && status !== 'all') {
-    query = query.eq('status', status)
+    if (status === 'pending') {
+      query = query.in('status', ['pending', 'pending_payment'])
+    } else {
+      query = query.eq('status', status)
+    }
   }
 
   // Filtro por estado de pago
