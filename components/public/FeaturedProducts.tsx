@@ -295,18 +295,20 @@ export function FeaturedProducts() {
 
           {/* Pagination dots */}
           {showNavigation && (
-            <div className="flex justify-center gap-2 mt-8">
+            <div className="flex justify-center mt-8">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setCurrentIndex(i)}
-                  className={`h-2 rounded-full transition-all duration-400 ${
+                  className="flex items-center justify-center min-h-[44px] px-1.5"
+                  aria-label={`Ir a slide ${i + 1}`}
+                >
+                  <span className={`block h-2 rounded-full transition-all duration-300 ${
                     i === currentIndex
                       ? 'w-8 bg-primary'
                       : 'w-2 bg-primary/20 hover:bg-primary/40'
-                  }`}
-                  aria-label={`Ir a slide ${i + 1}`}
-                />
+                  }`} />
+                </button>
               ))}
             </div>
           )}

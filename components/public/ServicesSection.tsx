@@ -16,7 +16,6 @@ interface Service {
   image: string
   href: string
   ctaText: string
-  accentColor: string
   icon: string
 }
 
@@ -33,7 +32,6 @@ const services: Service[] = [
     image: '/images/service-tortas.jpg',
     href: '/catalogo',
     ctaText: 'Ver Catálogo',
-    accentColor: 'primary',
     icon: 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z',
   },
   {
@@ -48,7 +46,6 @@ const services: Service[] = [
     image: '/images/service-cocteleria.jpg',
     href: '/catalogo/cocteleria',
     ctaText: 'Ver Cócteles',
-    accentColor: 'accent',
     icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
   },
   {
@@ -63,7 +60,6 @@ const services: Service[] = [
     image: '/images/service-pasteleria.jpg',
     href: '/catalogo/pasteleria',
     ctaText: 'Ver Pastelería',
-    accentColor: 'success',
     icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z',
   },
 ]
@@ -235,7 +231,7 @@ export function ServicesSection() {
                         key={feature}
                         className="flex items-center gap-2"
                       >
-                        <div className="flex-shrink-0 w-4.5 h-4.5 rounded-full bg-primary/10 flex items-center justify-center">
+                        <div className="flex-shrink-0 w-[18px] h-[18px] rounded-full bg-primary/10 flex items-center justify-center">
                           <svg className="w-3 h-3 text-primary" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                             <path
                               fillRule="evenodd"
@@ -254,7 +250,7 @@ export function ServicesSection() {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-400"
+                      className="w-full group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all duration-300"
                     >
                       <span>{service.ctaText}</span>
                       <svg

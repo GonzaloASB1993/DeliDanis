@@ -218,12 +218,12 @@ export function CTASection() {
         {/* Trust indicators — full width, separated by vertical dividers */}
         <div
           ref={trustRef}
-          className="flex flex-wrap items-center justify-center gap-0 mt-16 pt-8 border-t border-white/10 max-w-4xl mx-auto"
+          className="flex flex-wrap items-center justify-center gap-x-0 gap-y-4 mt-16 pt-8 border-t border-white/10 max-w-4xl mx-auto lg:flex-nowrap lg:divide-x lg:divide-white/15"
         >
           {trustIndicators.map((item, i) => (
             <div
               key={i}
-              className={`flex items-center gap-2.5 px-6 lg:px-8 py-2${i < trustIndicators.length - 1 ? ' border-r border-white/15' : ''}`}
+              className="flex items-center gap-2.5 px-6 lg:px-8 py-2"
             >
               <svg
                 className="w-5 h-5 text-accent-light flex-shrink-0"

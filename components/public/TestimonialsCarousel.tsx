@@ -419,18 +419,20 @@ export function TestimonialsCarousel() {
         </div>
 
         {/* Mobile pagination dots */}
-        <div className="flex items-center justify-center gap-2.5 mt-8 lg:hidden">
+        <div className="flex items-center justify-center mt-8 lg:hidden">
           {testimonials.map((_, index) => (
             <button
               key={index}
               onClick={() => animateFeaturedChange(index)}
-              className={`h-2 rounded-full transition-all duration-400 ${
+              className="flex items-center justify-center min-h-[44px] px-1.5"
+              aria-label={`Ir a testimonio ${index + 1}`}
+            >
+              <span className={`block h-2 rounded-full transition-all duration-300 ${
                 index === featuredIndex
                   ? 'w-8 bg-primary'
                   : 'w-2 bg-dark/15 hover:bg-dark/30'
-              }`}
-              aria-label={`Ir a testimonio ${index + 1}`}
-            />
+              }`} />
+            </button>
           ))}
         </div>
       </div>

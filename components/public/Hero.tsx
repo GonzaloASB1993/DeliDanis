@@ -391,7 +391,7 @@ export function Hero() {
                 <Link href="/agendar" className="group">
                   <Button
                     size="lg"
-                    className="w-full sm:w-auto shadow-[0_4px_24px_rgba(212,132,124,0.4)] hover:shadow-[0_8px_32px_rgba(212,132,124,0.5)] transition-all duration-400"
+                    className="w-full sm:w-auto shadow-[0_4px_24px_rgba(212,132,124,0.4)] hover:shadow-[0_8px_32px_rgba(212,132,124,0.5)] transition-all duration-300"
                   >
                     <span>Reserva tu Fecha</span>
                     <svg
@@ -475,7 +475,7 @@ export function Hero() {
               {[1, 2, 3, 4, 5].map((i) => (
                 <svg
                   key={i}
-                  className="w-4.5 h-4.5 text-accent"
+                  className="w-[18px] h-[18px] text-accent"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                   aria-hidden="true"
@@ -490,22 +490,24 @@ export function Hero() {
       </div>
 
       {/* ── Slide indicators + progress ── */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center">
         {SLIDES.map((_, i) => (
           <button
             key={i}
             onClick={() => handleSlideClick(i)}
-            className={`relative h-1.5 rounded-full transition-all duration-500 overflow-hidden ${
-              i === currentSlide ? 'w-10 bg-white/30' : 'w-2 bg-white/30 hover:bg-white/50'
-            }`}
+            className="flex items-center justify-center min-h-[44px] px-1.5"
             aria-label={`Ir a imagen ${i + 1}`}
           >
-            {i === currentSlide && (
-              <div
-                ref={progressRef}
-                className="absolute inset-0 bg-white rounded-full origin-left"
-              />
-            )}
+            <span className={`relative block h-1.5 rounded-full transition-all duration-500 overflow-hidden ${
+              i === currentSlide ? 'w-10 bg-white/30' : 'w-2 bg-white/30 hover:bg-white/50'
+            }`}>
+              {i === currentSlide && (
+                <div
+                  ref={progressRef}
+                  className="absolute inset-0 bg-white rounded-full origin-left"
+                />
+              )}
+            </span>
           </button>
         ))}
       </div>

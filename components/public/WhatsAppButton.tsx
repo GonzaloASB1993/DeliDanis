@@ -7,7 +7,7 @@ export function WhatsAppButton() {
   )
 
   const handleClick = () => {
-    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank')
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -25,7 +25,7 @@ export function WhatsAppButton() {
       </svg>
 
       {/* Tooltip */}
-      <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-dark text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+      <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-dark text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none">
         ¿Necesitas ayuda?
       </span>
     </button>
