@@ -3,10 +3,28 @@ import type { Metadata } from 'next'
 import { buildMetadata, DEFAULT_OG_IMAGE } from '@/lib/utils/seo'
 import { JsonLd } from '@/components/JsonLd'
 import { getProductBySlug } from '@/lib/supabase/product-queries'
+import { createClient } from '@supabase/supabase-js'
 import { ProductDetailClient } from './ProductDetailClient'
 
 interface Props {
   params: { slug: string }
+}
+
+async function getProductPrimaryImage(productId: string): Promise<string | undefined> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  )
+  const { data } = await supabase
+    .from('product_images')
+    .select('url, is_primary')
+    .eq('product_id', productId)
+    .eq('product_type', 'cake')
+    .order('is_primary', { ascending: false })
+    .order('order_index')
+    .limit(1)
+    .single()
+  return data?.url ?? undefined
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -19,14 +37,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       noIndex: true,
     })
   }
-  const productImage = product.images?.find(img => img.is_primary)?.url
-    ?? product.images?.[0]?.url
 
   return buildMetadata({
     title: `${product.name} - Torta Artesanal | DeliDanis`,
     description: product.short_description ?? product.description?.slice(0, 155) ?? '',
     path: `/catalogo/${params.slug}`,
-    image: productImage,
   })
 }
 
@@ -34,9 +49,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const product = await getProductBySlug(params.slug)
   if (!product || !product.is_active) notFound()
 
-  const primaryImage = product.images?.find(img => img.is_primary)?.url
-    ?? product.images?.[0]?.url
-    ?? DEFAULT_OG_IMAGE
+  const primaryImage = await getProductPrimaryImage(product.id) ?? DEFAULT_OG_IMAGE
 
   const productSchema = {
     '@context': 'https://schema.org',
