@@ -103,10 +103,12 @@ export async function POST(request: NextRequest) {
 
     const wasInCheckout = order.status === 'pending_payment'
 
-    // Actualizar pedido
+    // Actualizar pedido — solo cambiar status si venía de pending_payment
     const updateData: Record<string, unknown> = {
-      status: 'pending',
       payment_reference: paymentId,
+    }
+    if (order.status === 'pending_payment') {
+      updateData.status = 'pending'
     }
 
     if (isFullPayment) {
@@ -176,11 +178,16 @@ export async function POST(request: NextRequest) {
         : `Depósito confirmado vía MercadoPago ($${paidAmount.toLocaleString('es-CL')})`,
     })
 
-    // Enviar email de confirmación al cliente (fire and forget)
+    // Enviar email de confirmación al cliente (fire and forget).
+    // Passes the internal secret so the email endpoint can verify the caller
+    // is a trusted server-side process, not an external unauthenticated request.
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
     fetch(`${appUrl}/api/email/confirm-order`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-secret': process.env.INTERNAL_API_SECRET || '',
+      },
       body: JSON.stringify({ orderId: order.id }),
     }).catch(err => console.error('[MP Webhook] Error enviando email:', err))
 

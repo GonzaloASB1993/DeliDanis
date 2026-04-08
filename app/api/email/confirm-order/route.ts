@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { resend, EMAIL_FROM } from '@/lib/email/client'
 import { orderConfirmationHtml, type OrderEmailData } from '@/lib/email/templates'
@@ -8,7 +8,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function POST(request: Request) {
+// Internal shared secret — callers must pass this header to invoke email endpoints.
+// This prevents unauthenticated external actors from triggering emails to arbitrary customers.
+// Set INTERNAL_API_SECRET in environment variables.
+function isAuthorizedCaller(request: NextRequest): boolean {
+  const secret = process.env.INTERNAL_API_SECRET
+  if (!secret) return false // If not configured, deny all external calls
+  const header = request.headers.get('x-internal-secret')
+  return header === secret
+}
+
+export async function POST(request: NextRequest) {
+  if (!isAuthorizedCaller(request)) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+
   try {
     const { orderId } = await request.json()
 
@@ -60,7 +74,8 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Error sending confirmation email:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      // Log detail server-side; never return internal error message to client
+      return NextResponse.json({ error: 'Error al enviar email' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, id: data?.id })

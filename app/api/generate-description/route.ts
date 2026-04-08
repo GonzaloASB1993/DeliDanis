@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export async function POST(request: NextRequest) {
+  // Guard: only authenticated admins may call the AI generation endpoint.
+  // Unauthenticated access would drain Anthropic API credits freely.
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role, is_active')
+    .eq('id', user.id)
+    .single()
+  if (!profile?.is_active || !['admin', 'owner', 'sales'].includes(profile.role)) {
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+  }
+
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json(
@@ -56,8 +73,9 @@ Solo responde con la descripción, sin comillas ni explicaciones adicionales.`
     return NextResponse.json({ description })
   } catch (error: any) {
     console.error('Error generating description:', error)
+    // Never expose raw error messages (may include API details) to the client
     return NextResponse.json(
-      { error: error.message || 'Error al generar descripción' },
+      { error: 'Error al generar descripción' },
       { status: 500 }
     )
   }

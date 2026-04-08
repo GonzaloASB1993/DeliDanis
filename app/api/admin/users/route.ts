@@ -1,6 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/types/auth'
+
+/**
+ * Verifies the caller is an authenticated admin or owner.
+ * Returns null if authorized, or a 401/403 NextResponse if not.
+ * Protects against unauthenticated callers accessing the service-role endpoint.
+ */
+async function requireAdmin(): Promise<NextResponse | null> {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role, is_active')
+    .eq('id', user.id)
+    .single()
+  if (!profile?.is_active || !['admin', 'owner'].includes(profile.role)) {
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+  }
+  return null
+}
 
 /**
  * GET /api/admin/users
@@ -8,13 +31,18 @@ import type { UserRole } from '@/types/auth'
  * Uses supabaseAdmin (service role) to access auth.users.
  */
 export async function GET() {
+  // Guard: only authenticated admins may list all users
+  const authError = await requireAdmin()
+  if (authError) return authError
+
   try {
     // Fetch auth users list
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers()
 
     if (authError) {
       console.error('Error listing auth users:', authError)
-      return NextResponse.json({ error: authError.message }, { status: 500 })
+      // Never expose supabase/auth internal error messages to the client
+      return NextResponse.json({ error: 'Error al obtener usuarios' }, { status: 500 })
     }
 
     // Fetch all user profiles
@@ -25,7 +53,7 @@ export async function GET() {
 
     if (profilesError) {
       console.error('Error fetching user profiles:', profilesError)
-      return NextResponse.json({ error: profilesError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Error al obtener perfiles' }, { status: 500 })
     }
 
     // Build a map from profile id to auth user
@@ -51,7 +79,7 @@ export async function GET() {
     return NextResponse.json(users)
   } catch (error: any) {
     console.error('Error in GET /api/admin/users:', error)
-    return NextResponse.json({ error: error.message || 'Error interno' }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }
 
@@ -61,6 +89,10 @@ export async function GET() {
  * Body: { email, password, role, first_name, last_name, phone? }
  */
 export async function POST(request: NextRequest) {
+  // Guard: only authenticated admins may create users
+  const authCheck = await requireAdmin()
+  if (authCheck) return authCheck
+
   try {
     const body = await request.json()
     const { email, password, role, first_name, last_name, phone } = body
@@ -104,7 +136,7 @@ export async function POST(request: NextRequest) {
       // Rollback: delete the auth user if profile creation failed
       await supabaseAdmin.auth.admin.deleteUser(userId)
       console.error('Error creating user profile:', profileError)
-      return NextResponse.json({ error: profileError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Error al crear perfil de usuario' }, { status: 500 })
     }
 
     return NextResponse.json({
@@ -122,6 +154,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Error in POST /api/admin/users:', error)
-    return NextResponse.json({ error: error.message || 'Error interno' }, { status: 500 })
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { resend, EMAIL_FROM } from '@/lib/email/client'
 import { orderReadyHtml, type OrderEmailData } from '@/lib/email/templates'
 
@@ -8,7 +9,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Guard: require authenticated admin session or internal secret.
+  // Prevents unauthenticated callers from spamming customers with emails.
+  const internalSecret = process.env.INTERNAL_API_SECRET
+  const callerSecret = request.headers.get('x-internal-secret')
+  const isInternal = internalSecret && callerSecret === internalSecret
+
+  if (!isInternal) {
+    const sessionClient = await createServerSupabaseClient()
+    const { data: { user } } = await sessionClient.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+  }
+
   try {
     const { orderId } = await request.json()
 
@@ -59,7 +74,8 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error('Error sending order-ready email:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      // Log detail server-side; never return internal error message to client
+      return NextResponse.json({ error: 'Error al enviar email' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, id: data?.id })

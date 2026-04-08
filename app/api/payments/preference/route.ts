@@ -104,8 +104,10 @@ export async function POST(request: NextRequest) {
     console.error('[Payments] Error creando preferencia - message:', errMsg)
     console.error('[Payments] Error creando preferencia - stack:', errStack)
     console.error('[Payments] Error creando preferencia - raw:', error)
+    // Never expose internal error details to the client in production —
+    // logs the detail server-side but returns a generic message to callers.
     return NextResponse.json(
-      { error: 'Error interno al crear preferencia de pago', detail: errMsg },
+      { error: 'Error interno al crear preferencia de pago' },
       { status: 500 }
     )
   }

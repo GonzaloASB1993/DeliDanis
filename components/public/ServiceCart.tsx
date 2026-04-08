@@ -13,6 +13,7 @@ interface ServiceCartProps {
   onRemoveService: (serviceId: string) => void
   onAddAnother: () => void
   onContinue: () => void
+  currentStep?: number
 }
 
 const getServiceIcon = (type: ServiceItem['type']): string => {
@@ -156,9 +157,15 @@ export function ServiceCart({
   onRemoveService,
   onAddAnother,
   onContinue,
+  currentStep = 2,
 }: ServiceCartProps) {
   const hasServices = services.length > 0
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
+
+  // Close mobile cart when step changes (e.g., after clicking Continuar)
+  useEffect(() => {
+    setMobileCartOpen(false)
+  }, [currentStep])
 
   // Lock body scroll when mobile cart is open
   useEffect(() => {
@@ -259,28 +266,36 @@ export function ServiceCart({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="space-y-2">
-            <button
-              onClick={onContinue}
-              className="w-full px-6 py-3 bg-primary text-white rounded-full font-semibold hover:bg-primary-hover hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
-            >
-              <span>Continuar</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </button>
+          {/* Actions - Only show on step 2 */}
+          {currentStep === 2 && (
+            <div className="space-y-2">
+              <button
+                onClick={() => {
+                  setMobileCartOpen(false)
+                  onContinue()
+                }}
+                className="w-full px-6 py-3 bg-primary text-white rounded-full font-semibold hover:bg-primary-hover hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>Continuar</span>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </button>
 
-            <button
-              onClick={onAddAnother}
-              className="w-full px-6 py-2.5 border-2 border-primary text-primary rounded-full font-medium hover:bg-primary/10 transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Agregar Otro Servicio</span>
-            </button>
-          </div>
+              <button
+                onClick={() => {
+                  setMobileCartOpen(false)
+                  onAddAnother()
+                }}
+                className="w-full px-6 py-2.5 border-2 border-primary text-primary rounded-full font-medium hover:bg-primary/10 transition-all duration-200 flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Agregar Otro Servicio</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
     </>

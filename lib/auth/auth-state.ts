@@ -187,13 +187,15 @@ class AuthManager {
         const profile = await this.loadProfile(data.user.id)
 
         if (!profile) {
-          // Crear perfil si no existe
+          // Crear perfil si no existe — role defaults to 'viewer', not 'admin'.
+          // SECURITY: assigning 'admin' to any new user is a privilege escalation risk.
+          // An admin must explicitly promote users via the admin panel after account creation.
           const { error: insertError } = await supabase
             .from('user_profiles')
             .insert({
               id: data.user.id,
               email: data.user.email,
-              role: 'admin',
+              role: 'viewer',
               is_active: true,
             })
 

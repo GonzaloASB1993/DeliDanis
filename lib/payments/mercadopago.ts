@@ -37,9 +37,8 @@ export async function createPreference(
 
   const preference = new Preference(client)
 
-  console.log('[MP createPreference] appUrl:', appUrl)
-  console.log('[MP createPreference] back_urls success:', `${appUrl}/agendar/confirmacion?order=${orderNumber}&status=approved`)
-
+  // Removed debug console.logs — appUrl is config, not sensitive,
+  // but verbose URL logging clutters production logs unnecessarily.
   const response = await preference.create({
     body: {
       items: [

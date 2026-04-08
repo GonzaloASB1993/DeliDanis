@@ -1,6 +1,24 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Guard: only authenticated admins may query live payment data.
+  // This endpoint uses the MercadoPago access token — exposing it
+  // to unauthenticated callers leaks real transaction data.
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role, is_active')
+    .eq('id', user.id)
+    .single()
+  if (!profile?.is_active || !['admin', 'owner', 'accountant'].includes(profile.role)) {
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+  }
+
   try {
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN!
 
@@ -33,6 +51,7 @@ export async function GET() {
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : JSON.stringify(error)
     console.error('[MP recent] Error:', errMsg)
-    return NextResponse.json({ error: errMsg }, { status: 500 })
+    // Never expose raw internal error details to the client — log server-side only
+    return NextResponse.json({ error: 'Error interno al consultar pagos' }, { status: 500 })
   }
 }

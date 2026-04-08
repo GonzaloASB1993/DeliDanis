@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
+// Service-role client for bulk writes (bypasses RLS intentionally)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -16,6 +18,23 @@ function generateSlug(name: string): string {
 }
 
 export async function POST(request: NextRequest) {
+  // Guard: only authenticated admins may bulk-upload catalog items.
+  // This route uses the service role key (bypasses RLS), so it MUST verify
+  // the caller is an authenticated admin before processing anything.
+  const sessionClient = await createServerSupabaseClient()
+  const { data: { user } } = await sessionClient.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+  const { data: callerProfile } = await sessionClient
+    .from('user_profiles')
+    .select('role, is_active')
+    .eq('id', user.id)
+    .single()
+  if (!callerProfile?.is_active || !['admin', 'owner'].includes(callerProfile.role)) {
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+  }
+
   try {
     const { productType, products, categories, subcategories } = await request.json()
 
@@ -141,8 +160,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     console.error('Bulk upload error:', error)
+    // Never expose raw error messages to the client — may leak DB/internal details
     return NextResponse.json(
-      { error: error.message || 'Error interno del servidor' },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     )
   }

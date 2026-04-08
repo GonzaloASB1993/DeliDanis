@@ -889,6 +889,7 @@ export default function AgendarPage() {
                 onRemoveService={removeService}
                 onAddAnother={handleAddAnother}
                 onContinue={handleContinueToCheckout}
+                currentStep={currentStep}
               />
             </div>
           </div>

@@ -182,7 +182,7 @@ export function PastryServiceForm({ availableProducts, onAddService, onCancel }:
                       onClick={() => handleUpdateQuantity(product.id, -1)}
                       disabled={quantity === 0}
                       className={cn(
-                        'w-8 h-8 flex items-center justify-center rounded-lg transition-colors',
+                        'w-11 h-11 flex items-center justify-center rounded-lg transition-colors',
                         quantity === 0
                           ? 'bg-dark/5 text-dark/30 cursor-not-allowed'
                           : 'bg-dark/5 text-dark hover:bg-dark/10'

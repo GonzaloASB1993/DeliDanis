@@ -1,9 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { MercadoPagoConfig, Preference } from 'mercadopago'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.delidanis.cl'
 
 export async function POST(request: NextRequest) {
+  // Guard: only admins may create test payment links using the live MP access token.
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+  }
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role, is_active')
+    .eq('id', user.id)
+    .single()
+  if (!profile?.is_active || !['admin', 'owner'].includes(profile.role)) {
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 })
+  }
+
   try {
     const { amount } = await request.json()
 
@@ -46,6 +62,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : JSON.stringify(error)
     console.error('[MP test-link] Error:', errMsg)
-    return NextResponse.json({ error: errMsg }, { status: 500 })
+    // Never expose raw internal error details to the client — log server-side only
+    return NextResponse.json({ error: 'Error interno al crear link de prueba' }, { status: 500 })
   }
 }
