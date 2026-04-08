@@ -1,56 +1,12 @@
-'use client'
-
-import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/Button'
 
-// Registrar plugin de GSAP
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
-}
-
 export default function NosotrosPage() {
-  const heroRef = useRef<HTMLElement>(null)
-  const titleRef = useRef<HTMLHeadingElement>(null)
-  const subtitleRef = useRef<HTMLParagraphElement>(null)
-
-  useEffect(() => {
-    // Animación del hero
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline()
-
-      tl.from(titleRef.current, {
-        y: 60,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-      })
-        .from(
-          subtitleRef.current,
-          {
-            y: 40,
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power3.out',
-          },
-          '-=0.4'
-        )
-    }, heroRef)
-
-    return () => ctx.revert()
-  }, [])
-
   return (
     <div className="min-h-screen bg-light-alt">
       {/* Hero Section */}
-      <section
-        ref={heroRef}
-        className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden"
-      >
-        {/* Pattern Background */}
+      <section className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-full h-full">
             <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/30 rounded-full" />
@@ -59,8 +15,6 @@ export default function NosotrosPage() {
             <div className="absolute bottom-10 right-1/3 w-16 h-16 border-2 border-accent/30 rounded-full" />
           </div>
         </div>
-
-        {/* Gradient Blobs */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
@@ -69,28 +23,17 @@ export default function NosotrosPage() {
 
         <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
           <div className="max-w-3xl mx-auto text-center">
-            {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary font-medium mb-6 shadow-sm">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                  clipRule="evenodd"
-                />
+                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
               </svg>
               Conoce nuestra historia
             </div>
 
-            <h1
-              ref={titleRef}
-              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6"
-            >
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
               Sobre <span className="text-primary">Nosotros</span>
             </h1>
-            <p
-              ref={subtitleRef}
-              className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto"
-            >
+            <p className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
               Una historia de amor, pasión y deliciosas creaciones
             </p>
           </div>
@@ -101,7 +44,6 @@ export default function NosotrosPage() {
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4 md:px-6 max-w-6xl">
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Imagen */}
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <Image
@@ -113,12 +55,10 @@ export default function NosotrosPage() {
                   priority
                 />
               </div>
-              {/* Decoración */}
               <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-primary/20 rounded-full blur-2xl -z-10" />
               <div className="absolute -top-6 -left-6 w-24 h-24 bg-accent/20 rounded-full blur-2xl -z-10" />
             </div>
 
-            {/* Historia */}
             <div className="space-y-6">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-dark">
                 Hola, soy <span className="text-primary">Danitza</span> 👋
@@ -250,7 +190,6 @@ export default function NosotrosPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Pasión */}
             <div className="bg-gradient-to-br from-primary/5 to-transparent p-8 rounded-2xl border border-primary/10 hover:shadow-lg transition-shadow duration-300">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6 mx-auto">
                 <span className="text-4xl">❤️</span>
@@ -264,7 +203,6 @@ export default function NosotrosPage() {
               </p>
             </div>
 
-            {/* Calidad */}
             <div className="bg-gradient-to-br from-accent/5 to-transparent p-8 rounded-2xl border border-accent/10 hover:shadow-lg transition-shadow duration-300">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-6 mx-auto">
                 <span className="text-4xl">✨</span>
@@ -278,7 +216,6 @@ export default function NosotrosPage() {
               </p>
             </div>
 
-            {/* Protagonismo */}
             <div className="bg-gradient-to-br from-primary/5 to-transparent p-8 rounded-2xl border border-primary/10 hover:shadow-lg transition-shadow duration-300">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6 mx-auto">
                 <span className="text-4xl">🎉</span>

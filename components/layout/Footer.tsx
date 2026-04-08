@@ -9,9 +9,8 @@ const navigation = {
   ],
   empresa: [
     { name: 'Nuestra Historia', href: '/nosotros' },
-    { name: 'Galeria', href: '/galeria' },
-    { name: 'Testimonios', href: '/#testimonios' },
-    { name: 'Preguntas Frecuentes', href: '/faq' },
+    { name: 'Galería', href: '/galeria' },
+    { name: 'Testimonios', href: '/testimonios' },
   ],
   servicios: [
     { name: 'Agendar Pedido', href: '/agendar' },
@@ -19,11 +18,7 @@ const navigation = {
     { name: 'Seguimiento de Pedido', href: '/seguimiento' },
     { name: 'Contacto', href: '/contacto' },
   ],
-  legal: [
-    { name: 'Términos y Condiciones', href: '/terminos' },
-    { name: 'Política de Privacidad', href: '/privacidad' },
-    { name: 'Política de Devoluciones', href: '/devoluciones' },
-  ],
+  legal: [] as { name: string; href: string }[],
 }
 
 const socialLinks = [
@@ -172,7 +167,7 @@ export function Footer() {
 
             {/* Navigation Grid */}
             <div className="lg:col-span-8">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-8 lg:gap-6">
                 {/* Productos */}
                 <div>
                   <h4 className="font-display text-white text-[15px] font-semibold mb-5 relative inline-block">
@@ -233,25 +228,6 @@ export function Footer() {
                   </ul>
                 </div>
 
-                {/* Legal */}
-                <div>
-                  <h4 className="font-display text-white text-[15px] font-semibold mb-5 relative inline-block">
-                    Legal
-                    <span className="absolute -bottom-1.5 left-0 w-8 h-px bg-primary/60"></span>
-                  </h4>
-                  <ul className="space-y-3">
-                    {navigation.legal.map((item) => (
-                      <li key={item.name}>
-                        <Link
-                          href={item.href}
-                          className="text-light/55 hover:text-white text-sm transition-colors duration-300 inline-block"
-                        >
-                          {item.name}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
 
               {/* Newsletter */}
@@ -267,6 +243,7 @@ export function Footer() {
                     <input
                       type="email"
                       placeholder="tu@email.com"
+                      aria-label="Tu correo electrónico"
                       className="flex-1 px-4 py-2.5 rounded-full bg-light/[0.05] border border-light/[0.08] text-white placeholder:text-light/35 focus:outline-none focus:border-primary/40 transition-colors duration-300 text-sm"
                     />
                     <button

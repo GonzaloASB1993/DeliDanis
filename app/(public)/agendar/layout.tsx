@@ -1,8 +1,8 @@
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'Agenda tu Pedido - DeliDanis',
-  description: 'Reserva tu torta o servicio con anticipación. Proceso simple, confirmación inmediata.',
+  title: 'Agendar Pedido de Torta Artesanal | DeliDanis',
+  description: 'Reserva tu torta personalizada en minutos. Elige fecha, personaliza tu pedido y paga tu seña de forma segura. Despacho a Santiago y retiro en tienda disponible.',
   path: '/agendar',
 })
 

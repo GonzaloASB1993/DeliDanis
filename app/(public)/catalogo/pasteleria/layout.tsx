@@ -1,8 +1,8 @@
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'Pasteleria - DeliDanis',
-  description: 'Pie de limon, tartas, cheesecakes, alfajores, brownies y dulces finos para matrimonios, cumpleanos y eventos corporativos.',
+  title: 'Pastelería Artesanal para Eventos | DeliDanis Chile',
+  description: 'Pie de limón, tartas, cheesecakes, alfajores, brownies y dulces finos para matrimonios, cumpleaños y eventos corporativos. Pastelería premium hecha con amor en Santiago.',
   path: '/catalogo/pasteleria',
 })
 

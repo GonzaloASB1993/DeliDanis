@@ -1,8 +1,8 @@
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'Coctelería - DeliDanis',
-  description: 'Cócteles artesanales, limonadas, mini sandwiches, empanaditas y bocadillos para matrimonios y celebraciones.',
+  title: 'Coctelería Premium para Matrimonios y Eventos | DeliDanis',
+  description: 'Cócteles artesanales, limonadas, mini sándwiches, empanaditas y bocadillos premium para matrimonios, quinceañeros y celebraciones en Santiago, Chile.',
   path: '/catalogo/cocteleria',
 })
 

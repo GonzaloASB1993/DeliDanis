@@ -1,8 +1,8 @@
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'Catálogo - DeliDanis',
-  description: 'Explora nuestra colección de tortas, pastelería y coctelería para eventos especiales.',
+  title: 'Catálogo de Tortas y Pastelería | DeliDanis Chile',
+  description: 'Explora nuestro catálogo de tortas artesanales, pastelería y coctelería para matrimonios, cumpleaños, quinceañeros y todo tipo de eventos especiales en Chile.',
   path: '/catalogo',
 })
 

@@ -26,8 +26,9 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "DeliDanis - Pastelería Premium",
-  description: "Tortas artesanales para eventos especiales. Calidad premium, sabores únicos y diseños personalizados.",
+  title: "DeliDanis - Pastelería y Tortas Artesanales en Chile",
+  description: "Pastelería artesanal premium en Santiago, Chile. Tortas personalizadas para matrimonios, quinceañeros, cumpleaños y eventos corporativos. Ingredientes de calidad, diseños únicos.",
+  metadataBase: new URL("https://delidanis.cl"),
 };
 
 export default function RootLayout({
@@ -42,16 +43,36 @@ export default function RootLayout({
           '@context': 'https://schema.org',
           '@type': 'Bakery',
           name: 'DeliDanis',
+          description: 'Pastelería artesanal premium especializada en tortas personalizadas para matrimonios, quinceañeros, cumpleaños y eventos corporativos en Santiago, Chile.',
           url: 'https://delidanis.cl',
-          telephone: '+56993928764',
+          telephone: '+56939282764',
+          email: 'contacto@delidanis.cl',
           address: {
             '@type': 'PostalAddress',
             addressCountry: 'CL',
-            addressLocality: 'Chile',
+            addressLocality: 'Santiago',
+            addressRegion: 'Región Metropolitana',
           },
-          servesCuisine: 'Pasteleria, Tortas, Cocteleria',
+          servesCuisine: ['Pastelería', 'Tortas', 'Coctelería'],
           priceRange: '$$',
           image: 'https://delidanis.cl/logo.png',
+          logo: {
+            '@type': 'ImageObject',
+            url: 'https://delidanis.cl/logo.png',
+          },
+          sameAs: [
+            'https://instagram.com/delidanis_pasteleria',
+            'https://facebook.com/delidanis',
+            'https://tiktok.com/@delidanis',
+          ],
+          openingHoursSpecification: [
+            {
+              '@type': 'OpeningHoursSpecification',
+              dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+              opens: '09:00',
+              closes: '19:00',
+            },
+          ],
         }} />
         {children}
         <ToastContainer />

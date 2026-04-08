@@ -1,8 +1,8 @@
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'Testimonios - DeliDanis',
-  description: 'Lo que dicen nuestros clientes sobre sus experiencias con DeliDanis.',
+  title: 'Testimonios de Clientes | Tortas DeliDanis Chile',
+  description: 'Lee lo que dicen nuestros clientes sobre sus tortas y experiencias con DeliDanis. Matrimonios, quinceañeros y cumpleaños felices en Santiago y toda Chile.',
   path: '/testimonios',
 })
 

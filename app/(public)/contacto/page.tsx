@@ -1,72 +1,70 @@
-'use client'
-
-import { useEffect, useRef, useState } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { ContactForm } from '@/components/public/ContactForm'
 import { ContactInfo } from '@/components/public/ContactInfo'
+import { JsonLd } from '@/components/JsonLd'
 
-// Registrar plugin de GSAP
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger)
+async function getDeliveryCost(): Promise<number | null> {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data } = await supabase
+      .from('settings')
+      .select('value')
+      .eq('key', 'payments')
+      .single()
+    return data?.value?.delivery_cost ?? null
+  } catch {
+    return null
+  }
 }
 
-export default function ContactoPage() {
-  const heroRef = useRef<HTMLElement>(null)
-  const titleRef = useRef<HTMLHeadingElement>(null)
-  const subtitleRef = useRef<HTMLParagraphElement>(null)
+export default async function ContactoPage() {
+  const deliveryCost = await getDeliveryCost()
 
-  const [deliveryCost, setDeliveryCost] = useState<number | null>(null)
-
-  useEffect(() => {
-    import('@/lib/supabase/client').then(({ supabase }) => {
-      supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'payments')
-        .single()
-        .then(({ data }) => {
-          if (data?.value?.delivery_cost) {
-            setDeliveryCost(data.value.delivery_cost)
-          }
-        })
-    })
-  }, [])
-
-  useEffect(() => {
-    // Animación del hero
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline()
-
-      tl.from(titleRef.current, {
-        y: 60,
-        opacity: 0,
-        duration: 0.8,
-        ease: 'power3.out',
-      })
-        .from(
-          subtitleRef.current,
-          {
-            y: 40,
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power3.out',
-          },
-          '-=0.4'
-        )
-    }, heroRef)
-
-    return () => ctx.revert()
-  }, [])
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: '¿Con cuánta anticipación debo hacer mi pedido?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Recomendamos hacer los pedidos con al menos 5 días de anticipación para garantizar disponibilidad y la mejor calidad en tu torta. Para eventos especiales o pedidos grandes, se sugiere contactarnos con 2 semanas de anticipación.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Hacen entregas a domicilio?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Sí, realizamos entregas a domicilio dentro de la ciudad.${deliveryCost && deliveryCost > 0 ? ` El costo de envío es de $${deliveryCost.toLocaleString('es-CL')}.` : ' El costo de envío varía según la distancia.'} También puedes optar por retirar tu pedido en nuestra tienda sin costo adicional.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Puedo personalizar mi torta?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: '¡Por supuesto! Todas nuestras tortas son personalizables. Puedes elegir sabores, rellenos, decoraciones y tamaños. Si tienes un diseño específico en mente, envíanos una foto de referencia y haremos nuestro mejor esfuerzo para recrearlo.',
+        },
+      },
+      {
+        '@type': 'Question',
+        name: '¿Qué formas de pago aceptan?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Aceptamos transferencias bancarias, efectivo y pagos con tarjeta de crédito o débito. Para confirmar tu pedido, solicitamos una seña del 50% del valor total.',
+        },
+      },
+    ],
+  }
 
   return (
     <div className="min-h-screen bg-light-alt">
+      <JsonLd data={faqSchema} />
+
       {/* Hero Section */}
-      <section
-        ref={heroRef}
-        className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden"
-      >
-        {/* Pattern Background */}
+      <section className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-full h-full">
             <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/30 rounded-full" />
@@ -75,8 +73,6 @@ export default function ContactoPage() {
             <div className="absolute bottom-10 right-1/3 w-16 h-16 border-2 border-accent/30 rounded-full" />
           </div>
         </div>
-
-        {/* Gradient Blobs */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
@@ -85,7 +81,6 @@ export default function ContactoPage() {
 
         <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
           <div className="max-w-3xl mx-auto text-center">
-            {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary font-medium mb-6 shadow-sm">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
@@ -94,21 +89,14 @@ export default function ContactoPage() {
               Estamos aquí para ayudarte
             </div>
 
-            <h1
-              ref={titleRef}
-              className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6"
-            >
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
               Contáctanos
             </h1>
-            <p
-              ref={subtitleRef}
-              className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto"
-            >
+            <p className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
               Estamos aquí para hacer realidad la torta de tus sueños.
               Escríbenos y te responderemos a la brevedad.
             </p>
 
-            {/* Quick Contact Chips */}
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <a
                 href="https://wa.me/56939282764"
@@ -148,12 +136,9 @@ export default function ContactoPage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 md:px-6 max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
-            {/* Formulario de contacto */}
             <div className="flex">
               <ContactForm />
             </div>
-
-            {/* Información de contacto */}
             <div className="flex">
               <ContactInfo />
             </div>
@@ -197,18 +182,8 @@ export default function ContactoPage() {
             <details className="group bg-secondary rounded-xl p-6 cursor-pointer">
               <summary className="flex justify-between items-center font-semibold text-dark list-none">
                 <span>¿Con cuánta anticipación debo hacer mi pedido?</span>
-                <svg
-                  className="w-5 h-5 transition-transform group-open:rotate-180"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </summary>
               <p className="mt-4 text-dark-light">
@@ -222,18 +197,8 @@ export default function ContactoPage() {
             <details className="group bg-secondary rounded-xl p-6 cursor-pointer">
               <summary className="flex justify-between items-center font-semibold text-dark list-none">
                 <span>¿Hacen entregas a domicilio?</span>
-                <svg
-                  className="w-5 h-5 transition-transform group-open:rotate-180"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </summary>
               <p className="mt-4 text-dark-light">
@@ -248,18 +213,8 @@ export default function ContactoPage() {
             <details className="group bg-secondary rounded-xl p-6 cursor-pointer">
               <summary className="flex justify-between items-center font-semibold text-dark list-none">
                 <span>¿Puedo personalizar mi torta?</span>
-                <svg
-                  className="w-5 h-5 transition-transform group-open:rotate-180"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </summary>
               <p className="mt-4 text-dark-light">
@@ -273,18 +228,8 @@ export default function ContactoPage() {
             <details className="group bg-secondary rounded-xl p-6 cursor-pointer">
               <summary className="flex justify-between items-center font-semibold text-dark list-none">
                 <span>¿Qué formas de pago aceptan?</span>
-                <svg
-                  className="w-5 h-5 transition-transform group-open:rotate-180"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                <svg className="w-5 h-5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </summary>
               <p className="mt-4 text-dark-light">
