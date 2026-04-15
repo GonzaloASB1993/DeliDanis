@@ -110,6 +110,7 @@ export default function NuevoAgendamientoPage() {
   })
 
   useEffect(() => {
+    let isCancelled = false
     setIsLoadingProducts(true)
     setSelectedProductId('')
     setNewItem(prev => ({ ...prev, unit_price: 0 }))
@@ -122,21 +123,24 @@ export default function NuevoAgendamientoPage() {
           data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.base_price ?? 0 }))
         } else if (selectedCategory === 'pasteleria') {
           const result = await getPastryProductsAdmin()
-          data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.base_price ?? 0 }))
+          data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.price ?? 0 }))
         } else {
           const result = await getCocktailProductsAdmin()
-          data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.base_price ?? 0 }))
+          data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.price ?? 0 }))
         }
-        setCatalogProducts(data)
+        if (!isCancelled) setCatalogProducts(data)
       } catch (err) {
-        console.error('Error loading catalog:', err)
-        setCatalogProducts([])
+        if (!isCancelled) {
+          console.error('Error loading catalog:', err)
+          setCatalogProducts([])
+        }
       } finally {
-        setIsLoadingProducts(false)
+        if (!isCancelled) setIsLoadingProducts(false)
       }
     }
 
     load()
+    return () => { isCancelled = true }
   }, [selectedCategory])
 
   useEffect(() => {
@@ -476,7 +480,10 @@ export default function NuevoAgendamientoPage() {
           </div>
 
           {/* Product + quantity + price row */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 bg-secondary/50 rounded-lg">
+          <div className={cn(
+            'grid grid-cols-1 gap-3 p-4 bg-secondary/50 rounded-lg',
+            selectedCategory === 'torta' ? 'md:grid-cols-6' : 'md:grid-cols-5'
+          )}>
             {/* Product dropdown */}
             <div className="md:col-span-2">
               {isLoadingProducts ? (
