@@ -308,6 +308,45 @@ export async function updateOrderStatus(
   return { success: true }
 }
 
+// Private helper — recalculates and writes payment_status based on sum of all payments
+const PAYMENT_TOLERANCE = 10 // $10 CLP rounding tolerance
+
+async function recalculatePaymentStatus(orderId: string): Promise<void> {
+  const { data: payments } = await supabase
+    .from('order_payments')
+    .select('amount')
+    .eq('order_id', orderId)
+
+  const totalPaid = (payments || []).reduce(
+    (sum, p) => sum + (parseFloat(String(p.amount)) || 0),
+    0
+  )
+
+  const { data: order } = await supabase
+    .from('orders')
+    .select('total')
+    .eq('id', orderId)
+    .single()
+
+  if (!order) return
+
+  const orderTotal = parseFloat(String(order.total)) || 0
+
+  let paymentStatus: 'paid' | 'partial' | 'pending'
+  if (totalPaid >= orderTotal - PAYMENT_TOLERANCE) {
+    paymentStatus = 'paid'
+  } else if (totalPaid > 0) {
+    paymentStatus = 'partial'
+  } else {
+    paymentStatus = 'pending'
+  }
+
+  await supabase
+    .from('orders')
+    .update({ payment_status: paymentStatus })
+    .eq('id', orderId)
+}
+
 // Agregar pago/abono
 export async function addPayment(
   orderId: string,
@@ -331,6 +370,9 @@ export async function addPayment(
     .single()
 
   if (error) throw error
+
+  // Recalculate payment_status after every manual payment
+  await recalculatePaymentStatus(orderId)
 
   return data
 }
