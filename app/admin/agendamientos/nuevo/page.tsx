@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Header } from '@/components/admin/Header'
@@ -9,16 +9,37 @@ import { Input } from '@/components/ui/Input'
 import { formatCurrency } from '@/lib/utils/format'
 import { cn } from '@/lib/utils/cn'
 import { createManualOrder } from '@/lib/supabase/orders-queries'
+import {
+  getCakeProductsAdmin,
+  getPastryProductsAdmin,
+  getCocktailProductsAdmin,
+} from '@/lib/supabase/catalog-mutations'
 
 interface OrderItem {
   id: string
-  service_type: string
+  service_type: 'torta' | 'pasteleria' | 'cocteleria'
   product_name: string
+  product_id: string
+  service_data: Record<string, unknown>
   quantity: number
   portions?: number
   unit_price: number
   total_price: number
 }
+
+type CategoryType = 'torta' | 'pasteleria' | 'cocteleria'
+
+interface CatalogProduct {
+  id: string
+  name: string
+  base_price: number
+}
+
+const CATEGORY_TABS: { value: CategoryType; label: string }[] = [
+  { value: 'torta', label: 'Tortas' },
+  { value: 'pasteleria', label: 'Pastelería' },
+  { value: 'cocteleria', label: 'Coctelería' },
+]
 
 const EVENT_TYPES = [
   'Cumpleaños',
@@ -65,11 +86,16 @@ export default function NuevoAgendamientoPage() {
   // Items
   const [items, setItems] = useState<OrderItem[]>([])
   const [newItem, setNewItem] = useState({
-    product_name: '',
     quantity: 1,
     portions: 0,
     unit_price: 0,
   })
+
+  // Catalog selector state
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>('torta')
+  const [catalogProducts, setCatalogProducts] = useState<CatalogProduct[]>([])
+  const [selectedProductId, setSelectedProductId] = useState('')
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false)
 
   // Montos
   const [discount, setDiscount] = useState(0)
@@ -83,24 +109,83 @@ export default function NuevoAgendamientoPage() {
     reference: '',
   })
 
+  useEffect(() => {
+    setIsLoadingProducts(true)
+    setSelectedProductId('')
+    setNewItem(prev => ({ ...prev, unit_price: 0 }))
+
+    const load = async () => {
+      try {
+        let data: CatalogProduct[] = []
+        if (selectedCategory === 'torta') {
+          const result = await getCakeProductsAdmin()
+          data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.base_price ?? 0 }))
+        } else if (selectedCategory === 'pasteleria') {
+          const result = await getPastryProductsAdmin()
+          data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.base_price ?? 0 }))
+        } else {
+          const result = await getCocktailProductsAdmin()
+          data = result.map((p: any) => ({ id: p.id, name: p.name, base_price: p.base_price ?? 0 }))
+        }
+        setCatalogProducts(data)
+      } catch (err) {
+        console.error('Error loading catalog:', err)
+        setCatalogProducts([])
+      } finally {
+        setIsLoadingProducts(false)
+      }
+    }
+
+    load()
+  }, [selectedCategory])
+
+  useEffect(() => {
+    if (!selectedProductId) return
+    const product = catalogProducts.find(p => p.id === selectedProductId)
+    if (product) {
+      setNewItem(prev => ({ ...prev, unit_price: product.base_price }))
+    }
+  }, [selectedProductId, catalogProducts])
+
   const subtotal = items.reduce((sum, item) => sum + item.total_price, 0)
   const total = subtotal + deliveryFee - discount
 
   const addItem = () => {
-    if (!newItem.product_name || newItem.unit_price <= 0) return
+    if (!selectedProductId || newItem.unit_price <= 0) return
+
+    const product = catalogProducts.find(p => p.id === selectedProductId)
+    if (!product) return
+
+    let service_data: Record<string, unknown>
+    if (selectedCategory === 'torta') {
+      service_data = { product: { id: product.id, name: product.name } }
+    } else {
+      service_data = {
+        itemsDetails: [{
+          productId: product.id,
+          productName: product.name,
+          quantity: newItem.quantity,
+        }],
+      }
+    }
 
     const item: OrderItem = {
       id: Date.now().toString(),
-      service_type: 'custom',
-      product_name: newItem.product_name,
+      service_type: selectedCategory,
+      product_name: product.name,
+      product_id: product.id,
+      service_data,
       quantity: newItem.quantity,
-      portions: newItem.portions || undefined,
+      portions: selectedCategory === 'torta' && newItem.portions > 0
+        ? newItem.portions
+        : undefined,
       unit_price: newItem.unit_price,
       total_price: newItem.unit_price * newItem.quantity,
     }
 
     setItems([...items, item])
-    setNewItem({ product_name: '', quantity: 1, portions: 0, unit_price: 0 })
+    setSelectedProductId('')
+    setNewItem({ quantity: 1, portions: 0, unit_price: 0 })
   }
 
   const removeItem = (id: string) => {
@@ -157,6 +242,7 @@ export default function NuevoAgendamientoPage() {
           portions: item.portions,
           unit_price: item.unit_price,
           total_price: item.total_price,
+          service_data: item.service_data,
         })),
         subtotal,
         delivery_fee: deliveryFee,
@@ -370,36 +456,86 @@ export default function NuevoAgendamientoPage() {
           )}
 
           {/* Formulario para agregar item */}
+          {/* Category tabs */}
+          <div className="flex gap-2 mb-3">
+            {CATEGORY_TABS.map(tab => (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => setSelectedCategory(tab.value)}
+                className={cn(
+                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                  selectedCategory === tab.value
+                    ? 'bg-primary text-white'
+                    : 'bg-secondary text-dark-light hover:bg-gray-200'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Product + quantity + price row */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 bg-secondary/50 rounded-lg">
+            {/* Product dropdown */}
             <div className="md:col-span-2">
-              <input
-                type="text"
-                placeholder="Nombre del producto/servicio"
-                value={newItem.product_name}
-                onChange={(e) => setNewItem({ ...newItem, product_name: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
+              {isLoadingProducts ? (
+                <div className="w-full px-3 py-2 border border-border rounded-lg text-dark-light text-sm">
+                  Cargando productos...
+                </div>
+              ) : (
+                <select
+                  value={selectedProductId}
+                  onChange={e => setSelectedProductId(e.target.value)}
+                  className="w-full px-3 py-2 border border-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
+                >
+                  <option value="">Seleccionar producto...</option>
+                  {catalogProducts.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
             </div>
+
+            {/* Quantity */}
             <div>
               <input
                 type="number"
                 placeholder="Cantidad"
                 value={newItem.quantity}
-                onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) || 1 })}
+                onChange={e => setNewItem({ ...newItem, quantity: parseInt(e.target.value) || 1 })}
                 min="1"
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
+
+            {/* Portions (tortas only) */}
+            {selectedCategory === 'torta' && (
+              <div>
+                <input
+                  type="number"
+                  placeholder="Porciones"
+                  value={newItem.portions || ''}
+                  onChange={e => setNewItem({ ...newItem, portions: parseInt(e.target.value) || 0 })}
+                  min="1"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
+            )}
+
+            {/* Price */}
             <div>
               <input
                 type="number"
                 placeholder="Precio"
                 value={newItem.unit_price || ''}
-                onChange={(e) => setNewItem({ ...newItem, unit_price: parseInt(e.target.value) || 0 })}
+                onChange={e => setNewItem({ ...newItem, unit_price: parseInt(e.target.value) || 0 })}
                 className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
-            <div>
+
+            {/* Add button */}
+            <div className={selectedCategory === 'torta' ? '' : 'md:col-start-5'}>
               <Button type="button" onClick={addItem} className="w-full">
                 Agregar
               </Button>
