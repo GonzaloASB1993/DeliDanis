@@ -308,27 +308,29 @@ export async function updateOrderStatus(
   return { success: true }
 }
 
-// Private helper — recalculates and writes payment_status based on sum of all payments
-const PAYMENT_TOLERANCE = 10 // $10 CLP rounding tolerance
-
-async function recalculatePaymentStatus(orderId: string): Promise<void> {
-  const { data: payments } = await supabase
+// --- Payment recalculation ---
+async function getOrderPaidAmount(orderId: string): Promise<number> {
+  const { data, error } = await supabase
     .from('order_payments')
     .select('amount')
     .eq('order_id', orderId)
 
-  const totalPaid = (payments || []).reduce(
-    (sum, p) => sum + (parseFloat(String(p.amount)) || 0),
-    0
-  )
+  if (error) throw error
+  return (data ?? []).reduce((sum, p) => sum + (parseFloat(String(p.amount)) || 0), 0)
+}
 
-  const { data: order } = await supabase
+async function recalculatePaymentStatus(orderId: string): Promise<void> {
+  const PAYMENT_TOLERANCE = 10 // $10 CLP rounding tolerance
+
+  const totalPaid = await getOrderPaidAmount(orderId)
+
+  const { data: order, error: orderError } = await supabase
     .from('orders')
     .select('total')
     .eq('id', orderId)
     .single()
 
-  if (!order) return
+  if (orderError || !order) throw orderError ?? new Error(`Order ${orderId} not found`)
 
   const orderTotal = parseFloat(String(order.total)) || 0
 
@@ -341,10 +343,12 @@ async function recalculatePaymentStatus(orderId: string): Promise<void> {
     paymentStatus = 'pending'
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('orders')
     .update({ payment_status: paymentStatus })
     .eq('id', orderId)
+
+  if (updateError) throw updateError
 }
 
 // Agregar pago/abono
@@ -375,21 +379,6 @@ export async function addPayment(
   await recalculatePaymentStatus(orderId)
 
   return data
-}
-
-// Obtener total pagado de un pedido
-export async function getOrderPaidAmount(orderId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('order_payments')
-    .select('amount')
-    .eq('order_id', orderId)
-
-  if (error) {
-    console.error('Error fetching payments:', error)
-    return 0
-  }
-
-  return data?.reduce((sum, p) => sum + (parseFloat(String(p.amount)) || 0), 0) || 0
 }
 
 // Actualizar pedido
@@ -623,6 +612,7 @@ export async function createManualOrder(orderData: {
       orderData.initial_payment.payment_method,
       orderData.initial_payment.reference
     )
+    // recalculatePaymentStatus is called inside addPayment — payment_status is up to date
   }
 
   // 6. Actualizar estadísticas del cliente
