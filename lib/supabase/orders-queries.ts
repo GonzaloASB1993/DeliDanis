@@ -320,35 +320,39 @@ async function getOrderPaidAmount(orderId: string): Promise<number> {
 }
 
 async function recalculatePaymentStatus(orderId: string): Promise<void> {
-  const PAYMENT_TOLERANCE = 10 // $10 CLP rounding tolerance
+  try {
+    const totalPaid = await getOrderPaidAmount(orderId)
 
-  const totalPaid = await getOrderPaidAmount(orderId)
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('total')
+      .eq('id', orderId)
+      .single()
 
-  const { data: order, error: orderError } = await supabase
-    .from('orders')
-    .select('total')
-    .eq('id', orderId)
-    .single()
+    if (orderError || !order) throw orderError ?? new Error(`Order ${orderId} not found`)
 
-  if (orderError || !order) throw orderError ?? new Error(`Order ${orderId} not found`)
+    const PAYMENT_TOLERANCE = 10 // $10 CLP rounding tolerance
+    const orderTotal = parseFloat(String(order.total)) || 0
 
-  const orderTotal = parseFloat(String(order.total)) || 0
+    let paymentStatus: 'paid' | 'partial' | 'pending'
+    if (totalPaid >= orderTotal - PAYMENT_TOLERANCE) {
+      paymentStatus = 'paid'
+    } else if (totalPaid > 0) {
+      paymentStatus = 'partial'
+    } else {
+      paymentStatus = 'pending'
+    }
 
-  let paymentStatus: 'paid' | 'partial' | 'pending'
-  if (totalPaid >= orderTotal - PAYMENT_TOLERANCE) {
-    paymentStatus = 'paid'
-  } else if (totalPaid > 0) {
-    paymentStatus = 'partial'
-  } else {
-    paymentStatus = 'pending'
+    const { error: updateError } = await supabase
+      .from('orders')
+      .update({ payment_status: paymentStatus })
+      .eq('id', orderId)
+
+    if (updateError) throw updateError
+  } catch (err) {
+    console.error(`recalculatePaymentStatus failed for order ${orderId}:`, err)
+    // Do not rethrow — the payment insert already succeeded
   }
-
-  const { error: updateError } = await supabase
-    .from('orders')
-    .update({ payment_status: paymentStatus })
-    .eq('id', orderId)
-
-  if (updateError) throw updateError
 }
 
 // Agregar pago/abono
