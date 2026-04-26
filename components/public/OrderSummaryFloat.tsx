@@ -21,7 +21,9 @@ export function OrderSummaryFloat() {
       <Card className="bg-gradient-to-br from-white to-secondary shadow-2xl border-2 border-primary/20">
         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
           <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <span className="text-2xl">🎂</span>
+            <svg className="w-6 h-6 text-dark-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+            </svg>
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-dark text-sm line-clamp-1">
@@ -43,10 +45,7 @@ export function OrderSummaryFloat() {
 
           {bookingData.deliveryFee > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-dark-light">
-                <span className="inline-block mr-1">🚗</span>
-                Envío
-              </span>
+              <span className="text-dark-light">Envío</span>
               <span className="font-semibold text-dark">
                 {formatCurrency(bookingData.deliveryFee)}
               </span>
@@ -95,7 +94,7 @@ export function OrderSummaryFloat() {
         {bookingData.portions >= 50 && (
           <div className="mt-3 p-2 bg-success/10 rounded-lg text-center">
             <p className="text-xs text-success-dark font-medium">
-              ✨ Pedido grande - Precio especial aplicado
+              Pedido grande — Precio especial aplicado
             </p>
           </div>
         )}

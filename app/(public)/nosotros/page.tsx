@@ -123,7 +123,7 @@ export default function NosotrosPage() {
         <div className="container mx-auto px-4 md:px-6 max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-dark mb-4">
-              De mi cocina a tu celebración 🎂
+              De mi cocina a tu celebración
             </h2>
             <p className="text-lg text-dark-light">
               Lo que comenzó haciendo tortas para la familia y vecinos del condominio
@@ -165,7 +165,7 @@ export default function NosotrosPage() {
               </p>
 
               <div className="bg-white rounded-lg p-4 shadow-sm border border-dark/5">
-                <p className="text-sm font-medium text-dark mb-2">🎂 Mis favoritas:</p>
+                <p className="text-sm font-medium text-dark mb-2">Mis favoritas:</p>
                 <p className="text-dark-light text-sm">
                   Si tengo que elegir, las <strong className="text-primary">Tres Leches</strong> y
                   la <strong className="text-primary">Torta Amor</strong> tienen un lugar especial
@@ -205,7 +205,9 @@ export default function NosotrosPage() {
 
             <div className="bg-gradient-to-br from-accent/5 to-transparent p-8 rounded-2xl border border-accent/10 hover:shadow-lg transition-shadow duration-300">
               <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-6 mx-auto">
-                <span className="text-4xl">✨</span>
+                <svg className="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
               </div>
               <h3 className="font-display text-xl font-bold text-dark text-center mb-3">
                 Mi secreto

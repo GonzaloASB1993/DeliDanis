@@ -57,7 +57,9 @@ export function ProductSelector({
                   className="object-cover"
                 />
               ) : (
-                <span className="text-5xl">🎂</span>
+                <svg className="w-12 h-12 text-dark-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                </svg>
               )}
             </div>
             <div className="flex-1">
@@ -96,7 +98,11 @@ export function ProductSelector({
         </div>
       ) : (
         <div className="bg-secondary/50 rounded-2xl p-8 text-center border-2 border-dashed border-border">
-          <div className="text-5xl mb-3">🎂</div>
+          <div className="flex justify-center mb-3">
+            <svg className="w-12 h-12 text-dark-light/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+            </svg>
+          </div>
           <p className="text-dark-light">Selecciona un sabor para continuar</p>
         </div>
       )}
@@ -174,7 +180,9 @@ export function ProductSelector({
                           className="object-cover"
                         />
                       ) : (
-                        <span className="text-3xl">🎂</span>
+                        <svg className="w-7 h-7 text-dark-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                        </svg>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -218,17 +226,29 @@ export function ProductSelector({
       {/* Quick Info */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4 text-center border border-primary/20">
-          <div className="text-2xl mb-2">✨</div>
+          <div className="flex justify-center mb-2">
+            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
           <p className="text-sm font-medium text-dark">Personalizable</p>
           <p className="text-xs text-dark-light mt-1">100% a tu gusto</p>
         </div>
         <div className="bg-gradient-to-br from-accent/5 to-accent/10 rounded-xl p-4 text-center border border-accent/20">
-          <div className="text-2xl mb-2">🏆</div>
+          <div className="flex justify-center mb-2">
+            <svg className="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+            </svg>
+          </div>
           <p className="text-sm font-medium text-dark">Calidad Premium</p>
           <p className="text-xs text-dark-light mt-1">Ingredientes selectos</p>
         </div>
         <div className="bg-gradient-to-br from-success/5 to-success/10 rounded-xl p-4 text-center border border-success/20">
-          <div className="text-2xl mb-2">💝</div>
+          <div className="flex justify-center mb-2">
+            <svg className="w-6 h-6 text-success-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </div>
           <p className="text-sm font-medium text-dark">Hecho con Amor</p>
           <p className="text-xs text-dark-light mt-1">Artesanal</p>
         </div>

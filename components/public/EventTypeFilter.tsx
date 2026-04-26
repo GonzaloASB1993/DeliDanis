@@ -37,8 +37,7 @@ export function EventTypeFilter({
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-lg">🎂</span>
-              <span className="font-medium">Todos los Eventos</span>
+              <span className="font-medium">Todos los eventos</span>
             </div>
           </div>
         </button>
@@ -56,7 +55,6 @@ export function EventTypeFilter({
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-lg">{eventType.icon}</span>
                 <span className="font-medium">{eventType.name}</span>
               </div>
               {eventType.count !== undefined && (

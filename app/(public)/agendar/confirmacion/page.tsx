@@ -233,8 +233,16 @@ function ConfirmacionContent() {
                   const service = item.service_data
                   return (
                     <div key={item.id} className="flex items-start gap-4 p-3 bg-secondary/50 rounded-lg">
-                      <div className="text-3xl flex-shrink-0">
-                        {item.service_type === 'torta' ? '🎂' : item.service_type === 'cocteleria' ? '🥪' : '🍰'}
+                      <div className="w-8 h-8 flex-shrink-0 text-dark-light flex items-center justify-center">
+                        <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={
+                            item.service_type === 'torta'
+                              ? 'M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z'
+                              : item.service_type === 'cocteleria'
+                              ? 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                              : 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z'
+                          } />
+                        </svg>
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold text-dark">
@@ -292,8 +300,8 @@ function ConfirmacionContent() {
                   </p>
                   <p className="text-dark font-semibold">
                     {orderData.delivery_type === 'pickup'
-                      ? '🏪 Recoger en tienda'
-                      : '🚗 Entrega a domicilio'}
+                      ? 'Recoger en tienda'
+                      : 'Entrega a domicilio'}
                   </p>
                 </div>
               </div>
