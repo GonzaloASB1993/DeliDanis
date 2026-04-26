@@ -184,7 +184,10 @@ export function ServiceCart({
       {/* Header */}
       <div className="p-6 border-b border-border bg-gradient-to-br from-primary/5 to-accent/5">
         <h3 className="font-display text-2xl font-bold text-dark flex items-center gap-2">
-          🛒 Tu Pedido
+          <svg className="w-6 h-6 text-dark-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          Tu Pedido
         </h3>
         <p className="text-sm text-dark-light mt-1">
           {services.length} {services.length === 1 ? 'servicio' : 'servicios'}
@@ -195,7 +198,11 @@ export function ServiceCart({
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {!hasServices ? (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4 opacity-20">🛒</div>
+            <div className="mb-4 opacity-20 flex justify-center">
+              <svg className="w-16 h-16 text-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
             <p className="text-dark-light">
               Aún no has agregado servicios
             </p>
@@ -315,7 +322,9 @@ export function ServiceCart({
         <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
           <div className="bg-white border-t border-border shadow-2xl px-4 py-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-2xl">🛒</span>
+              <svg className="w-6 h-6 text-dark-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
               <div>
                 <p className="text-xs text-dark-light">
                   {services.length} {services.length === 1 ? 'servicio' : 'servicios'}

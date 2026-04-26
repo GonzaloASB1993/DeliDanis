@@ -77,7 +77,7 @@ export function EventTypeFilter({
       {/* Info Box */}
       <div className="mt-6 p-4 bg-secondary/50 rounded-lg border border-primary/10">
         <p className="text-sm text-dark-light">
-          💡 <span className="font-semibold text-dark">Tip:</span> Cada sabor puede personalizarse según tu evento
+          <span className="font-semibold text-dark">Tip:</span> Cada sabor puede personalizarse según tu evento
         </p>
       </div>
     </div>

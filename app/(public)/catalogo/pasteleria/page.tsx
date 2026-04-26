@@ -37,11 +37,11 @@ interface PastryItem {
 }
 
 const categories = [
-  { id: 'todos', name: 'Todos', icon: '🍰' },
-  { id: 'pies', name: 'Pies', icon: '🥧' },
-  { id: 'tartas', name: 'Tartas', icon: '🍮' },
-  { id: 'galletas', name: 'Galletas', icon: '🍪' },
-  { id: 'bocaditos', name: 'Bocaditos', icon: '🥐' },
+  { id: 'todos', name: 'Todos' },
+  { id: 'pies', name: 'Pies' },
+  { id: 'tartas', name: 'Tartas' },
+  { id: 'galletas', name: 'Galletas' },
+  { id: 'bocaditos', name: 'Bocaditos' },
 ]
 
 export default function PasteleriaPage() {
@@ -102,10 +102,7 @@ export default function PasteleriaPage() {
     return products.filter(i => i.category?.slug === category).length
   }
 
-  const getCategoryIcon = (categorySlug?: string) => {
-    const cat = categories.find(c => c.id === categorySlug)
-    return cat?.icon || '🍰'
-  }
+  const getCategoryIcon = (_categorySlug?: string) => null
 
   const getPrimaryImage = (item: PastryItem) => {
     if (!item.images || item.images.length === 0) return null
@@ -183,7 +180,6 @@ export default function PasteleriaPage() {
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               {categories.slice(1).map((cat) => (
                 <div key={cat.id} className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
-                  <span className="text-2xl">{cat.icon}</span>
                   <span className="text-sm font-medium text-dark">{getCategoryCount(cat.id)} {cat.name}</span>
                 </div>
               ))}
@@ -210,7 +206,6 @@ export default function PasteleriaPage() {
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span>{cat.icon}</span>
                       <span className="font-medium">{cat.name}</span>
                     </div>
                     <span className="text-sm opacity-80">{getCategoryCount(cat.id)}</span>
@@ -286,9 +281,9 @@ export default function PasteleriaPage() {
                           />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-center transform group-hover:scale-110 transition-transform duration-500">
-                              <div className="text-6xl mb-2">{getCategoryIcon(item.category?.slug)}</div>
-                            </div>
+                            <svg className="w-16 h-16 text-dark-light/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
                           </div>
                         )}
 
@@ -364,7 +359,11 @@ export default function PasteleriaPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-6xl mb-4">🔍</div>
+                <div className="mb-4 flex justify-center">
+                  <svg className="w-16 h-16 text-dark-light/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
                 <h3 className="text-xl font-bold text-dark mb-2">No se encontraron productos</h3>
                 <p className="text-dark-light">
                   Intenta ajustar los filtros para ver más resultados

@@ -146,8 +146,10 @@ export function PastryServiceForm({ availableProducts, onAddService, onCancel }:
                       className="object-cover"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                      🥧
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-10 h-10 text-dark-light/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                      </svg>
                     </div>
                   )}
                 </div>
@@ -238,7 +240,11 @@ export function PastryServiceForm({ availableProducts, onAddService, onCancel }:
       {/* Mensaje si no hay productos */}
       {availableProducts.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-5xl mb-4">🥧</div>
+          <div className="flex justify-center mb-4">
+            <svg className="w-12 h-12 text-dark-light/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </div>
           <p className="text-dark-light">No hay productos de pastelería disponibles</p>
         </div>
       )}

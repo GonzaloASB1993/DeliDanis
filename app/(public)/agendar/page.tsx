@@ -454,7 +454,11 @@ export default function AgendarPage() {
                         />
                       ) : (
                         <div className="text-center py-12">
-                          <div className="text-6xl mb-4">🎉</div>
+                          <div className="mb-4 flex justify-center">
+                          <svg className="w-16 h-16 text-dark-light/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </div>
                           <p className="text-dark-light mb-6">
                             {bookingData.services.length === 0
                               ? 'Comienza agregando tu primer servicio'

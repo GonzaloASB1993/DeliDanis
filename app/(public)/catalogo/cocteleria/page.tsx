@@ -188,11 +188,9 @@ export default function CocteleriaPage() {
             {/* Quick Stats */}
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
-                <span className="text-2xl">🍰</span>
                 <span className="text-sm font-medium text-dark">{dulcesCount} Dulces</span>
               </div>
               <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
-                <span className="text-2xl">🥐</span>
                 <span className="text-sm font-medium text-dark">{saladosCount} Salados</span>
               </div>
             </div>
@@ -227,7 +225,6 @@ export default function CocteleriaPage() {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span>🍰</span>
                     <span className="font-medium">Dulces</span>
                   </div>
                   <span className="text-sm opacity-80">{dulcesCount}</span>
@@ -241,7 +238,6 @@ export default function CocteleriaPage() {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span>🥐</span>
                     <span className="font-medium">Salados</span>
                   </div>
                   <span className="text-sm opacity-80">{saladosCount}</span>
@@ -318,7 +314,9 @@ export default function CocteleriaPage() {
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="text-center transform group-hover:scale-110 transition-transform duration-500">
-                              <div className="text-6xl mb-2">{category === 'dulce' ? '🍰' : '🥐'}</div>
+                              <svg className="w-14 h-14 text-dark-light/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d={category === 'dulce' ? 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z' : 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'} />
+                              </svg>
                             </div>
                           </div>
                         )}
@@ -401,7 +399,11 @@ export default function CocteleriaPage() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-6xl mb-4">🔍</div>
+                <div className="mb-4 flex justify-center">
+                  <svg className="w-16 h-16 text-dark-light/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
                 <h3 className="text-xl font-bold text-dark mb-2">No se encontraron productos</h3>
                 <p className="text-dark-light">
                   Intenta ajustar los filtros para ver más resultados
