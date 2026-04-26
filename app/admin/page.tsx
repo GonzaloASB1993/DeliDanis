@@ -125,13 +125,13 @@ export default function AdminDashboardPage() {
   }
 
   const statusColors: Record<string, string> = {
-    pending: 'bg-orange-100 text-orange-700',
-    confirmed: 'bg-green-100 text-green-700',
-    in_production: 'bg-blue-100 text-blue-700',
-    ready: 'bg-cyan-100 text-cyan-700',
-    delivered: 'bg-emerald-100 text-emerald-700',
-    completed: 'bg-gray-100 text-gray-700',
-    cancelled: 'bg-red-100 text-red-700',
+    pending: 'bg-warning/15 text-dark',
+    confirmed: 'bg-success/15 text-dark',
+    in_production: 'bg-info/15 text-dark',
+    ready: 'bg-success/20 text-dark',
+    delivered: 'bg-secondary text-dark',
+    completed: 'bg-secondary text-dark-light',
+    cancelled: 'bg-primary/10 text-dark',
   }
 
   const statusLabels: Record<string, string> = {
@@ -145,9 +145,9 @@ export default function AdminDashboardPage() {
   }
 
   const paymentStatusLabels: Record<string, { label: string; color: string }> = {
-    pending: { label: 'Sin pago', color: 'text-red-600' },
-    partial: { label: 'Abonado', color: 'text-orange-600' },
-    paid: { label: 'Pagado', color: 'text-green-600' },
+    pending: { label: 'Sin pago', color: 'text-primary' },
+    partial: { label: 'Abonado', color: 'text-accent' },
+    paid: { label: 'Pagado', color: 'text-success-dark' },
   }
 
   return (
@@ -184,8 +184,8 @@ export default function AdminDashboardPage() {
 
       <div className="p-6 space-y-6">
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            {[...Array(6)].map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
               <div key={i} className="bg-white rounded-xl p-5 animate-pulse">
                 <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
                 <div className="h-8 bg-gray-200 rounded w-3/4"></div>
@@ -195,35 +195,19 @@ export default function AdminDashboardPage() {
         ) : (
           <>
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Ingresos del Mes */}
               <div className="bg-white rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-dark-light text-sm">Ingresos del Mes</p>
-                    <p className="text-2xl font-bold text-green-600 mt-1">
+                    <p className="text-xs font-medium text-dark-light uppercase tracking-wider">Ingresos del mes</p>
+                    <p className="text-3xl font-bold text-dark mt-1.5">
                       {formatCurrency(metrics?.ingresosMes || 0)}
                     </p>
                     <p className="text-xs text-dark-light mt-1">{MONTHS[selectedMonth - 1]} {selectedYear}</p>
                   </div>
-                  <div className="p-2 bg-green-100 rounded-full text-green-600">
+                  <div className="p-2 bg-secondary rounded-lg text-dark-light">
                     {Icons.money}
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Pagado */}
-              <div className="bg-white rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-dark-light text-sm">Total Pagado</p>
-                    <p className="text-2xl font-bold text-cyan-600 mt-1">
-                      {formatCurrency(metrics?.totalPagado || 0)}
-                    </p>
-                    <p className="text-xs text-dark-light mt-1">Pagos recibidos</p>
-                  </div>
-                  <div className="p-2 bg-cyan-100 rounded-full text-cyan-600">
-                    {Icons.wallet}
                   </div>
                 </div>
               </div>
@@ -232,46 +216,14 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-dark-light text-sm">Saldo por Cobrar</p>
-                    <p className="text-2xl font-bold text-red-500 mt-1">
+                    <p className="text-xs font-medium text-dark-light uppercase tracking-wider">Saldo por cobrar</p>
+                    <p className="text-3xl font-bold text-dark mt-1.5">
                       {formatCurrency(metrics?.saldoPorCobrar || 0)}
                     </p>
                     <p className="text-xs text-dark-light mt-1">Pendiente de pago</p>
                   </div>
-                  <div className="p-2 bg-red-100 rounded-full text-red-500">
+                  <div className="p-2 bg-secondary rounded-lg text-dark-light">
                     {Icons.bank}
-                  </div>
-                </div>
-              </div>
-
-              {/* Eventos Realizados */}
-              <div className="bg-white rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-dark-light text-sm">Eventos Realizados</p>
-                    <p className="text-2xl font-bold text-blue-600 mt-1">
-                      {metrics?.eventosRealizados || 0}
-                    </p>
-                    <p className="text-xs text-dark-light mt-1">Mes seleccionado</p>
-                  </div>
-                  <div className="p-2 bg-blue-100 rounded-full text-blue-600">
-                    {Icons.calendar}
-                  </div>
-                </div>
-              </div>
-
-              {/* Utilidad del Mes */}
-              <div className="bg-white rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="text-dark-light text-sm">Utilidad del Mes</p>
-                    <p className="text-2xl font-bold text-emerald-600 mt-1">
-                      {formatCurrency(metrics?.utilidadMes || 0)}
-                    </p>
-                    <p className="text-xs text-dark-light mt-1">Ganancia neta</p>
-                  </div>
-                  <div className="p-2 bg-emerald-100 rounded-full text-emerald-600">
-                    {Icons.chart}
                   </div>
                 </div>
               </div>
@@ -280,13 +232,13 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-xl p-5 border border-border hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-dark-light text-sm">Próximos Eventos</p>
-                    <p className="text-2xl font-bold text-yellow-600 mt-1">
+                    <p className="text-xs font-medium text-dark-light uppercase tracking-wider">Próximos eventos</p>
+                    <p className="text-3xl font-bold text-dark mt-1.5">
                       {metrics?.proximosEventos || 0}
                     </p>
                     <p className="text-xs text-dark-light mt-1">Próximos 7 días</p>
                   </div>
-                  <div className="p-2 bg-yellow-100 rounded-full text-yellow-600">
+                  <div className="p-2 bg-secondary rounded-lg text-dark-light">
                     {Icons.clock}
                   </div>
                 </div>
@@ -319,23 +271,23 @@ export default function AdminDashboardPage() {
 
               {/* Resumen de estados */}
               <div className="bg-white rounded-xl p-5 border border-border lg:col-span-2">
-                <h3 className="font-semibold text-dark mb-4">Resumen de Pedidos</h3>
+                <h3 className="font-semibold text-dark mb-4">Resumen de pedidos</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div className="text-center p-3 bg-orange-50 rounded-lg">
-                    <p className="text-2xl font-bold text-orange-600">{metrics?.pedidosPendientes || 0}</p>
-                    <p className="text-xs text-orange-700">Pendientes</p>
+                  <div className="text-center p-3 bg-secondary rounded-lg">
+                    <p className="text-2xl font-bold text-dark">{metrics?.pedidosPendientes || 0}</p>
+                    <p className="text-xs text-dark-light">Pendientes</p>
                   </div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <p className="text-2xl font-bold text-green-600">{metrics?.pedidosConfirmados || 0}</p>
-                    <p className="text-xs text-green-700">Confirmados</p>
+                  <div className="text-center p-3 bg-secondary rounded-lg">
+                    <p className="text-2xl font-bold text-dark">{metrics?.pedidosConfirmados || 0}</p>
+                    <p className="text-xs text-dark-light">Confirmados</p>
                   </div>
-                  <div className="text-center p-3 bg-cyan-50 rounded-lg">
-                    <p className="text-2xl font-bold text-cyan-600">{metrics?.pedidosCompletados || 0}</p>
-                    <p className="text-xs text-cyan-700">Completados</p>
+                  <div className="text-center p-3 bg-secondary rounded-lg">
+                    <p className="text-2xl font-bold text-dark">{metrics?.pedidosCompletados || 0}</p>
+                    <p className="text-xs text-dark-light">Completados</p>
                   </div>
-                  <div className="text-center p-3 bg-gray-50 rounded-lg">
-                    <p className="text-2xl font-bold text-gray-600">{metrics?.totalPedidos || 0}</p>
-                    <p className="text-xs text-gray-700">Total</p>
+                  <div className="text-center p-3 bg-secondary rounded-lg">
+                    <p className="text-2xl font-bold text-dark">{metrics?.totalPedidos || 0}</p>
+                    <p className="text-xs text-dark-light">Total</p>
                   </div>
                 </div>
               </div>
