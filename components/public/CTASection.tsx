@@ -117,9 +117,9 @@ export function CTASection() {
       ref={sectionRef}
       className="relative py-16 lg:py-24 overflow-hidden"
     >
-      {/* Gradient background with diagonal split */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#C4746C] via-primary to-[#B06B64]" />
-      <div className="absolute inset-0 bg-gradient-to-tr from-[#B06B64]/60 via-transparent to-primary/40" />
+      {/* Dark editorial background */}
+      <div className="absolute inset-0 bg-[#1A1715]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#2A2420]/80 via-transparent to-transparent" />
 
       {/* Decorative large typography in background */}
       <div
@@ -188,7 +188,7 @@ export function CTASection() {
                 <svg className="w-5 h-5 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>Reservar mi Fecha</span>
+                <span>Reservar mi fecha</span>
                 <svg className="w-5 h-5 ml-2.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
@@ -201,7 +201,7 @@ export function CTASection() {
                 variant="secondary"
                 className="w-full border-2 border-white/25 text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300 px-9 py-5 text-base font-bold backdrop-blur-sm"
               >
-                <span>Solicitar Cotización</span>
+                <span>Solicitar cotización</span>
                 <svg className="w-5 h-5 ml-2.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>

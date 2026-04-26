@@ -30,8 +30,6 @@ export function Hero() {
   const badgeRef = useRef<HTMLDivElement>(null)
   const statsRef = useRef<HTMLDivElement>(null)
   const statsBorderRef = useRef<HTMLDivElement>(null)
-  const floatingBadge1Ref = useRef<HTMLDivElement>(null)
-  const floatingBadge2Ref = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef<HTMLDivElement>(null)
 
@@ -129,15 +127,13 @@ export function Hero() {
       const stats = statsRef.current
       const statsBorder = statsBorderRef.current
       const overlay = overlayRef.current
-      const floatingBadge1 = floatingBadge1Ref.current
-      const floatingBadge2 = floatingBadge2Ref.current
       if (!content) return
 
       // Respect reduced motion
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       if (prefersReducedMotion) {
         gsap.set(
-          [badge, overlay, floatingBadge1, floatingBadge2, stats?.children, statsBorder].filter(Boolean),
+          [badge, overlay, stats?.children, statsBorder].filter(Boolean),
           { opacity: 1, y: 0, scaleX: 1, scale: 1 }
         )
         const titles = content.querySelectorAll('[data-hero-title-inner]')
@@ -242,46 +238,6 @@ export function Hero() {
           { opacity: 1, y: 0, duration: 0.5, stagger: 0.1 },
           '-=0.3'
         )
-      }
-
-      // 9. Floating badges — pop in
-      if (floatingBadge1) {
-        tl.fromTo(
-          floatingBadge1,
-          { opacity: 0, scale: 0.8, y: 10 },
-          { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: 'back.out(1.5)' },
-          '-=0.4'
-        )
-      }
-      if (floatingBadge2) {
-        tl.fromTo(
-          floatingBadge2,
-          { opacity: 0, scale: 0.8, y: -10 },
-          { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: 'back.out(1.5)' },
-          '-=0.4'
-        )
-      }
-
-      // ── Floating badges idle animation ──
-      if (floatingBadge1) {
-        gsap.to(floatingBadge1, {
-          y: '+=8',
-          duration: 2.5,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 2.5,
-        })
-      }
-      if (floatingBadge2) {
-        gsap.to(floatingBadge2, {
-          y: '+=6',
-          duration: 3,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 3,
-        })
       }
 
       // ── Content parallax on scroll ──
@@ -391,9 +347,9 @@ export function Hero() {
                 <Link href="/agendar" className="group">
                   <Button
                     size="lg"
-                    className="w-full sm:w-auto shadow-[0_4px_24px_rgba(212,132,124,0.4)] hover:shadow-[0_8px_32px_rgba(212,132,124,0.5)] transition-all duration-300"
+                    className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all duration-300"
                   >
-                    <span>Reserva tu Fecha</span>
+                    <span>Reserva tu fecha</span>
                     <svg
                       className="w-5 h-5 ml-2.5 transition-transform duration-300 group-hover:translate-x-1"
                       fill="none"
@@ -411,7 +367,7 @@ export function Hero() {
                     variant="secondary"
                     className="w-full sm:w-auto border-white/25 text-white hover:bg-white/10 hover:border-white/40 backdrop-blur-sm transition-all duration-300"
                   >
-                    Explorar Creaciones
+                    Explorar creaciones
                   </Button>
                 </Link>
               </div>
@@ -435,56 +391,6 @@ export function Hero() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Floating badges (right side of viewport) ── */}
-      <div
-        ref={floatingBadge1Ref}
-        data-floating
-        className="absolute bottom-32 right-6 lg:right-12 z-30 will-change-transform hidden sm:block"
-      >
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 border border-white/50">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary-light rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div>
-              <p className="font-bold text-dark text-lg leading-tight">200+</p>
-              <p className="text-xs text-dark-light">Clientes Felices</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        ref={floatingBadge2Ref}
-        data-floating
-        className="absolute top-28 right-8 lg:right-20 z-30 will-change-transform hidden sm:block"
-      >
-        <div className="bg-white/95 backdrop-blur-md rounded-full shadow-2xl px-5 py-3 border border-white/50">
-          <div className="flex items-center gap-2.5">
-            <div className="flex -space-x-0.5">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <svg
-                  key={i}
-                  className="w-[18px] h-[18px] text-accent"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-sm font-bold text-dark">5.0</span>
           </div>
         </div>
       </div>
