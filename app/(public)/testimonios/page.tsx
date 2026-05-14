@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { cn } from '@/lib/utils/cn'
+import { PageHeader } from '@/components/public/PageHeader'
 import {
   getTestimonialsPublic,
   submitTestimonialPublic,
@@ -206,7 +207,6 @@ export default function TestimoniosPage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   // ── Refs for GSAP ──
-  const heroRef = useRef<HTMLDivElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const gridSectionRef = useRef<HTMLDivElement>(null)
   const formSectionRef = useRef<HTMLDivElement>(null)
@@ -218,17 +218,6 @@ export default function TestimoniosPage() {
       .then((data) => setTestimonials(data))
       .catch(() => setTestimonials([]))
       .finally(() => setLoadingTestimonials(false))
-  }, [])
-
-  // ── GSAP: hero ──
-  useEffect(() => {
-    if (!heroRef.current) return
-    const ctx = gsap.context(() => {
-      gsap.from('.hero-badge', { opacity: 0, y: -20, duration: 0.6, ease: 'power3.out' })
-      gsap.from('.hero-title', { opacity: 0, y: 40, duration: 0.8, delay: 0.15, ease: 'power3.out' })
-      gsap.from('.hero-subtitle', { opacity: 0, y: 30, duration: 0.7, delay: 0.3, ease: 'power3.out' })
-    }, heroRef)
-    return () => ctx.revert()
   }, [])
 
   // ── GSAP: testimonials grid stagger ──
@@ -412,43 +401,22 @@ export default function TestimoniosPage() {
 
   return (
     <>
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section
-        ref={heroRef}
-        className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden"
-      >
-        {/* Decorative circles */}
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/30 rounded-full" />
-          <div className="absolute top-20 right-20 w-32 h-32 border-2 border-accent/30 rounded-full" />
-          <div className="absolute bottom-20 left-1/4 w-24 h-24 border-2 border-primary/30 rounded-full" />
-          <div className="absolute bottom-10 right-1/3 w-16 h-16 border-2 border-accent/30 rounded-full" />
-        </div>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="hero-badge inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary font-medium mb-6 shadow-sm">
-              {/* Chat bubble icon */}
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              Opiniones de clientes
-            </div>
-
-            <h1 className="hero-title font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
-              Lo que dicen{' '}
-              <span className="text-primary">nuestros clientes</span>
-            </h1>
-            <p className="hero-subtitle text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
-              Cada torta cuenta una historia. Lee las experiencias de quienes confiaron en nosotros para sus momentos mas especiales.
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow={{
+          text: 'Opiniones de clientes',
+          icon: (
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          ),
+        }}
+        title={
+          <>
+            Lo que dicen <span className="text-primary italic font-accent">nuestros clientes</span>
+          </>
+        }
+        description="Cada torta cuenta una historia. Lee las experiencias de quienes confiaron en nosotros para sus momentos más especiales."
+      />
 
       {/* ── Approved testimonials grid ───────────────────────────────────── */}
       <section ref={gridSectionRef} className="py-16 md:py-20 bg-white">

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { formatCurrency } from '@/lib/utils/format'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
 import { ProductDetailModal } from '@/components/public/ProductDetailModal'
+import { PageHeader, PageHeaderChip } from '@/components/public/PageHeader'
 import { getCocktailProducts } from '@/lib/supabase/product-queries'
 
 interface ProductImage {
@@ -152,51 +153,29 @@ export default function CocteleriaPage() {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden">
-        {/* Pattern Background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-full h-full">
-            <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/30 rounded-full" />
-            <div className="absolute top-20 right-20 w-32 h-32 border-2 border-accent/30 rounded-full" />
-            <div className="absolute bottom-20 left-1/4 w-24 h-24 border-2 border-primary/30 rounded-full" />
-          </div>
-        </div>
-
-        {/* Gradient Blobs */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary font-medium mb-6 shadow-sm">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
-              </svg>
-              {products.length} productos disponibles
-            </div>
-
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
-              Coctelería <span className="text-primary">para Eventos</span>
-            </h1>
-            <p className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
-              Delicias perfectas para tu evento. Elaborados artesanalmente para sorprender a tus invitados.
-            </p>
-
-            {/* Quick Stats */}
-            <div className="flex flex-wrap justify-center gap-4 mt-8">
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
-                <span className="text-sm font-medium text-dark">{dulcesCount} Dulces</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
-                <span className="text-sm font-medium text-dark">{saladosCount} Salados</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow={{
+          text: 'Coctelería',
+          icon: (
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h18l-9 13L3 5z" />
+            </svg>
+          ),
+        }}
+        title={
+          <>
+            Coctelería <span className="text-primary italic font-accent">para eventos</span>
+          </>
+        }
+        description="Delicias perfectas para tu evento, elaboradas artesanalmente para sorprender a tus invitados."
+        meta={
+          <>
+            <PageHeaderChip>{products.length} productos</PageHeaderChip>
+            <PageHeaderChip>{dulcesCount} dulces</PageHeaderChip>
+            <PageHeaderChip>{saladosCount} salados</PageHeaderChip>
+          </>
+        }
+      />
 
       <div className="container mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-4 gap-8">

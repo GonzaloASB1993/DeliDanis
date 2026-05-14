@@ -1,44 +1,27 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { PageHeader } from '@/components/public/PageHeader'
 
 export default function NosotrosPage() {
   return (
     <div className="min-h-screen bg-light-alt">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-20 overflow-hidden">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-full h-full">
-            <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/30 rounded-full" />
-            <div className="absolute top-20 right-20 w-32 h-32 border-2 border-accent/30 rounded-full" />
-            <div className="absolute bottom-20 left-1/4 w-24 h-24 border-2 border-primary/30 rounded-full" />
-            <div className="absolute bottom-10 right-1/3 w-16 h-16 border-2 border-accent/30 rounded-full" />
-          </div>
-        </div>
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/15 rounded-full blur-2xl" />
-        </div>
-
-        <div className="relative container mx-auto px-4 md:px-6 max-w-7xl">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary font-medium mb-6 shadow-sm">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-              </svg>
-              Conoce nuestra historia
-            </div>
-
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-dark mb-6">
-              Sobre <span className="text-primary">Nosotros</span>
-            </h1>
-            <p className="text-lg md:text-xl text-dark-light leading-relaxed max-w-2xl mx-auto">
-              Una historia de amor, pasión y deliciosas creaciones
-            </p>
-          </div>
-        </div>
-      </section>
+      <PageHeader
+        eyebrow={{
+          text: 'Conoce nuestra historia',
+          icon: (
+            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+          ),
+        }}
+        title={
+          <>
+            Sobre <span className="text-primary italic font-accent">nosotros</span>
+          </>
+        }
+        description="Una historia de amor, pasión y deliciosas creaciones."
+      />
 
       {/* Historia Principal */}
       <section className="py-16 md:py-24 bg-white">
@@ -61,7 +44,7 @@ export default function NosotrosPage() {
 
             <div className="space-y-6">
               <h2 className="font-display text-3xl md:text-4xl font-bold text-dark">
-                Hola, soy <span className="text-primary">Danitza</span> 👋
+                Hola, soy <span className="text-primary">Danitza</span>
               </h2>
 
               <div className="space-y-4 text-dark-light leading-relaxed">

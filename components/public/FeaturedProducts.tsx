@@ -172,12 +172,12 @@ export function FeaturedProducts() {
 
         {/* Carousel */}
         <div className="relative">
-          {/* Navigation arrows */}
+          {/* Navigation arrows — positioned just outside the visible content but within section bounds */}
           {showNavigation && (
             <>
               <button
                 onClick={goPrev}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 lg:-translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105"
+                className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 lg:-translate-x-6 z-20 w-11 h-11 bg-white rounded-full shadow-md items-center justify-center transition-all duration-300 border border-border/50 hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105"
                 aria-label="Anterior"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,7 +186,7 @@ export function FeaturedProducts() {
               </button>
               <button
                 onClick={goNext}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 lg:translate-x-5 z-10 w-11 h-11 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-300 border border-border/50 hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105"
+                className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 lg:translate-x-6 z-20 w-11 h-11 bg-white rounded-full shadow-md items-center justify-center transition-all duration-300 border border-border/50 hover:bg-primary hover:text-white hover:border-primary hover:shadow-lg hover:scale-105"
                 aria-label="Siguiente"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -196,13 +196,14 @@ export function FeaturedProducts() {
             </>
           )}
 
-          {/* Carousel track */}
-          <div className="overflow-hidden mx-2 lg:mx-6">
+          {/* Carousel track — overflow-x-clip lets vertical shadows breathe, py-6 gives hover-lift room */}
+          <div className="overflow-x-clip py-6 -my-2">
             <div
               ref={trackRef}
               className="flex gap-5 transition-transform duration-500 ease-out"
               style={{
-                transform: `translateX(calc(-${currentIndex} * (${100 / getItemsToShow()}% - ${((getItemsToShow() - 1) * 20) / getItemsToShow()}px + ${20 / getItemsToShow()}px)))`,
+                // Step per slide = (100% + gap) / itemsToShow
+                transform: `translateX(calc(-${currentIndex} * ((100% + 20px) / ${getItemsToShow()})))`,
               }}
             >
               {products.map((product) => {
@@ -213,7 +214,8 @@ export function FeaturedProducts() {
                     key={product.id}
                     className="group cursor-pointer flex-shrink-0"
                     style={{
-                      width: `calc(${100 / getItemsToShow()}% - ${((getItemsToShow() - 1) * 20) / getItemsToShow()}px)`,
+                      // Card width = (100% - (N-1)*gap) / N
+                      width: `calc((100% - ${(getItemsToShow() - 1) * 20}px) / ${getItemsToShow()})`,
                     }}
                     onClick={() => setSelectedProduct(product)}
                   >
