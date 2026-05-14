@@ -310,7 +310,7 @@ export function TestimonialsCarousel() {
     <section
       id="testimonios"
       ref={sectionRef}
-      className="py-16 lg:py-20 bg-gradient-to-b from-white via-secondary/20 to-white relative overflow-hidden"
+      className="section-padding bg-gradient-to-b from-white via-secondary/20 to-white relative overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -332,7 +332,7 @@ export function TestimonialsCarousel() {
           </svg>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-dark leading-[1.1]">
             Historias que nos{' '}
-            <span className="text-primary">Inspiran</span>
+            <span className="text-primary italic font-accent">inspiran</span>
           </h2>
         </div>
 

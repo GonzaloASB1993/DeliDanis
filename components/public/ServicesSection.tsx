@@ -143,7 +143,7 @@ export function ServicesSection() {
     <section
       ref={sectionRef}
       id="servicios"
-      className="py-16 lg:py-20 bg-secondary/40 overflow-hidden relative"
+      className="section-padding bg-secondary/40 overflow-hidden relative"
     >
       {/* Background decoration */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -154,8 +154,8 @@ export function ServicesSection() {
         <div ref={headerRef} className="mb-10 lg:mb-12">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 lg:gap-12">
             <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-dark leading-[1.1] lg:max-w-lg">
-              Tres Formas de{' '}
-              <span className="text-primary">Celebrar Contigo</span>
+              Tres formas de{' '}
+              <span className="text-primary italic font-accent">celebrar contigo</span>
             </h2>
 
             <p className="text-dark-light text-lg leading-relaxed lg:max-w-md lg:text-right">
@@ -180,46 +180,38 @@ export function ServicesSection() {
               data-service-card
               className="group"
             >
-              <div className="relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1.5 border border-border/20 hover:border-primary/15 h-full flex flex-col">
-                {/* Image */}
+              <div className="card-tile card-tile-hover">
+                {/* Image — clean, no overlays competing with content */}
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
                     src={service.image}
                     alt={service.title}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
                   />
+                </div>
 
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-dark/70 via-dark/20 to-transparent" />
-
-                  {/* Icon badge */}
-                  <div className="absolute top-3 left-3 z-20">
-                    <div className="w-10 h-10 bg-white/95 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                {/* Content — title here, paired with a small icon, so the hierarchy reads cleanly */}
+                <div className="p-5 lg:p-6 flex-1 flex flex-col">
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="inline-flex w-9 h-9 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
                       <svg
-                        className="w-5 h-5 text-primary"
+                        className="w-4 h-4"
                         fill="none"
                         stroke="currentColor"
-                        strokeWidth={1.5}
+                        strokeWidth={1.75}
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" d={service.icon} />
                       </svg>
-                    </div>
-                  </div>
-
-                  {/* Title over image */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-                    <h3 className="font-display text-xl font-bold text-white drop-shadow-md">
+                    </span>
+                    <h3 className="font-display text-xl font-bold text-dark leading-tight">
                       {service.title}
                     </h3>
                   </div>
-                </div>
 
-                {/* Content */}
-                <div className="p-5 lg:p-6 flex-1 flex flex-col">
                   <p className="text-dark-light mb-4 text-sm leading-relaxed">
                     {service.description}
                   </p>

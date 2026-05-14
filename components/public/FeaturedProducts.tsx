@@ -143,30 +143,30 @@ export function FeaturedProducts() {
     <section
       ref={sectionRef}
       id="productos"
-      className="py-16 lg:py-20 bg-gradient-to-b from-white via-secondary/30 to-white overflow-hidden"
+      className="section-padding bg-gradient-to-b from-white via-secondary/30 to-white overflow-hidden"
     >
       <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
-        <div ref={headerRef} className="text-center mb-10 lg:mb-12">
-          <span className="inline-flex items-center gap-2 px-5 py-2 bg-primary/8 text-primary font-semibold rounded-full text-sm mb-5">
+        <div ref={headerRef} className="section-header">
+          <span className="section-badge">
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
             Favoritos de Nuestros Clientes
           </span>
 
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-dark mb-4 leading-[1.1]">
+          <h2 className="section-title">
             Creaciones que{' '}
             <span className="relative inline-block">
-              <span className="text-primary">Enamoran</span>
-              <svg className="absolute -bottom-2 left-0 w-full h-3 text-primary/25" viewBox="0 0 100 12" preserveAspectRatio="none">
+              <span className="text-primary italic font-accent">enamoran</span>
+              <svg className="absolute -bottom-2 left-0 w-full h-3 text-primary/25" viewBox="0 0 100 12" preserveAspectRatio="none" aria-hidden="true">
                 <path d="M0 9 Q 50 0, 100 9" stroke="currentColor" strokeWidth="3" fill="none" />
               </svg>
             </span>
           </h2>
 
-          <p className="text-dark-light max-w-lg mx-auto text-lg">
-            Descubre nuestras tortas más solicitadas, elaboradas con pasión y los mejores ingredientes
+          <p className="section-subtitle">
+            Descubre nuestras tortas más solicitadas, elaboradas con pasión y los mejores ingredientes.
           </p>
         </div>
 
@@ -219,7 +219,7 @@ export function FeaturedProducts() {
                     }}
                     onClick={() => setSelectedProduct(product)}
                   >
-                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1.5 border border-border/20 hover:border-primary/15 h-full flex flex-col">
+                    <div className="card-tile card-tile-hover">
                       {/* Image */}
                       <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
                         {primaryImage ? (

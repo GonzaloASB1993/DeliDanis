@@ -20,7 +20,7 @@ export function ProductCard({ product, productType = 'cake' }: ProductCardProps)
     <>
       <article
         onClick={() => setShowDetail(true)}
-        className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-1.5 border border-border/20 hover:border-primary/15 cursor-pointer h-full flex flex-col"
+        className="group card-tile card-tile-hover cursor-pointer"
       >
         {/* Image */}
         <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
