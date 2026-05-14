@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { gsap } from 'gsap'
 import Link from 'next/link'
+import { PageHeader } from '@/components/public/PageHeader'
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin()
@@ -22,15 +23,11 @@ export default function SeguimientoPage() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline()
-      tl.from('[data-hero-badge]', { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' })
-        .from('[data-hero-title]', { y: 40, opacity: 0, duration: 0.7, ease: 'power3.out' }, '-=0.3')
-        .from('[data-hero-subtitle]', { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out' }, '-=0.4')
-
       if (formRef.current) {
-        tl.from(formRef.current, { y: 40, opacity: 0, duration: 0.6, ease: 'power3.out' }, '-=0.3')
+        tl.from(formRef.current, { y: 30, opacity: 0, duration: 0.6, ease: 'power3.out' })
       }
       if (tipsRef.current) {
-        tl.from(tipsRef.current, { y: 30, opacity: 0, duration: 0.5, ease: 'power3.out' }, '-=0.2')
+        tl.from(tipsRef.current, { y: 20, opacity: 0, duration: 0.5, ease: 'power3.out' }, '-=0.3')
       }
     }, heroRef)
 
@@ -69,48 +66,28 @@ export default function SeguimientoPage() {
 
   return (
     <div className="min-h-screen bg-light-alt">
-      {/* Hero + Form Section */}
+      <PageHeader
+        eyebrow={{
+          text: 'Seguimiento de pedido',
+          icon: (
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          ),
+        }}
+        title={
+          <>
+            Consulta el estado de <span className="text-primary italic font-accent">tu pedido</span>
+          </>
+        }
+        description="Ingresa tu número de pedido para ver el progreso en tiempo real."
+      />
+
       <section
         ref={heroRef}
-        className="relative bg-gradient-to-br from-primary/10 via-secondary to-accent/10 py-16 md:py-24 overflow-hidden"
+        className="relative pb-16 md:pb-24 -mt-8 md:-mt-12"
       >
-        {/* Decorative elements */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-20 h-20 border-2 border-primary/30 rounded-full" />
-          <div className="absolute top-20 right-20 w-32 h-32 border-2 border-accent/30 rounded-full" />
-          <div className="absolute bottom-20 left-1/4 w-24 h-24 border-2 border-primary/30 rounded-full" />
-        </div>
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
-        </div>
-
         <div className="relative container mx-auto px-4 md:px-6 max-w-2xl">
-          <div className="text-center mb-10">
-            {/* Badge */}
-            <div
-              data-hero-badge
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full text-primary font-medium mb-5 shadow-sm text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              Seguimiento de Pedido
-            </div>
-
-            <h1
-              data-hero-title
-              className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-dark mb-4 leading-[1.1]"
-            >
-              Consulta el estado de{' '}
-              <span className="text-primary">tu pedido</span>
-            </h1>
-
-            <p data-hero-subtitle className="text-dark-light text-lg max-w-md mx-auto">
-              Ingresa tu numero de pedido para ver el progreso en tiempo real
-            </p>
-          </div>
-
           {/* Search Form */}
           <div ref={formRef} className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-border/30">
             <form onSubmit={handleSubmit} className="space-y-4">

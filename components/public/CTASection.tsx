@@ -121,13 +121,13 @@ export function CTASection() {
       <div className="absolute inset-0 bg-[#1A1715]" />
       <div className="absolute inset-0 bg-gradient-to-br from-[#2A2420]/80 via-transparent to-transparent" />
 
-      {/* Decorative large typography in background */}
+      {/* Decorative large typography in background — sized to read as a watermark, not crash against viewport edges */}
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
         aria-hidden="true"
       >
         <span
-          className="font-display text-[18rem] md:text-[26rem] lg:text-[34rem] font-bold text-white/[0.035] leading-none whitespace-nowrap -rotate-12"
+          className="font-display text-[8rem] sm:text-[12rem] md:text-[15rem] lg:text-[18rem] font-bold text-white/[0.04] leading-none whitespace-nowrap tracking-tight"
         >
           DeliDanis
         </span>

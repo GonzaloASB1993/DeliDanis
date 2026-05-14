@@ -73,18 +73,22 @@
 }
 
 @layer components {
-  /* Section spacing rhythm */
+  /* Section spacing rhythm — matches the de-facto rhythm of the home sections */
   .section-padding {
-    @apply py-20 lg:py-28;
+    @apply py-16 lg:py-20;
   }
 
-  /* Premium section header pattern */
+  .section-padding-lg {
+    @apply py-16 md:py-24;
+  }
+
+  /* Centered header pattern (for sections that use it; some pages use asymmetric headers) */
   .section-header {
-    @apply text-center mb-14 lg:mb-16;
+    @apply text-center mb-10 lg:mb-12;
   }
 
   .section-badge {
-    @apply inline-flex items-center gap-2 px-5 py-2 bg-primary/8 text-primary font-semibold rounded-full text-sm mb-5 tracking-wide;
+    @apply inline-flex items-center gap-2 px-5 py-2 bg-primary/10 text-primary font-semibold rounded-full text-sm mb-5;
   }
 
   .section-title {
@@ -108,6 +112,20 @@
 
   .divider-ornament::after {
     @apply bg-gradient-to-l;
+  }
+
+  /* Shared chrome for product / service / featured image cards.
+     Inner structure stays component-specific; this only owns the outer
+     surface, shadow, hover lift and border behaviour. */
+  .card-tile {
+    @apply relative bg-white rounded-2xl overflow-hidden shadow-sm
+           border border-border/20
+           transition-all duration-500
+           h-full flex flex-col;
+  }
+
+  .card-tile-hover {
+    @apply hover:shadow-xl hover:-translate-y-1.5 hover:border-primary/15;
   }
 }
 
@@ -188,9 +206,9 @@
   }
 }
 
-/* Custom scrollbar - thin and unobtrusive */
+/* Custom scrollbar — neutral, unobtrusive */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -198,18 +216,18 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-primary-light);
-  border-radius: 3px;
+  background: var(--color-border-dark);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  background: var(--color-dark-light);
 }
 
 /* Firefox scrollbar */
 html {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-primary-light) transparent;
+  scrollbar-color: var(--color-border-dark) transparent;
 }
 
 /* Selection color */

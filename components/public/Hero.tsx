@@ -183,10 +183,10 @@ export function Hero() {
         ref={overlayRef}
         className="absolute inset-0 z-10"
       >
-        {/* Left side: strong gradient for text */}
-        <div className="absolute inset-0 bg-gradient-to-r from-dark/75 via-dark/40 to-transparent" />
+        {/* Left side: gradient for text readability — lighter so cake stays visible */}
+        <div className="absolute inset-0 bg-gradient-to-r from-dark/60 via-dark/25 to-transparent" />
         {/* Bottom: subtle gradient for stats */}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark/50 via-transparent to-dark/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark/40 via-transparent to-transparent" />
       </div>
 
       {/* ── Content ── */}
@@ -258,7 +258,7 @@ export function Hero() {
                   <Button
                     size="lg"
                     variant="secondary"
-                    className="w-full sm:w-auto border-white/25 text-white hover:bg-white/10 hover:border-white/40 backdrop-blur-sm transition-all duration-300"
+                    className="w-full sm:w-auto border-2 border-white/60 text-white bg-white/10 hover:bg-white/20 hover:border-white backdrop-blur-md transition-all duration-300"
                   >
                     Explorar creaciones
                   </Button>
