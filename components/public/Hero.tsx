@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { gsap } from 'gsap'
@@ -9,20 +9,11 @@ import { Button } from '@/components/ui'
 
 gsap.registerPlugin(ScrollTrigger)
 
-const SLIDES = [
-  { src: '/images/hero-1.jpg', alt: 'Torta artesanal elegante de DeliDanis' },
-  { src: '/images/hero-2.jpg', alt: 'Decoración premium de torta personalizada' },
-  { src: '/images/hero-3.jpg', alt: 'Torta de celebración con detalles únicos' },
-  { src: '/images/hero-4.jpg', alt: 'Creación artesanal para evento especial' },
-] as const
-
 const STATS = [
   { value: '150+', label: 'Eventos Celebrados' },
   { value: '5.0', label: 'Calificación' },
   { value: '3 años', label: 'De Experiencia' },
 ] as const
-
-const SLIDE_DURATION = 6000
 
 export function Hero() {
   const heroRef = useRef<HTMLDivElement>(null)
@@ -31,93 +22,7 @@ export function Hero() {
   const statsRef = useRef<HTMLDivElement>(null)
   const statsBorderRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
-  const progressRef = useRef<HTMLDivElement>(null)
-
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [hasLoaded, setHasLoaded] = useState(false)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const slideRefs = useRef<(HTMLDivElement | null)[]>([])
-
-  // ── Slide transition ──
-  const goToSlide = useCallback((index: number) => {
-    if (isAnimating || index === currentSlide) return
-    setIsAnimating(true)
-
-    const currentEl = slideRefs.current[currentSlide]
-    const nextEl = slideRefs.current[index]
-    if (!currentEl || !nextEl) { setIsAnimating(false); return }
-
-    // Next slide enters
-    gsap.set(nextEl, { opacity: 0, scale: 1.1 })
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        setCurrentSlide(index)
-        setIsAnimating(false)
-      },
-    })
-
-    // Crossfade with a subtle zoom-out on the incoming image
-    tl.to(currentEl, {
-      opacity: 0,
-      scale: 1.05,
-      duration: 1.2,
-      ease: 'power2.inOut',
-    })
-    .to(nextEl, {
-      opacity: 1,
-      scale: 1,
-      duration: 1.2,
-      ease: 'power2.inOut',
-    }, '<')
-  }, [currentSlide, isAnimating])
-
-  // ── Auto-play ──
-  useEffect(() => {
-    if (!hasLoaded) return
-
-    timerRef.current = setInterval(() => {
-      const next = (currentSlide + 1) % SLIDES.length
-      goToSlide(next)
-    }, SLIDE_DURATION)
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [currentSlide, hasLoaded, goToSlide])
-
-  // ── Progress bar animation ──
-  useEffect(() => {
-    if (!hasLoaded || !progressRef.current) return
-
-    gsap.fromTo(
-      progressRef.current,
-      { scaleX: 0 },
-      {
-        scaleX: 1,
-        duration: SLIDE_DURATION / 1000,
-        ease: 'none',
-        transformOrigin: 'left center',
-      }
-    )
-  }, [currentSlide, hasLoaded])
-
-  // ── Ken Burns slow zoom on active slide ──
-  useEffect(() => {
-    const activeEl = slideRefs.current[currentSlide]
-    if (!activeEl || !hasLoaded) return
-
-    gsap.fromTo(
-      activeEl,
-      { scale: 1 },
-      {
-        scale: 1.08,
-        duration: SLIDE_DURATION / 1000 + 1.5,
-        ease: 'none',
-      }
-    )
-  }, [currentSlide, hasLoaded])
+  const imageRef = useRef<HTMLDivElement>(null)
 
   // ── Initial entrance animation ──
   useEffect(() => {
@@ -127,6 +32,7 @@ export function Hero() {
       const stats = statsRef.current
       const statsBorder = statsBorderRef.current
       const overlay = overlayRef.current
+      const image = imageRef.current
       if (!content) return
 
       // Respect reduced motion
@@ -142,25 +48,21 @@ export function Hero() {
         if (subtitle) gsap.set(subtitle, { opacity: 1, y: 0 })
         const buttons = content.querySelector('[data-hero-buttons]')
         if (buttons) gsap.set(buttons, { opacity: 1, y: 0 })
-        setHasLoaded(true)
         return
       }
 
-      // First slide initial state
-      const firstSlide = slideRefs.current[0]
-      if (firstSlide) {
-        gsap.set(firstSlide, { opacity: 1, scale: 1.15 })
+      if (image) {
+        gsap.set(image, { scale: 1.15 })
       }
 
       const tl = gsap.timeline({
         defaults: { ease: 'power3.out' },
         delay: 0.2,
-        onComplete: () => setHasLoaded(true),
       })
 
       // 1. Image reveal — zoom out from 1.15 to 1
-      if (firstSlide) {
-        tl.to(firstSlide, {
+      if (image) {
+        tl.to(image, {
           scale: 1,
           duration: 1.8,
           ease: 'power2.out',
@@ -256,34 +158,25 @@ export function Hero() {
     return () => ctx.revert()
   }, [])
 
-  const handleSlideClick = (index: number) => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    goToSlide(index)
-  }
-
   return (
     <section
       ref={heroRef}
       className="relative h-[100svh] min-h-[600px] max-h-[1000px] overflow-hidden"
     >
-      {/* ── Full-bleed background images ── */}
-      {SLIDES.map((slide, i) => (
-        <div
-          key={slide.src}
-          ref={(el) => { slideRefs.current[i] = el }}
-          className="absolute inset-0 will-change-transform"
-          style={{ opacity: i === 0 ? 1 : 0 }}
-        >
-          <Image
-            src={slide.src}
-            alt={slide.alt}
-            fill
-            sizes="100vw"
-            className="object-cover"
-            priority={i === 0}
-          />
-        </div>
-      ))}
+      {/* ── Full-bleed background image ── */}
+      <div
+        ref={imageRef}
+        className="absolute inset-0 will-change-transform"
+      >
+        <Image
+          src="/images/hero-1.jpg"
+          alt="Torta artesanal elegante de DeliDanis"
+          fill
+          sizes="100vw"
+          className="object-cover"
+          priority
+        />
+      </div>
 
       {/* ── Gradient overlay for text readability ── */}
       <div
@@ -395,28 +288,6 @@ export function Hero() {
         </div>
       </div>
 
-      {/* ── Slide indicators + progress ── */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center">
-        {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => handleSlideClick(i)}
-            className="flex items-center justify-center min-h-[44px] px-1.5"
-            aria-label={`Ir a imagen ${i + 1}`}
-          >
-            <span className={`relative block h-1.5 rounded-full transition-all duration-500 overflow-hidden ${
-              i === currentSlide ? 'w-10 bg-white/30' : 'w-2 bg-white/30 hover:bg-white/50'
-            }`}>
-              {i === currentSlide && (
-                <div
-                  ref={progressRef}
-                  className="absolute inset-0 bg-white rounded-full origin-left"
-                />
-              )}
-            </span>
-          </button>
-        ))}
-      </div>
     </section>
   )
 }
