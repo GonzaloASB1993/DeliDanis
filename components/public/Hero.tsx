@@ -169,7 +169,7 @@ export function Hero() {
         className="absolute inset-0 will-change-transform"
       >
         <Image
-          src="/images/hero-1.jpg"
+          src="/images/hero-3.jpg"
           alt="Torta artesanal elegante de DeliDanis"
           fill
           sizes="100vw"
