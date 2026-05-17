@@ -1,0 +1,110 @@
+'use client'
+
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import type { B2BOrderDetail } from '@/types/b2b'
+
+interface B2BOrderDetailProps {
+  order: B2BOrderDetail
+}
+
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  pending: { label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800' },
+  confirmed: { label: 'Confirmado', color: 'bg-blue-100 text-blue-800' },
+  in_production: { label: 'En producción', color: 'bg-purple-100 text-purple-800' },
+  ready: { label: 'Listo', color: 'bg-green-100 text-green-800' },
+  delivered: { label: 'Entregado', color: 'bg-green-100 text-green-800' },
+  completed: { label: 'Completado', color: 'bg-gray-100 text-gray-800' },
+  cancelled: { label: 'Cancelado', color: 'bg-red-100 text-red-800' },
+}
+
+function formatDate(iso: string) {
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(iso))
+}
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
+
+export function B2BOrderDetailView({ order }: B2BOrderDetailProps) {
+  const status = STATUS_LABELS[order.status] ?? { label: order.status, color: 'bg-gray-100 text-gray-800' }
+
+  return (
+    <div className="max-w-3xl mx-auto">
+      {/* Back link */}
+      <Link
+        href="/b2b/pedidos"
+        className="inline-flex items-center gap-2 text-sm text-dark-light hover:text-dark transition-colors mb-6"
+      >
+        <ArrowLeft size={16} />
+        Volver a pedidos
+      </Link>
+
+      {/* Card */}
+      <div className="bg-white rounded-2xl border border-border overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-border flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1">
+            <h1 className="font-display text-xl font-bold text-dark">
+              {order.order_number}
+            </h1>
+            <p className="text-sm text-dark-light mt-0.5">
+              Fecha: {formatDate(order.created_at)}
+            </p>
+          </div>
+          <span
+            className={`self-start sm:self-auto inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${status.color}`}
+          >
+            {status.label}
+          </span>
+        </div>
+
+        {/* Items table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-secondary/50">
+                <th className="text-left px-6 py-3 font-medium text-dark-light">Producto</th>
+                <th className="text-center px-4 py-3 font-medium text-dark-light">Cant.</th>
+                <th className="text-right px-4 py-3 font-medium text-dark-light">Precio</th>
+                <th className="text-right px-6 py-3 font-medium text-dark-light">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {order.items.map((item) => (
+                <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
+                  <td className="px-6 py-4 font-medium text-dark">{item.product_name}</td>
+                  <td className="px-4 py-4 text-center text-dark-light">{item.quantity}</td>
+                  <td className="px-4 py-4 text-right text-dark-light">
+                    {formatCurrency(item.unit_price)}
+                  </td>
+                  <td className="px-6 py-4 text-right font-medium text-dark">
+                    {formatCurrency(item.total_price)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer total */}
+        <div className="px-6 py-4 border-t border-border flex justify-end">
+          <div className="flex items-center gap-6">
+            <span className="text-sm text-dark-light font-medium">Total</span>
+            <span className="text-lg font-bold text-accent">
+              {formatCurrency(order.total)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
