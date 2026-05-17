@@ -47,11 +47,11 @@ export async function getB2BProducts(): Promise<B2BProduct[]> {
       const ids = priceRecords.map((p) => p.product_id)
       const { table, categoryTable } = tableMap[productType]
 
-      const { data: products, error: productsError } = await supabase
+      const { data: products, error: productsError } = await (supabase
         .from(table)
         .select(`id, name, slug, description, short_description, image_url, is_active, category:${categoryTable}(name)`)
         .in('id', ids)
-        .eq('is_active', true)
+        .eq('is_active', true) as any)
 
       if (productsError) {
         console.error(`getB2BProducts – ${table} error:`, productsError)

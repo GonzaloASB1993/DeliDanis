@@ -191,6 +191,7 @@ export async function getUserStats(): Promise<UserStats> {
       sales: 0,
       accountant: 0,
       viewer: 0,
+      b2b_client: 0,
     },
   }
 

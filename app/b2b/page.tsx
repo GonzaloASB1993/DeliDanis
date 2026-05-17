@@ -29,15 +29,15 @@ export default function B2BCatalogPage() {
     let cancelled = false
 
     async function load() {
-      const result = await getB2BProducts()
-      if (cancelled) return
-
-      if (result.success) {
-        setProducts(result.products)
-      } else {
-        setError('No se pudo cargar el catálogo. Intenta nuevamente.')
+      try {
+        const result = await getB2BProducts()
+        if (cancelled) return
+        setProducts(result)
+      } catch {
+        if (!cancelled) setError('No se pudo cargar el catálogo. Intenta nuevamente.')
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-      setLoading(false)
     }
 
     load()

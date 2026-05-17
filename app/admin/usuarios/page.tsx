@@ -22,7 +22,7 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const ALL_ROLES: UserRole[] = ['admin', 'manager', 'production', 'sales', 'accountant', 'viewer']
+const ALL_ROLES: UserRole[] = ['admin', 'manager', 'production', 'sales', 'accountant', 'viewer', 'b2b_client']
 
 const ROLE_BADGE: Record<UserRole, string> = {
   admin:      'bg-purple-100 text-purple-700',
@@ -31,6 +31,7 @@ const ROLE_BADGE: Record<UserRole, string> = {
   sales:      'bg-green-100 text-green-700',
   accountant: 'bg-yellow-100 text-yellow-700',
   viewer:     'bg-gray-100 text-gray-700',
+  b2b_client: 'bg-amber-100 text-amber-700',
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -108,7 +109,7 @@ export default function UsuariosPage() {
     total: 0,
     active: 0,
     inactive: 0,
-    byRole: { admin: 0, manager: 0, production: 0, sales: 0, accountant: 0, viewer: 0 },
+    byRole: { admin: 0, manager: 0, production: 0, sales: 0, accountant: 0, viewer: 0, b2b_client: 0 },
   })
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')

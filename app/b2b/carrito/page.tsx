@@ -28,10 +28,10 @@ export default function B2BCarritoPage() {
 
       const result = await createB2BOrder(customer.id, items)
 
-      if (result.success && result.orderId) {
+      if (result.success && result.data) {
         clear()
         toast.success('Pedido confirmado exitosamente.')
-        router.push(`/b2b/pedidos/${result.orderId}`)
+        router.push(`/b2b/pedidos/${result.data.id}`)
       } else {
         toast.error(result.error ?? 'Ocurrió un error al confirmar el pedido. Intentá nuevamente.')
       }
