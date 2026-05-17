@@ -83,11 +83,51 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // --- B2B Routes ---
+  const isB2BRoute = request.nextUrl.pathname.startsWith('/b2b')
+  const isB2BLogin = request.nextUrl.pathname === '/b2b/login'
+
+  if (isB2BRoute && !isB2BLogin && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/b2b/login'
+    return NextResponse.redirect(url)
+  }
+
+  if (isB2BLogin && user) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.role === 'b2b_client') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/b2b'
+      return NextResponse.redirect(url)
+    }
+  }
+
+  if (isB2BRoute && !isB2BLogin && user) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role, is_active')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || profile.role !== 'b2b_client' || !profile.is_active) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/b2b/login'
+      url.searchParams.set('error', 'unauthorized')
+      return NextResponse.redirect(url)
+    }
+  }
+
   return supabaseResponse
 }
 
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/b2b/:path*',
   ],
 }
