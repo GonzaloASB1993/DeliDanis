@@ -2,6 +2,10 @@
 -- B2B System: prices, customer type, order channel
 -- =============================================
 
+-- 0. Add user_id column to customers (required for B2B login linkage)
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id);
+CREATE INDEX IF NOT EXISTS idx_customers_user_id ON customers(user_id);
+
 -- 1. B2B prices table
 CREATE TABLE IF NOT EXISTS b2b_prices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
