@@ -1,6 +1,6 @@
 // Tipos para el sistema de autenticación
 
-export type UserRole = 'admin' | 'manager' | 'production' | 'sales' | 'accountant' | 'viewer'
+export type UserRole = 'admin' | 'manager' | 'production' | 'sales' | 'accountant' | 'viewer' | 'b2b_client'
 
 export interface UserProfile {
   id: string
@@ -63,6 +63,11 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     'products.view',
     'customers.view',
   ],
+  b2b_client: [
+    'b2b.catalog',
+    'b2b.orders',
+    'b2b.profile',
+  ],
 }
 
 // Helper para verificar permisos
@@ -80,4 +85,5 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   sales: 'Ventas',
   accountant: 'Contabilidad',
   viewer: 'Visualizador',
+  b2b_client: 'Cliente B2B',
 }
