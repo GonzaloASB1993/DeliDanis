@@ -19,6 +19,7 @@ import {
   type ProductType
 } from '@/lib/supabase/catalog-mutations'
 import { cn } from '@/lib/utils/cn'
+import { getB2BPrice, upsertB2BPrice } from '@/lib/supabase/b2b-queries'
 
 interface ProductFormModalProps {
   productType: ProductType
@@ -80,6 +81,11 @@ export function ProductFormModal({
   const [isCreatingCategory, setIsCreatingCategory] = useState(false)
   const [isCreatingSubcategory, setIsCreatingSubcategory] = useState(false)
 
+  // B2B pricing
+  const [b2bEnabled, setB2bEnabled] = useState(false)
+  const [b2bPrice, setB2bPrice] = useState('')
+  const [b2bMinQty, setB2bMinQty] = useState('1')
+
   // Cargar datos si es edición
   useEffect(() => {
     if (product) {
@@ -111,6 +117,18 @@ export function ProductFormModal({
       }
     }
   }, [product, productType])
+
+  useEffect(() => {
+    if (isEditing && product?.id) {
+      getB2BPrice(product.id, productType).then((data) => {
+        if (data) {
+          setB2bEnabled(data.is_active)
+          setB2bPrice(String(data.price))
+          setB2bMinQty(String(data.min_quantity))
+        }
+      })
+    }
+  }, [isEditing, product?.id, productType])
 
   // Subcategorías filtradas
   const filteredSubcategories = subcategories.filter(s => s.category_id === categoryId)
@@ -359,6 +377,16 @@ export function ProductFormModal({
           await updatePastryProduct(product.id, data)
         } else {
           await createPastryProduct(data)
+        }
+      }
+
+      // Save B2B pricing
+      const productId = product?.id // For editing, we already have it
+      if (productId) {
+        if (b2bEnabled && b2bPrice) {
+          await upsertB2BPrice(productId, productType, parseFloat(b2bPrice), parseInt(b2bMinQty) || 1, true)
+        } else if (!b2bEnabled) {
+          await upsertB2BPrice(productId, productType, 0, 1, false)
         }
       }
 
@@ -786,6 +814,51 @@ export function ProductFormModal({
                   <span className="text-sm text-dark">Destacado</span>
                 </label>
               </div>
+
+              {/* B2B Pricing */}
+              {isEditing && (
+                <div className="border-t border-gray-100 pt-4 mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-medium text-dark">Precio Mayorista (B2B)</h4>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={b2bEnabled}
+                        onChange={(e) => setB2bEnabled(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary/30 rounded-full peer peer-checked:bg-primary transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-transform peer-checked:after:translate-x-4"></div>
+                    </label>
+                  </div>
+                  {b2bEnabled && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Precio mayorista ($)</label>
+                        <input
+                          type="number"
+                          value={b2bPrice}
+                          onChange={(e) => setB2bPrice(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
+                          placeholder="0.00"
+                          step="0.01"
+                          min="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Cantidad mínima</label>
+                        <input
+                          type="number"
+                          value={b2bMinQty}
+                          onChange={(e) => setB2bMinQty(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
+                          placeholder="1"
+                          min="1"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Imágenes (solo en edición) */}
               {isEditing && (
