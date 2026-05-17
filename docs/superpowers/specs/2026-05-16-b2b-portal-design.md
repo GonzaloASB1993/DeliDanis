@@ -168,10 +168,10 @@ Desde `/admin/clientes` → botón "Nuevo Cliente B2B":
 
 ### Precios B2B
 
-Nueva pestaña/sección en `/admin/catalogo` → "Precios B2B":
-- Tabla de productos con columna de precio mayorista editable
-- Toggle para activar/desactivar disponibilidad B2B por producto
-- Cantidad mínima configurable por producto
+Se gestiona desde la ficha de cada producto en `/admin/catalogo/[id]`, en una pestaña "B2B":
+- Toggle "Disponible para B2B" (si está off, el producto no aparece en el portal B2B)
+- Campo "Precio mayorista" (obligatorio si el toggle está activo)
+- Campo "Cantidad mínima" (default 1)
 
 ### Pedidos B2B en admin
 
