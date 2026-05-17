@@ -50,6 +50,7 @@ const statusLabels: Record<string, string> = {
 interface Order {
   id: string
   order_number: string
+  channel: string | null
   event_date: string
   event_time: string | null
   status: string
@@ -80,6 +81,7 @@ export default function AgendamientosPage() {
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(now.getFullYear())
   const [statusFilter, setStatusFilter] = useState('all')
+  const [channelFilter, setChannelFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [orders, setOrders] = useState<Order[]>([])
@@ -111,6 +113,7 @@ export default function AgendamientosPage() {
           month: selectedMonth,
           year: selectedYear,
           status: statusFilter,
+          channel: channelFilter,
           search: searchQuery,
         }),
         getOrderStats(selectedMonth, selectedYear),
@@ -134,7 +137,7 @@ export default function AgendamientosPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedMonth, selectedYear, statusFilter, searchQuery])
+  }, [selectedMonth, selectedYear, statusFilter, channelFilter, searchQuery])
 
   useEffect(() => {
     loadData()
@@ -308,6 +311,31 @@ export default function AgendamientosPage() {
               </select>
             </div>
 
+            {/* Filtro por canal */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-dark-light whitespace-nowrap">Canal:</span>
+              <div className="flex gap-1">
+                {[
+                  { value: 'all', label: 'Todos' },
+                  { value: 'public', label: 'Público' },
+                  { value: 'b2b', label: 'B2B' },
+                ].map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => setChannelFilter(option.value)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-full text-sm transition-colors whitespace-nowrap',
+                      channelFilter === option.value
+                        ? 'bg-primary text-white'
+                        : 'bg-secondary text-dark hover:bg-primary/10'
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Filtro por estado */}
             <div className="flex items-center gap-2 overflow-x-auto">
               <span className="text-sm text-dark-light whitespace-nowrap">Estado:</span>
@@ -376,6 +404,9 @@ export default function AgendamientosPage() {
                       >
                         <td className="px-5 py-4">
                           <span className="font-mono text-sm font-semibold text-dark">{order.order_number}</span>
+                          {order.channel === 'b2b' && (
+                            <span className="ml-1.5 px-1.5 py-0.5 bg-accent/10 text-accent text-[10px] font-bold rounded uppercase">B2B</span>
+                          )}
                         </td>
                         <td className="px-5 py-4">
                           <p className="font-medium text-dark">

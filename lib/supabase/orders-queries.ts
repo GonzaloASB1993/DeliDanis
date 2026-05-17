@@ -72,11 +72,12 @@ export async function getOrders(filters: {
   year?: number
   status?: string
   paymentStatus?: string
+  channel?: string
   search?: string
   limit?: number
   offset?: number
 }) {
-  const { month, year, status, paymentStatus, search, limit = 50, offset = 0 } = filters
+  const { month, year, status, paymentStatus, channel, search, limit = 50, offset = 0 } = filters
 
   let query = supabase
     .from('orders')
@@ -115,6 +116,11 @@ export async function getOrders(filters: {
     } else {
       query = query.eq('status', status)
     }
+  }
+
+  // Filtro por canal (público vs B2B)
+  if (channel && channel !== 'all') {
+    query = query.eq('channel', channel)
   }
 
   // Filtro por estado de pago
