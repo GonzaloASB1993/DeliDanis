@@ -90,7 +90,7 @@ export default function B2BOrderDetailPage() {
         <div className="text-center py-20">
           <p className="text-dark font-medium">Pedido no encontrado</p>
           <p className="text-sm text-dark-light mt-1">
-            El pedido que buscás no existe o no tenés acceso.
+            El pedido que buscas no existe o no tienes acceso.
           </p>
         </div>
       </div>

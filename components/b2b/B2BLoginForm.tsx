@@ -14,7 +14,7 @@ export function B2BLoginForm() {
 
   useEffect(() => {
     if (searchParams.get('error') === 'unauthorized') {
-      setError('No tenés permisos para acceder al portal B2B.')
+      setError('No tienes permisos para acceder al portal B2B.')
     }
   }, [searchParams])
 
@@ -43,7 +43,7 @@ export function B2BLoginForm() {
 
       if (profileError || !profile) {
         await supabase.auth.signOut()
-        setError('No se pudo verificar tu cuenta. Contactá a DeliDanis.')
+        setError('No se pudo verificar tu cuenta. Contacta a DeliDanis.')
         return
       }
 
@@ -55,14 +55,14 @@ export function B2BLoginForm() {
 
       if (!profile.is_active) {
         await supabase.auth.signOut()
-        setError('Tu cuenta está desactivada. Contactá a DeliDanis.')
+        setError('Tu cuenta está desactivada. Contacta a DeliDanis.')
         return
       }
 
       router.push('/b2b')
       router.refresh()
     } catch {
-      setError('Ocurrió un error inesperado. Intentá de nuevo.')
+      setError('Ocurrió un error inesperado. Intenta de nuevo.')
     } finally {
       setIsLoading(false)
     }

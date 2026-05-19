@@ -52,7 +52,7 @@ export default function B2BCatalogPage() {
           Catálogo Mayorista
         </h1>
         <p className="text-sm text-dark-light mt-1">
-          Seleccioná los productos y cantidades para armar tu pedido al por mayor.
+          Selecciona los productos y cantidades para armar tu pedido al por mayor.
         </p>
       </div>
 

@@ -35,7 +35,7 @@ export default function B2BLoginPage() {
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-md p-8">
           <h2 className="font-display font-semibold text-xl text-dark mb-6">
-            Iniciá sesión
+            Inicia sesión
           </h2>
 
           <Suspense fallback={<LoginFormFallback />}>
@@ -45,7 +45,7 @@ export default function B2BLoginPage() {
 
         {/* Footer */}
         <p className="font-body text-xs text-dark-light text-center mt-6">
-          ¿No tenés cuenta? Contactá a DeliDanis para solicitar acceso.
+          ¿No tienes cuenta? Contacta a DeliDanis para solicitar acceso.
         </p>
       </div>
     </div>
