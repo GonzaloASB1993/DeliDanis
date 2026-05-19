@@ -4,17 +4,31 @@ import { ServicesSection } from '@/components/public/ServicesSection'
 import { TestimonialsCarousel } from '@/components/public/TestimonialsCarousel'
 import { CTASection } from '@/components/public/CTASection'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
+import { JsonLd } from '@/components/JsonLd'
 import { buildMetadata } from '@/lib/utils/seo'
 
 export const metadata = buildMetadata({
-  title: 'DeliDanis - Pastelería Premium en Chile',
-  description: 'Tortas artesanales para matrimonios, quinceañeros y eventos. Diseños únicos, sabores memorables.',
+  title: 'Tortas Artesanales y Pastelería Premium en Santiago, Chile',
+  description: 'Tortas personalizadas para matrimonios, cumpleaños, quinceañeros y eventos en Santiago. Pastelería artesanal, coctelería gourmet y servicio de catering. Cotiza sin compromiso.',
   path: '/',
 })
 
 export default function HomePage() {
   return (
     <main className="overflow-x-hidden">
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'DeliDanis',
+        url: 'https://delidanis.cl',
+        description: 'Pastelería artesanal premium en Santiago, Chile. Tortas personalizadas, coctelería y catering para eventos.',
+        publisher: {
+          '@type': 'Organization',
+          name: 'DeliDanis',
+          logo: { '@type': 'ImageObject', url: 'https://delidanis.cl/logo.png' },
+        },
+      }} />
+
       {/* Hero - Impacto inmediato con valor y confianza */}
       <Hero />
 

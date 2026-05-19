@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
 export const BASE_URL = 'https://delidanis.cl'
-// public/logo.png exists but is a logo — not the ideal 1200x630 OG image.
-// Do NOT hardcode width/height — let platforms measure it.
-export const DEFAULT_OG_IMAGE = `${BASE_URL}/logo.png`
+// Next.js auto-generates /opengraph-image from app/opengraph-image.tsx (1200x630)
+// This fallback is used when no per-page OG image route exists.
+export const DEFAULT_OG_IMAGE = `${BASE_URL}/opengraph-image`
 
 interface BuildMetadataParams {
   title: string

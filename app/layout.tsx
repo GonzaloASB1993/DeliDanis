@@ -26,9 +26,43 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "DeliDanis - Pastelería y Tortas Artesanales en Chile",
-  description: "Pastelería artesanal premium en Santiago, Chile. Tortas personalizadas para matrimonios, quinceañeros, cumpleaños y eventos corporativos. Ingredientes de calidad, diseños únicos.",
+  title: {
+    default: 'DeliDanis | Tortas Artesanales y Pastelería Premium en Santiago, Chile',
+    template: '%s | DeliDanis',
+  },
+  description: "Pastelería artesanal en Santiago, Chile. Tortas personalizadas para matrimonios, quinceañeros, cumpleaños y eventos corporativos. Coctelería gourmet y catering para eventos. Cotiza gratis.",
   metadataBase: new URL("https://delidanis.cl"),
+  keywords: [
+    'tortas artesanales Santiago',
+    'pastelería premium Chile',
+    'tortas personalizadas',
+    'tortas para matrimonios',
+    'tortas para cumpleaños',
+    'pastelería para eventos Santiago',
+    'coctelería para eventos',
+    'catering dulce Santiago',
+    'DeliDanis',
+  ],
+  authors: [{ name: 'DeliDanis' }],
+  creator: 'DeliDanis',
+  publisher: 'DeliDanis',
+  formatDetection: { telephone: true, email: true },
+  alternates: { canonical: 'https://delidanis.cl' },
+  openGraph: {
+    type: 'website',
+    locale: 'es_CL',
+    siteName: 'DeliDanis',
+    title: 'DeliDanis | Tortas Artesanales y Pastelería Premium en Santiago',
+    description: 'Pastelería artesanal en Santiago. Tortas personalizadas, coctelería gourmet y catering para eventos. Cotiza sin compromiso.',
+    url: 'https://delidanis.cl',
+    images: [{ url: 'https://delidanis.cl/opengraph-image', alt: 'DeliDanis Pastelería', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@delidanis_pasteleria',
+    title: 'DeliDanis | Tortas Artesanales en Santiago, Chile',
+    description: 'Pastelería artesanal, tortas personalizadas y coctelería para eventos.',
+  },
 };
 
 export default function RootLayout({
@@ -55,7 +89,7 @@ export default function RootLayout({
           },
           servesCuisine: ['Pastelería', 'Tortas', 'Coctelería'],
           priceRange: '$$',
-          image: 'https://delidanis.cl/logo.png',
+          image: 'https://delidanis.cl/opengraph-image',
           logo: {
             '@type': 'ImageObject',
             url: 'https://delidanis.cl/logo.png',

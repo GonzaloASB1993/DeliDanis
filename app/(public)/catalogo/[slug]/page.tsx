@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { buildMetadata, DEFAULT_OG_IMAGE } from '@/lib/utils/seo'
 import { JsonLd } from '@/components/JsonLd'
-import { getProductBySlug } from '@/lib/supabase/product-queries'
+import { getProductBySlug, getActiveProductSlugs } from '@/lib/supabase/product-queries'
 import { createClient } from '@supabase/supabase-js'
 import { ProductDetailClient } from './ProductDetailClient'
 
@@ -11,6 +11,11 @@ export const revalidate = 60
 
 interface Props {
   params: { slug: string }
+}
+
+export async function generateStaticParams() {
+  const slugs = await getActiveProductSlugs()
+  return slugs.map(({ slug }) => ({ slug }))
 }
 
 async function getProductPrimaryImage(productId: string): Promise<string | undefined> {
@@ -41,10 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     })
   }
 
+  const image = await getProductPrimaryImage(product.id)
+
   return buildMetadata({
-    title: `${product.name} - Torta Artesanal | DeliDanis`,
-    description: product.short_description ?? product.description?.slice(0, 155) ?? '',
+    title: `${product.name} - Torta Artesanal en Santiago`,
+    description: product.short_description ?? product.description?.slice(0, 155) ?? `${product.name}: torta artesanal personalizada para eventos en Santiago. Desde $${product.base_price?.toLocaleString('es-CL')} CLP. Pide la tuya en DeliDanis.`,
     path: `/catalogo/${params.slug}`,
+    image,
   })
 }
 
