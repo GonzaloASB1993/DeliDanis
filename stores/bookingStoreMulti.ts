@@ -357,15 +357,24 @@ export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
     }))
   },
 
-  nextStep: () =>
+  nextStep: () => {
     set((state) => ({
       currentStep: Math.min(state.currentStep + 1, 5),
-    })),
+    }))
+    // Scroll to top for better UX when advancing steps
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  },
 
-  prevStep: () =>
+  prevStep: () => {
     set((state) => ({
       currentStep: Math.max(state.currentStep - 1, 1),
-    })),
+    }))
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  },
 
   resetBooking: () =>
     set({

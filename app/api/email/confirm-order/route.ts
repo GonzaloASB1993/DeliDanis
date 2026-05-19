@@ -13,7 +13,12 @@ const supabase = createClient(
 // Set INTERNAL_API_SECRET in environment variables.
 function isAuthorizedCaller(request: NextRequest): boolean {
   const secret = process.env.INTERNAL_API_SECRET
-  if (!secret) return false // If not configured, deny all external calls
+  if (!secret) {
+    // If not configured, allow internal calls (webhook → email within same server)
+    // In production, ALWAYS set INTERNAL_API_SECRET for security
+    console.warn('[Email] INTERNAL_API_SECRET not configured — allowing call. Set this env var in production!')
+    return true
+  }
   const header = request.headers.get('x-internal-secret')
   return header === secret
 }

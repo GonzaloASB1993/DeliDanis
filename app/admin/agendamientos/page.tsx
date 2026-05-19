@@ -338,7 +338,6 @@ export default function AgendamientosPage() {
 
             {/* Filtro por estado */}
             <div className="flex items-center gap-2 overflow-x-auto">
-              <span className="text-sm text-dark-light whitespace-nowrap">Estado:</span>
               <div className="flex gap-1">
                 {STATUS_OPTIONS.map(option => (
                   <button

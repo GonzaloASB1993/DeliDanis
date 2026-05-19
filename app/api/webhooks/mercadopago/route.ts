@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
 
     const paidAmount = Math.round(payment.transaction_amount || 0)
     const totalAmount = Math.round(order.total)
+    const existingDeposit = Math.round(order.deposit_amount || 0)
 
     // Obtener porcentaje de depósito
     let depositPercentage = 50
@@ -97,9 +98,13 @@ export async function POST(request: NextRequest) {
     }
     const expectedDeposit = Math.round((totalAmount * depositPercentage) / 100)
 
-    // Determinar si es depósito o pago total
+    // Determine payment type:
+    // 1. Full payment from checkout (paidAmount ≈ totalAmount)
+    // 2. Deposit payment (paidAmount ≈ expectedDeposit, order was pending)
+    // 3. Balance payment (order already has partial payment, paidAmount ≈ remaining balance)
     const isFullPayment = Math.abs(paidAmount - totalAmount) <= TOLERANCE_CLP
-    const isDepositPayment = !isFullPayment && Math.abs(paidAmount - expectedDeposit) <= TOLERANCE_CLP
+    const isBalancePayment = order.payment_status === 'partial' && existingDeposit > 0
+    const isDepositPayment = !isFullPayment && !isBalancePayment && Math.abs(paidAmount - expectedDeposit) <= TOLERANCE_CLP
 
     const wasInCheckout = order.status === 'pending_payment'
 
@@ -113,6 +118,16 @@ export async function POST(request: NextRequest) {
 
     if (isFullPayment) {
       updateData.payment_status = 'paid'
+    } else if (isBalancePayment) {
+      // Balance payment: check if deposit + this payment covers the total
+      const totalPaid = existingDeposit + paidAmount
+      if (Math.abs(totalPaid - totalAmount) <= TOLERANCE_CLP || totalPaid >= totalAmount) {
+        updateData.payment_status = 'paid'
+      } else {
+        // Partial balance — still not fully paid
+        updateData.payment_status = 'partial'
+        updateData.deposit_amount = totalPaid
+      }
     } else {
       updateData.payment_status = 'partial'
       updateData.deposit_paid = true
@@ -143,15 +158,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Determine label for logs
+    const paymentLabel = isFullPayment
+      ? 'Pago completo'
+      : isBalancePayment
+        ? 'Pago de saldo'
+        : 'Depósito'
+
     // Registrar en order_payments (para que el modal admin muestre el pago correctamente)
     await supabase.from('order_payments').insert({
       order_id: order.id,
       amount: paidAmount,
       payment_method: 'mercadopago',
       reference: paymentId,
-      notes: isFullPayment
-        ? `Pago completo vía MercadoPago (ID: ${paymentId})`
-        : `Depósito vía MercadoPago (ID: ${paymentId})`,
+      notes: `${paymentLabel} vía MercadoPago (ID: ${paymentId})`,
     })
 
     // Registrar en transactions
@@ -160,9 +180,7 @@ export async function POST(request: NextRequest) {
       type: 'income',
       category: 'order',
       amount: paidAmount,
-      description: isFullPayment
-        ? `Pago total pedido ${orderNumber} vía MercadoPago`
-        : `Depósito pedido ${orderNumber} vía MercadoPago`,
+      description: `${paymentLabel} pedido ${orderNumber} vía MercadoPago`,
       reference_id: order.id,
       reference_type: 'order_payment',
       payment_method: 'mercadopago',
@@ -172,10 +190,8 @@ export async function POST(request: NextRequest) {
     // Registrar en order_history
     await supabase.from('order_history').insert({
       order_id: order.id,
-      status: 'pending',
-      notes: isFullPayment
-        ? `Pago completo confirmado vía MercadoPago ($${paidAmount.toLocaleString('es-CL')})`
-        : `Depósito confirmado vía MercadoPago ($${paidAmount.toLocaleString('es-CL')})`,
+      status: updateData.payment_status === 'paid' ? 'pending' : order.status,
+      notes: `${paymentLabel} confirmado vía MercadoPago ($${paidAmount.toLocaleString('es-CL')})`,
     })
 
     // Enviar email de confirmación al cliente (fire and forget).
