@@ -6,6 +6,9 @@ import { getProductBySlug } from '@/lib/supabase/product-queries'
 import { createClient } from '@supabase/supabase-js'
 import { ProductDetailClient } from './ProductDetailClient'
 
+// Revalidate every 60 seconds so admin changes reflect quickly
+export const revalidate = 60
+
 interface Props {
   params: { slug: string }
 }
