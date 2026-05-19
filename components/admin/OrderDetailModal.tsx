@@ -60,13 +60,40 @@ function getProductImage(product: any): string | null {
 function ServiceDataDetail({ serviceData, serviceType }: { serviceData: Record<string, unknown>, serviceType: string }) {
   if (serviceType === 'torta') {
     const tortaData = serviceData as any
+
+    // B2B flat structure: { product_id, product_name, image_url }
+    if (tortaData.product_id && !tortaData.product) {
+      const imgUrl = tortaData.image_url as string | null
+      return (
+        <div className="mt-3 pt-3 border-t border-border/50">
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-pink-100 to-pink-50 overflow-hidden flex-shrink-0 relative">
+              {imgUrl ? (
+                <Image src={imgUrl} alt={tortaData.product_name || ''} fill className="object-cover" />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="w-7 h-7 text-dark-light/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-dark">{tortaData.product_name}</p>
+              <p className="text-xs text-dark-light mt-1">Pedido B2B</p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    // Standard nested structure: { product: { id, name, images } }
     const imageUrl = getProductImage(tortaData.product)
 
     return (
       <div className="mt-3 pt-3 border-t border-border/50 space-y-3">
         {tortaData.product?.name && (
           <div className="flex items-start gap-4">
-            {/* Imagen del producto */}
             <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-pink-100 to-pink-50 overflow-hidden flex-shrink-0 relative">
               {imageUrl ? (
                 <Image
@@ -120,7 +147,32 @@ function ServiceDataDetail({ serviceData, serviceType }: { serviceData: Record<s
       imageUrl?: string | null
     }> | undefined
 
+    // B2B flat structure: { product_id, product_name, image_url }
     if (!itemsDetails || itemsDetails.length === 0) {
+      if (serviceDataTyped.product_id) {
+        const imgUrl = serviceDataTyped.image_url as string | null
+        return (
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-white border border-border overflow-hidden flex-shrink-0 relative">
+                {imgUrl ? (
+                  <Image src={imgUrl} alt={serviceDataTyped.product_name || ''} fill className="object-cover" />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-dark-light/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-dark">{serviceDataTyped.product_name}</p>
+                <p className="text-xs text-dark-light">Pedido B2B</p>
+              </div>
+            </div>
+          </div>
+        )
+      }
       return null
     }
 
@@ -582,36 +634,86 @@ export function OrderDetailModal({ orderId, isOpen, onClose, onUpdate }: OrderDe
 
                   {/* Items del pedido */}
                   <div>
-                    <h3 className="font-medium text-dark mb-3">Servicios</h3>
+                    <h3 className="font-medium text-dark mb-3">
+                      {(order as any).channel === 'b2b' ? 'Productos' : 'Servicios'}
+                    </h3>
                     <div className="space-y-4">
-                      {order.items.map(item => (
-                        <div key={item.id} className="bg-white border border-border rounded-xl p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <span className={cn(
-                                'inline-flex px-2 py-0.5 rounded text-xs font-medium uppercase mb-2',
-                                item.service_type === 'torta' ? 'bg-pink-100 text-pink-700' :
-                                item.service_type === 'cocteleria' ? 'bg-purple-100 text-purple-700' :
-                                'bg-orange-100 text-orange-700'
-                              )}>
-                                {item.service_type}
-                              </span>
-                              <p className="font-semibold text-dark">
-                                {item.product_name || item.service_type}
-                              </p>
-                              {item.portions && (
-                                <p className="text-sm text-dark-light">{item.portions} porciones</p>
-                              )}
-                            </div>
-                            <p className="font-bold text-primary text-lg">{formatCurrency(item.total_price)}</p>
-                          </div>
+                      {order.items.map(item => {
+                        const sd = item.service_data as any
+                        const isB2BItem = sd?.product_id && !sd?.product && !sd?.itemsDetails
 
-                          {/* Detalle expandido desde service_data */}
-                          {item.service_data && (
-                            <ServiceDataDetail serviceData={item.service_data} serviceType={item.service_type} />
-                          )}
-                        </div>
-                      ))}
+                        if (isB2BItem) {
+                          const imgUrl = sd?.image_url as string | null
+                          const name = item.product_name || sd?.product_name || item.service_type
+                          const qty = item.quantity ?? 1
+                          const unitPrice = item.unit_price ?? item.total_price
+
+                          return (
+                            <div key={item.id} className="bg-white border border-border rounded-xl p-4">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 rounded-xl bg-secondary overflow-hidden flex-shrink-0 relative">
+                                  {imgUrl ? (
+                                    <Image src={imgUrl} alt={name} fill className="object-cover" />
+                                  ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                      <svg className="w-6 h-6 text-dark-light/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.701 2.701 0 001 15.546M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
+                                      </svg>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-0.5">
+                                    <span className={cn(
+                                      'inline-flex px-2 py-0.5 rounded text-[10px] font-medium uppercase',
+                                      item.service_type === 'torta' ? 'bg-pink-100 text-pink-700' :
+                                      item.service_type === 'cocteleria' ? 'bg-purple-100 text-purple-700' :
+                                      'bg-orange-100 text-orange-700'
+                                    )}>
+                                      {item.service_type}
+                                    </span>
+                                  </div>
+                                  <p className="font-semibold text-dark text-sm truncate">{name}</p>
+                                  <p className="text-xs text-dark-light mt-0.5">
+                                    {qty} {qty === 1 ? 'unidad' : 'unidades'} &middot; {formatCurrency(unitPrice)} c/u
+                                  </p>
+                                </div>
+                                <p className="font-bold text-accent text-lg flex-shrink-0">
+                                  {formatCurrency(item.total_price)}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        }
+
+                        return (
+                          <div key={item.id} className="bg-white border border-border rounded-xl p-4">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <span className={cn(
+                                  'inline-flex px-2 py-0.5 rounded text-xs font-medium uppercase mb-2',
+                                  item.service_type === 'torta' ? 'bg-pink-100 text-pink-700' :
+                                  item.service_type === 'cocteleria' ? 'bg-purple-100 text-purple-700' :
+                                  'bg-orange-100 text-orange-700'
+                                )}>
+                                  {item.service_type}
+                                </span>
+                                <p className="font-semibold text-dark">
+                                  {item.product_name || (item.service_data as any)?.product_name || item.service_type}
+                                </p>
+                                {item.portions && (
+                                  <p className="text-sm text-dark-light">{item.portions} porciones</p>
+                                )}
+                              </div>
+                              <p className="font-bold text-primary text-lg">{formatCurrency(item.total_price)}</p>
+                            </div>
+
+                            {item.service_data && (
+                              <ServiceDataDetail serviceData={item.service_data} serviceType={item.service_type} />
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
 
                     {/* Resumen de totales */}

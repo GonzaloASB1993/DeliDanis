@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { Minus, Plus, ShoppingCart } from 'lucide-react'
 import { useB2BCartStore } from '@/stores/b2bCartStore'
@@ -17,9 +17,36 @@ const TYPE_LABELS: Record<B2BProduct['product_type'], string> = {
   cocktail: 'Coctelería',
 }
 
+function formatCLP(amount: number) {
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
+
 export function B2BProductCard({ product }: B2BProductCardProps) {
+  const hasCakePortions =
+    product.product_type === 'cake' &&
+    product.b2b_price_per_portion != null &&
+    product.min_portions != null
+
+  const minPortions = product.min_portions ?? 15
+  const maxPortions = product.max_portions ?? 80
+
   const [quantity, setQuantity] = useState(product.min_quantity)
+  const [portions, setPortions] = useState(minPortions)
   const addItem = useB2BCartStore((s) => s.addItem)
+
+  const unitPrice = useMemo(() => {
+    if (hasCakePortions) {
+      const base = product.b2b_price
+      const ppp = product.b2b_price_per_portion!
+      const extra = Math.max(0, portions - minPortions)
+      return base + extra * ppp
+    }
+    return product.b2b_price
+  }, [hasCakePortions, product, portions, minPortions])
 
   const decrement = () => {
     setQuantity((q) => Math.max(product.min_quantity, q - 1))
@@ -36,6 +63,13 @@ export function B2BProductCard({ product }: B2BProductCardProps) {
     }
   }
 
+  const handlePortionsInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = parseInt(e.target.value, 10)
+    if (!isNaN(val) && val >= minPortions && val <= maxPortions) {
+      setPortions(val)
+    }
+  }
+
   const handleAdd = () => {
     addItem({
       productId: product.id,
@@ -43,18 +77,14 @@ export function B2BProductCard({ product }: B2BProductCardProps) {
       productName: product.name,
       imageUrl: product.image_url,
       quantity,
-      unitPrice: product.b2b_price,
+      unitPrice,
       minQuantity: product.min_quantity,
+      ...(hasCakePortions ? { portions } : {}),
     })
     toast.success(`"${product.name}" agregado al pedido`)
     setQuantity(product.min_quantity)
+    setPortions(minPortions)
   }
-
-  const formattedPrice = new Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    minimumFractionDigits: 0,
-  }).format(product.b2b_price)
 
   return (
     <article className="group bg-white rounded-2xl overflow-hidden border border-border flex flex-col hover:shadow-md transition-shadow duration-200">
@@ -102,14 +132,60 @@ export function B2BProductCard({ product }: B2BProductCardProps) {
 
         {/* Price */}
         <div className="flex items-baseline gap-1">
-          <span className="text-base font-bold text-accent">{formattedPrice}</span>
-          <span className="text-xs text-dark-light">c/u</span>
+          <span className="text-base font-bold text-accent">{formatCLP(unitPrice)}</span>
+          {hasCakePortions ? (
+            <span className="text-xs text-dark-light">/ {portions} porc.</span>
+          ) : (
+            <span className="text-xs text-dark-light">c/u</span>
+          )}
         </div>
 
-        {/* Min quantity note */}
-        {product.min_quantity > 1 && (
+        {hasCakePortions && (
           <p className="text-[11px] text-dark-light">
-            Mín. {product.min_quantity} unidades
+            {formatCLP(product.b2b_price_per_portion!)} por porción adicional
+          </p>
+        )}
+
+        {/* Portion selector for cakes */}
+        {hasCakePortions && (
+          <div className="flex items-center gap-2">
+            <label className="text-[11px] text-dark-light whitespace-nowrap">Porciones</label>
+            <div className="flex items-center border border-border rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setPortions((p) => Math.max(minPortions, p - 5))}
+                disabled={portions <= minPortions}
+                className="px-2 py-1 text-dark-light hover:text-dark hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Reducir porciones"
+              >
+                <Minus size={11} />
+              </button>
+              <input
+                type="number"
+                value={portions}
+                onChange={handlePortionsInput}
+                min={minPortions}
+                max={maxPortions}
+                className="w-10 text-center text-xs font-medium text-dark bg-transparent focus:outline-none"
+                aria-label="Porciones"
+              />
+              <button
+                type="button"
+                onClick={() => setPortions((p) => Math.min(maxPortions, p + 5))}
+                disabled={portions >= maxPortions}
+                className="px-2 py-1 text-dark-light hover:text-dark hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                aria-label="Aumentar porciones"
+              >
+                <Plus size={11} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Min quantity note (for non-cake products) */}
+        {!hasCakePortions && product.min_quantity > 1 && (
+          <p className="text-[11px] text-dark-light">
+            Min. {product.min_quantity} unidades
           </p>
         )}
 
@@ -118,7 +194,6 @@ export function B2BProductCard({ product }: B2BProductCardProps) {
 
         {/* Quantity selector + Add button */}
         <div className="flex items-center gap-2 mt-1">
-          {/* Quantity row */}
           <div className="flex items-center border border-border rounded-lg overflow-hidden">
             <button
               type="button"
@@ -147,7 +222,6 @@ export function B2BProductCard({ product }: B2BProductCardProps) {
             </button>
           </div>
 
-          {/* Add button */}
           <button
             type="button"
             onClick={handleAdd}

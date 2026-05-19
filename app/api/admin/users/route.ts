@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { email, password, role, first_name, last_name, phone } = body
+    const { email, password, role, first_name, last_name, phone, business_name } = body
 
     if (!email || !password || !role || !first_name || !last_name) {
       return NextResponse.json(
@@ -118,25 +118,44 @@ export async function POST(request: NextRequest) {
 
     const userId = authData.user.id
 
-    // Create user profile
+    // Update user profile (trigger handle_new_user already created it with role 'viewer')
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
-      .insert({
-        id: userId,
+      .update({
+        email,
         role,
         first_name,
         last_name,
         phone: phone || null,
         is_active: true,
       })
+      .eq('id', userId)
       .select()
       .single()
 
     if (profileError) {
-      // Rollback: delete the auth user if profile creation failed
       await supabaseAdmin.auth.admin.deleteUser(userId)
       console.error('Error creating user profile:', profileError)
       return NextResponse.json({ error: 'Error al crear perfil de usuario' }, { status: 500 })
+    }
+
+    // For b2b_client, also create a business customer record
+    if (role === 'b2b_client') {
+      const { error: customerError } = await supabaseAdmin
+        .from('customers')
+        .insert({
+          user_id: userId,
+          email,
+          phone: phone || '',
+          first_name,
+          last_name,
+          business_name: business_name || null,
+          type: 'business',
+        })
+
+      if (customerError) {
+        console.error('Error creating B2B customer:', customerError)
+      }
     }
 
     return NextResponse.json({

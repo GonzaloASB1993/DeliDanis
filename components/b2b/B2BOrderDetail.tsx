@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 import type { B2BOrderDetail } from '@/types/b2b'
 
@@ -19,7 +20,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('es-AR', {
+  return new Intl.DateTimeFormat('es-CL', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -27,9 +28,9 @@ function formatDate(iso: string) {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('es-AR', {
+  return new Intl.NumberFormat('es-CL', {
     style: 'currency',
-    currency: 'ARS',
+    currency: 'CLP',
     minimumFractionDigits: 0,
   }).format(amount)
 }
@@ -81,7 +82,32 @@ export function B2BOrderDetailView({ order }: B2BOrderDetailProps) {
             <tbody className="divide-y divide-border">
               {order.items.map((item) => (
                 <tr key={item.id} className="hover:bg-secondary/30 transition-colors">
-                  <td className="px-6 py-4 font-medium text-dark">{item.product_name}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-secondary overflow-hidden flex-shrink-0 relative">
+                        {item.image_url ? (
+                          <Image
+                            src={item.image_url}
+                            alt={item.product_name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-dark-light/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-dark">{item.product_name}</span>
+                        {item.portions && (
+                          <span className="text-[11px] text-dark-light">{item.portions} porciones</span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
                   <td className="px-4 py-4 text-center text-dark-light">{item.quantity}</td>
                   <td className="px-4 py-4 text-right text-dark-light">
                     {formatCurrency(item.unit_price)}

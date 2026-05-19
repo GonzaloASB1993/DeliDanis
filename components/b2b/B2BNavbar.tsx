@@ -8,9 +8,13 @@ import { useB2BCartStore } from '@/stores/b2bCartStore'
 
 export function B2BNavbar() {
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
   const itemCount = useB2BCartStore((s) => s.getItemCount())
   const [customerName, setCustomerName] = useState<string | null>(null)
+  const [businessName, setBusinessName] = useState<string | null>(null)
   const [isSigningOut, setIsSigningOut] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     async function loadCustomer() {
@@ -28,10 +32,9 @@ export function B2BNavbar() {
 
       if (data) {
         const name =
-          data.business_name ||
-          [data.first_name, data.last_name].filter(Boolean).join(' ') ||
-          null
+          [data.first_name, data.last_name].filter(Boolean).join(' ') || null
         setCustomerName(name)
+        setBusinessName(data.business_name || null)
       }
     }
 
@@ -96,18 +99,27 @@ export function B2BNavbar() {
                   d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
                 />
               </svg>
-              {itemCount > 0 && (
+              {mounted && itemCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center bg-primary text-white text-[10px] font-body font-semibold rounded-full px-1 leading-none">
                   {itemCount > 99 ? '99+' : itemCount}
                 </span>
               )}
             </Link>
 
-            {/* Customer name */}
-            {customerName && (
-              <span className="hidden sm:block font-body text-sm text-dark-light truncate max-w-[140px]">
-                {customerName}
-              </span>
+            {/* Customer name + business → links to profile */}
+            {(customerName || businessName) && (
+              <Link href="/b2b/perfil" className="hidden sm:flex flex-col items-end max-w-[200px] hover:opacity-80 transition-opacity">
+                {customerName && (
+                  <span className="font-body text-sm font-medium text-dark truncate w-full text-right">
+                    {customerName}
+                  </span>
+                )}
+                {businessName && (
+                  <span className="font-body text-[11px] text-dark-light truncate w-full text-right leading-tight">
+                    {businessName}
+                  </span>
+                )}
+              </Link>
             )}
 
             {/* Sign out */}

@@ -54,18 +54,18 @@ function extractProductsFromOrder(order: ConfirmedOrderForProduction): Array<{
     const serviceData = item.service_data as any
 
     if (item.service_type === 'torta') {
-      // Torta: single product from service_data.product
-      const productId = serviceData?.product?.id
+      // Torta: nested structure (public) or flat structure (B2B)
+      const productId = serviceData?.product?.id ?? serviceData?.product_id
       if (productId) {
         products.push({
           product_id: productId,
           product_type: 'cake',
-          product_name: serviceData.product.name || item.product_name || 'Torta',
-          quantity: 1,
+          product_name: serviceData?.product?.name || serviceData?.product_name || item.product_name || 'Torta',
+          quantity: item.quantity ?? 1,
         })
       }
     } else {
-      // Cocktail/Pastry: multiple items from service_data.itemsDetails
+      // Cocktail/Pastry: itemsDetails array (public) or flat B2B structure
       const itemsDetails = serviceData?.itemsDetails as Array<{
         productId: string
         productName: string
@@ -79,6 +79,17 @@ function extractProductsFromOrder(order: ConfirmedOrderForProduction): Array<{
             product_type: productType,
             product_name: detail.productName,
             quantity: detail.quantity,
+          })
+        }
+      } else {
+        // B2B flat structure: { product_id, product_name }
+        const productId = serviceData?.product_id
+        if (productId) {
+          products.push({
+            product_id: productId,
+            product_type: productType,
+            product_name: serviceData?.product_name || item.product_name || item.service_type,
+            quantity: item.quantity ?? 1,
           })
         }
       }

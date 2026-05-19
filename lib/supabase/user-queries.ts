@@ -154,13 +154,14 @@ export async function createUserWithProfile(
   role: UserRole,
   firstName: string,
   lastName: string,
-  phone?: string
+  phone?: string,
+  businessName?: string
 ): Promise<{ success: boolean; user?: UserWithProfile; error?: string }> {
   try {
     const response = await fetch('/api/admin/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, role, first_name: firstName, last_name: lastName, phone }),
+      body: JSON.stringify({ email, password, role, first_name: firstName, last_name: lastName, phone, business_name: businessName }),
     })
 
     const result = await response.json()

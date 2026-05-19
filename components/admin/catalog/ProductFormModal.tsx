@@ -85,6 +85,7 @@ export function ProductFormModal({
   const [b2bEnabled, setB2bEnabled] = useState(false)
   const [b2bPrice, setB2bPrice] = useState('')
   const [b2bMinQty, setB2bMinQty] = useState('1')
+  const [b2bPricePerPortion, setB2bPricePerPortion] = useState('')
 
   // Cargar datos si es edición
   useEffect(() => {
@@ -125,6 +126,7 @@ export function ProductFormModal({
           setB2bEnabled(data.is_active)
           setB2bPrice(String(data.price))
           setB2bMinQty(String(data.min_quantity))
+          setB2bPricePerPortion(data.price_per_portion ? String(data.price_per_portion) : '')
         }
       })
     }
@@ -384,9 +386,10 @@ export function ProductFormModal({
       const productId = product?.id // For editing, we already have it
       if (productId) {
         if (b2bEnabled && b2bPrice) {
-          await upsertB2BPrice(productId, productType, parseFloat(b2bPrice), parseInt(b2bMinQty) || 1, true)
+          const b2bPPP = productType === 'cake' && b2bPricePerPortion ? parseInt(b2bPricePerPortion) || null : null
+          await upsertB2BPrice(productId, productType, parseInt(b2bPrice) || 0, parseInt(b2bMinQty) || 1, true, b2bPPP)
         } else if (!b2bEnabled) {
-          await upsertB2BPrice(productId, productType, 0, 1, false)
+          await upsertB2BPrice(productId, productType, 0, 1, false, null)
         }
       }
 
@@ -831,30 +834,51 @@ export function ProductFormModal({
                     </label>
                   </div>
                   {b2bEnabled && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Precio mayorista ($)</label>
-                        <input
-                          type="number"
-                          value={b2bPrice}
-                          onChange={(e) => setB2bPrice(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
-                          placeholder="0.00"
-                          step="0.01"
-                          min="0"
-                        />
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            {productType === 'cake' ? `Precio base B2B (${minPortions || 15} porc.)` : 'Precio mayorista ($)'}
+                          </label>
+                          <input
+                            type="number"
+                            value={b2bPrice}
+                            onChange={(e) => setB2bPrice(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
+                            placeholder="0"
+                            step="1"
+                            min="0"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Cantidad mínima</label>
+                          <input
+                            type="number"
+                            value={b2bMinQty}
+                            onChange={(e) => setB2bMinQty(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
+                            placeholder="1"
+                            min="1"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Cantidad mínima</label>
-                        <input
-                          type="number"
-                          value={b2bMinQty}
-                          onChange={(e) => setB2bMinQty(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
-                          placeholder="1"
-                          min="1"
-                        />
-                      </div>
+                      {productType === 'cake' && (
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Precio por porción adicional B2B ($)</label>
+                          <input
+                            type="number"
+                            value={b2bPricePerPortion}
+                            onChange={(e) => setB2bPricePerPortion(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none"
+                            placeholder="0"
+                            step="1"
+                            min="0"
+                          />
+                          <p className="text-[11px] text-gray-400 mt-1">
+                            Precio por cada porción adicional sobre las {minPortions || 15} base
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

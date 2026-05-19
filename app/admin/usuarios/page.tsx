@@ -43,6 +43,7 @@ interface CreateFormData {
   last_name: string
   role: UserRole
   phone: string
+  business_name: string
 }
 
 interface EditFormData {
@@ -60,6 +61,7 @@ const EMPTY_CREATE: CreateFormData = {
   last_name: '',
   role: 'viewer',
   phone: '',
+  business_name: '',
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -216,7 +218,8 @@ export default function UsuariosPage() {
         createForm.role,
         createForm.first_name,
         createForm.last_name,
-        createForm.phone || undefined
+        createForm.phone || undefined,
+        createForm.business_name || undefined
       )
       if (!result.success) {
         setCreateError(result.error ?? 'Error al crear usuario')
@@ -619,10 +622,23 @@ export default function UsuariosPage() {
                   type="tel"
                   value={createForm.phone}
                   onChange={e => setCreateForm(p => ({ ...p, phone: e.target.value }))}
-                  placeholder="+57 300 000 0000"
+                  placeholder="+56 9 1234 5678"
                   className={INPUT_CLS}
                 />
               </FormField>
+
+              {createForm.role === 'b2b_client' && (
+                <FormField label="Empresa" required>
+                  <input
+                    type="text"
+                    required
+                    value={createForm.business_name}
+                    onChange={e => setCreateForm(p => ({ ...p, business_name: e.target.value }))}
+                    placeholder="Nombre de la empresa"
+                    className={INPUT_CLS}
+                  />
+                </FormField>
+              )}
 
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button

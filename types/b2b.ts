@@ -3,6 +3,7 @@ export interface B2BPrice {
   product_id: string
   product_type: 'cake' | 'pastry' | 'cocktail'
   price: number
+  price_per_portion: number | null
   min_quantity: number
   is_active: boolean
   created_at: string
@@ -19,8 +20,13 @@ export interface B2BProduct {
   category_name: string | null
   image_url: string | null
   b2b_price: number
+  b2b_price_per_portion: number | null
   min_quantity: number
   is_active: boolean
+  base_price: number | null
+  price_per_portion: number | null
+  min_portions: number | null
+  max_portions: number | null
 }
 
 export interface B2BCartItem {
@@ -31,6 +37,7 @@ export interface B2BCartItem {
   quantity: number
   unitPrice: number
   minQuantity: number
+  portions?: number
 }
 
 export interface B2BOrderSummary {
@@ -54,7 +61,11 @@ export interface B2BOrderDetail {
 
 export interface B2BOrderItem {
   id: string
+  product_id: string | null
+  product_type: string | null
   product_name: string
+  image_url: string | null
+  portions: number | null
   quantity: number
   unit_price: number
   total_price: number

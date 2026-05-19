@@ -23,7 +23,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('es-AR', {
+  return new Intl.DateTimeFormat('es-CL', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -31,9 +31,9 @@ function formatDate(iso: string) {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('es-AR', {
+  return new Intl.NumberFormat('es-CL', {
     style: 'currency',
-    currency: 'ARS',
+    currency: 'CLP',
     minimumFractionDigits: 0,
   }).format(amount)
 }
@@ -55,17 +55,18 @@ function OrderCard({ order }: { order: B2BOrderSummary }) {
 
     for (const item of items) {
       addItem({
-        productId: item.id, // closest proxy; product_id not returned by query
-        productType: 'cake', // default; actual type not stored in order_items
+        productId: item.product_id ?? item.id,
+        productType: (item.product_type as 'cake' | 'pastry' | 'cocktail') ?? 'cake',
         productName: item.product_name,
-        imageUrl: null,
+        imageUrl: item.image_url,
         quantity: item.quantity,
         unitPrice: item.unit_price,
         minQuantity: 1,
+        ...(item.portions ? { portions: item.portions } : {}),
       })
     }
 
-    toast.success('Pedido agregado al carrito. Revisalo antes de confirmar.')
+    toast.success('Pedido agregado al carrito. Revísalo antes de confirmar.')
     router.push('/b2b/carrito')
   }
 
@@ -122,7 +123,7 @@ export function B2BOrderList({ orders }: B2BOrderListProps) {
         <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center mb-4">
           <ShoppingBag className="text-dark-light" size={24} />
         </div>
-        <p className="text-dark font-medium">Todavía no tenés pedidos</p>
+        <p className="text-dark font-medium">Todavía no tienes pedidos</p>
         <p className="text-sm text-dark-light mt-1">
           Cuando realices tu primer pedido aparecerá acá.
         </p>

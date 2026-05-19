@@ -35,32 +35,63 @@ export async function getB2BProducts(): Promise<B2BProduct[]> {
     const results: B2BProduct[] = []
 
     // 2. Fetch from each product table
-    const tableMap: Record<string, { table: string; categoryTable: string }> = {
-      cake: { table: 'cake_products', categoryTable: 'cake_categories' },
-      pastry: { table: 'pastry_products', categoryTable: 'pastry_categories' },
-      cocktail: { table: 'cocktail_products', categoryTable: 'cocktail_categories' },
+    const tableMap: Record<string, string> = {
+      cake: 'cake_products',
+      pastry: 'pastry_products',
+      cocktail: 'cocktail_products',
+    }
+
+    const selectMap: Record<string, string> = {
+      cake: 'id, name, slug, description, short_description, is_active, base_price, price_per_portion, min_portions, max_portions',
+      pastry: 'id, name, slug, description, is_active',
+      cocktail: 'id, name, slug, description, is_active',
     }
 
     for (const [productType, priceRecords] of Object.entries(byType)) {
       if (priceRecords.length === 0) continue
 
       const ids = priceRecords.map((p) => p.product_id)
-      const { table, categoryTable } = tableMap[productType]
+      const table = tableMap[productType]
 
-      const { data: products, error: productsError } = await (supabase
+      const { data: rawProducts, error: productsError } = await supabase
         .from(table)
-        .select(`id, name, slug, description, short_description, image_url, is_active, category:${categoryTable}(name)`)
+        .select(selectMap[productType])
         .in('id', ids)
-        .eq('is_active', true) as any)
+        .eq('is_active', true)
 
       if (productsError) {
         console.error(`getB2BProducts – ${table} error:`, productsError)
         continue
       }
 
-      if (!products) continue
+      if (!rawProducts) continue
 
-      // Build a lookup map for prices
+      const products = rawProducts as unknown as Array<{
+        id: string
+        name: string
+        slug: string
+        description: string | null
+        short_description?: string | null
+        is_active: boolean
+        base_price?: number
+        price_per_portion?: number
+        min_portions?: number
+        max_portions?: number
+      }>
+
+      // Fetch primary images for these products
+      const { data: images } = await supabase
+        .from('product_images')
+        .select('product_id, url')
+        .eq('product_type', productType)
+        .in('product_id', ids)
+        .eq('is_primary', true)
+
+      const imageMap = new Map<string, string>()
+      for (const img of images ?? []) {
+        imageMap.set(img.product_id, img.url)
+      }
+
       const priceMap = new Map<string, (typeof priceRecords)[number]>()
       for (const pr of priceRecords) {
         priceMap.set(pr.product_id, pr)
@@ -70,24 +101,23 @@ export async function getB2BProducts(): Promise<B2BProduct[]> {
         const priceRecord = priceMap.get(product.id)
         if (!priceRecord) continue
 
-        // Supabase returns joined tables as an object or array; normalise here
-        const categoryRow = product.category as { name: string } | { name: string }[] | null
-        const categoryName = Array.isArray(categoryRow)
-          ? (categoryRow[0]?.name ?? null)
-          : (categoryRow?.name ?? null)
-
         results.push({
           id: product.id,
           name: product.name,
           slug: product.slug,
           description: product.description ?? null,
-          short_description: product.short_description ?? null,
+          short_description: product.short_description ?? product.description ?? null,
           product_type: productType as 'cake' | 'pastry' | 'cocktail',
-          category_name: categoryName,
-          image_url: product.image_url ?? null,
+          category_name: null,
+          image_url: imageMap.get(product.id) ?? null,
           b2b_price: priceRecord.price,
+          b2b_price_per_portion: priceRecord.price_per_portion ?? null,
           min_quantity: priceRecord.min_quantity,
           is_active: product.is_active,
+          base_price: product.base_price ?? null,
+          price_per_portion: product.price_per_portion ?? null,
+          min_portions: product.min_portions ?? null,
+          max_portions: product.max_portions ?? null,
         })
       }
     }
@@ -140,14 +170,18 @@ export async function getB2BCustomer() {
 
 interface CreateB2BOrderItem {
   productId: string
+  productType: string
   productName: string
+  imageUrl?: string | null
   quantity: number
   unitPrice: number
+  portions?: number
 }
 
 export async function createB2BOrder(
   customerId: string,
-  items: CreateB2BOrderItem[]
+  items: CreateB2BOrderItem[],
+  eventDate: string
 ): Promise<{ success: boolean; data?: { id: string; order_number: string }; error?: string }> {
   try {
     const orderNumber = `B2B-${Date.now().toString(36).toUpperCase()}`
@@ -163,6 +197,7 @@ export async function createB2BOrder(
         customer_id: customerId,
         channel: 'b2b',
         event_type: 'b2b_order',
+        event_date: eventDate,
         delivery_type: 'pickup',
         status: 'pending',
         payment_status: 'pending',
@@ -178,11 +213,17 @@ export async function createB2BOrder(
       return { success: false, error: orderError?.message ?? 'Failed to create order' }
     }
 
-    // Insert order items
+    // Insert order items using the actual schema (service_type + service_data JSONB)
     const orderItems = items.map((item) => ({
       order_id: order.id,
-      product_id: item.productId,
+      service_type: ({ cake: 'torta', pastry: 'pasteleria', cocktail: 'cocteleria' }[item.productType]) ?? 'torta',
       product_name: item.productName,
+      service_data: {
+        product_id: item.productId,
+        product_name: item.productName,
+        image_url: item.imageUrl ?? null,
+        ...(item.portions ? { portions: item.portions } : {}),
+      },
       quantity: item.quantity,
       unit_price: item.unitPrice,
       total_price: item.unitPrice * item.quantity,
@@ -254,7 +295,8 @@ export async function getB2BOrderDetail(orderId: string): Promise<B2BOrderDetail
         created_at,
         order_items (
           id,
-          product_name,
+          service_type,
+          service_data,
           quantity,
           unit_price,
           total_price
@@ -271,7 +313,8 @@ export async function getB2BOrderDetail(orderId: string): Promise<B2BOrderDetail
 
     const rawItems = (data.order_items ?? []) as Array<{
       id: string
-      product_name: string
+      service_type: string
+      service_data: { product_id?: string; product_name?: string; image_url?: string | null; portions?: number }
       quantity: number
       unit_price: number
       total_price: number
@@ -279,7 +322,11 @@ export async function getB2BOrderDetail(orderId: string): Promise<B2BOrderDetail
 
     const items: B2BOrderItem[] = rawItems.map((item) => ({
       id: item.id,
-      product_name: item.product_name,
+      product_id: item.service_data?.product_id ?? null,
+      product_type: item.service_type === 'torta' ? 'cake' : item.service_type === 'pasteleria' ? 'pastry' : item.service_type === 'cocteleria' ? 'cocktail' : null,
+      product_name: item.service_data?.product_name ?? item.service_type,
+      image_url: item.service_data?.image_url ?? null,
+      portions: item.service_data?.portions ?? null,
       quantity: item.quantity,
       unit_price: item.unit_price,
       total_price: item.total_price,
@@ -308,7 +355,7 @@ export async function getOrderItemsForRepeat(orderId: string): Promise<B2BOrderI
   try {
     const { data, error } = await supabase
       .from('order_items')
-      .select('id, product_name, quantity, unit_price, total_price')
+      .select('id, service_type, service_data, quantity, unit_price, total_price')
       .eq('order_id', orderId)
 
     if (error) {
@@ -316,13 +363,20 @@ export async function getOrderItemsForRepeat(orderId: string): Promise<B2BOrderI
       return []
     }
 
-    return (data ?? []).map((item) => ({
-      id: item.id,
-      product_name: item.product_name,
-      quantity: item.quantity,
-      unit_price: item.unit_price,
-      total_price: item.total_price,
-    }))
+    return (data ?? []).map((item) => {
+      const sd = item.service_data as { product_id?: string; product_name?: string; image_url?: string | null; portions?: number } | null
+      return {
+        id: item.id,
+        product_id: sd?.product_id ?? null,
+        product_type: item.service_type === 'torta' ? 'cake' : item.service_type === 'pasteleria' ? 'pastry' : item.service_type === 'cocteleria' ? 'cocktail' : null,
+        product_name: sd?.product_name ?? item.service_type,
+        image_url: sd?.image_url ?? null,
+        portions: sd?.portions ?? null,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total_price: item.total_price,
+      }
+    })
   } catch (err) {
     console.error('getOrderItemsForRepeat – unexpected error:', err)
     return []
@@ -343,14 +397,14 @@ export async function getB2BPrice(
       .select('*')
       .eq('product_id', productId)
       .eq('product_type', productType)
-      .single()
+      .maybeSingle()
 
     if (error) {
       console.error('getB2BPrice – query error:', error)
       return null
     }
 
-    return data as B2BPrice
+    return (data as B2BPrice) ?? null
   } catch (err) {
     console.error('getB2BPrice – unexpected error:', err)
     return null
@@ -362,7 +416,8 @@ export async function upsertB2BPrice(
   productType: 'cake' | 'pastry' | 'cocktail',
   price: number,
   minQuantity: number,
-  isActive: boolean
+  isActive: boolean,
+  pricePerPortion?: number | null
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { error } = await supabase.from('b2b_prices').upsert(
@@ -372,6 +427,7 @@ export async function upsertB2BPrice(
         price,
         min_quantity: minQuantity,
         is_active: isActive,
+        price_per_portion: pricePerPortion ?? null,
       },
       { onConflict: 'product_id,product_type' }
     )

@@ -69,15 +69,22 @@ export function B2BCartTable() {
                         </div>
                       )}
                     </div>
-                    <span className="font-medium text-dark text-sm leading-tight">
-                      {item.productName}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="font-medium text-dark text-sm leading-tight">
+                        {item.productName}
+                      </span>
+                      {item.portions && (
+                        <span className="text-[11px] text-dark-light mt-0.5">
+                          {item.portions} porciones
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </td>
 
                 {/* Unit price */}
                 <td className="px-4 py-4 text-right text-sm text-dark-light whitespace-nowrap">
-                  ${item.unitPrice.toLocaleString('es-AR')}
+                  ${item.unitPrice.toLocaleString('es-CL')}
                 </td>
 
                 {/* Quantity selector */}
@@ -110,7 +117,7 @@ export function B2BCartTable() {
 
                 {/* Subtotal */}
                 <td className="px-4 py-4 text-right text-sm font-semibold text-dark whitespace-nowrap">
-                  ${(item.quantity * item.unitPrice).toLocaleString('es-AR')}
+                  ${(item.quantity * item.unitPrice).toLocaleString('es-CL')}
                 </td>
 
                 {/* Remove */}
