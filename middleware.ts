@@ -81,6 +81,13 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set('error', 'inactive')
       return NextResponse.redirect(url)
     }
+
+    // Bloquear usuarios B2B del panel admin
+    if (profile && profile.role === 'b2b_client') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/b2b'
+      return NextResponse.redirect(url)
+    }
   }
 
   // --- B2B Routes ---

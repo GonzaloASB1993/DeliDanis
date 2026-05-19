@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Settings } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { useB2BCartStore } from '@/stores/b2bCartStore'
 
@@ -24,17 +25,32 @@ export function B2BNavbar() {
 
       if (!user) return
 
-      const { data } = await supabase
+      // Try with business_name first; if column doesn't exist yet, retry without it
+      let data: Record<string, unknown> | null = null
+
+      const res = await supabase
         .from('customers')
         .select('first_name, last_name, business_name')
         .eq('user_id', user.id)
         .single()
 
+      if (res.error) {
+        // Fallback: column may not exist in production yet
+        const fallback = await supabase
+          .from('customers')
+          .select('first_name, last_name')
+          .eq('user_id', user.id)
+          .single()
+        data = fallback.data as Record<string, unknown> | null
+      } else {
+        data = res.data as Record<string, unknown> | null
+      }
+
       if (data) {
         const name =
           [data.first_name, data.last_name].filter(Boolean).join(' ') || null
         setCustomerName(name)
-        setBusinessName(data.business_name || null)
+        setBusinessName((data.business_name as string) || null)
       }
     }
 
@@ -106,21 +122,31 @@ export function B2BNavbar() {
               )}
             </Link>
 
-            {/* Customer name + business → links to profile */}
-            {(customerName || businessName) && (
-              <Link href="/b2b/perfil" className="hidden sm:flex flex-col items-end max-w-[200px] hover:opacity-80 transition-opacity">
-                {customerName && (
-                  <span className="font-body text-sm font-medium text-dark truncate w-full text-right">
-                    {customerName}
-                  </span>
-                )}
-                {businessName && (
-                  <span className="font-body text-[11px] text-dark-light truncate w-full text-right leading-tight">
-                    {businessName}
-                  </span>
-                )}
+            {/* Customer name + business + gear icon */}
+            <div className="hidden sm:flex items-center gap-2">
+              {(customerName || businessName) && (
+                <div className="flex flex-col items-end max-w-[200px]">
+                  {customerName && (
+                    <span className="font-body text-sm font-medium text-dark truncate w-full text-right">
+                      {customerName}
+                    </span>
+                  )}
+                  {businessName && (
+                    <span className="font-body text-[11px] text-dark-light truncate w-full text-right leading-tight">
+                      {businessName}
+                    </span>
+                  )}
+                </div>
+              )}
+              <Link
+                href="/b2b/perfil"
+                className="p-1.5 rounded-lg text-dark-light hover:text-primary hover:bg-secondary transition-colors"
+                aria-label="Editar perfil"
+                title="Editar perfil"
+              >
+                <Settings size={18} />
               </Link>
-            )}
+            </div>
 
             {/* Sign out */}
             <button
