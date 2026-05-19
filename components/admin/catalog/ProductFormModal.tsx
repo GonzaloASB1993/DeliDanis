@@ -92,7 +92,13 @@ export function ProductFormModal({
     if (product) {
       setName(product.name || '')
       setDescription(product.description || '')
-      setCategoryId(product.category_id || '')
+
+      // For cocktail products, category_id comes from subcategory.category.id
+      if (productType === 'cocktail' && product.subcategory?.category?.id) {
+        setCategoryId(product.subcategory.category.id)
+      } else {
+        setCategoryId(product.category_id || '')
+      }
       setSubcategoryId(product.subcategory_id || '')
       setIsActive(product.is_active ?? true)
       setIsFeatured(product.is_featured ?? false)
