@@ -276,13 +276,21 @@ export default function NuevoAgendamientoPage() {
 
     let service_data: Record<string, unknown>
     if (selectedCategory === 'torta') {
-      service_data = { product: { id: product.id, name: product.name } }
+      service_data = {
+        product: {
+          id: product.id,
+          name: product.name,
+          images: product.image_url ? [{ url: product.image_url, is_primary: true }] : [],
+        },
+      }
     } else {
       service_data = {
         itemsDetails: [{
           productId: product.id,
           productName: product.name,
           quantity: newItem.quantity,
+          unitPrice: newItem.unit_price,
+          imageUrl: product.image_url || null,
         }],
       }
     }
