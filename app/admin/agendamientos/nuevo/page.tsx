@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Header } from '@/components/admin/Header'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -25,6 +26,7 @@ interface OrderItem {
   portions?: number
   unit_price: number
   total_price: number
+  image_url?: string
 }
 
 type CategoryType = 'torta' | 'pasteleria' | 'cocteleria'
@@ -37,6 +39,7 @@ interface CatalogProduct {
   max_portions?: number
   price_per_portion?: number
   min_order_quantity?: number
+  image_url?: string
 }
 
 const CATEGORY_TABS: { value: CategoryType; label: string; icon: React.ReactNode }[] = [
@@ -182,6 +185,9 @@ export default function NuevoAgendamientoPage() {
     const load = async () => {
       try {
         let data: CatalogProduct[] = []
+        const getPrimaryImage = (images: any[]) =>
+          (images?.find((i: any) => i.is_primary) || images?.[0])?.url || undefined
+
         if (selectedCategory === 'torta') {
           const result = await getCakeProductsAdmin()
           data = result.map((p: any) => ({
@@ -191,6 +197,7 @@ export default function NuevoAgendamientoPage() {
             min_portions: p.min_portions ?? 15,
             max_portions: p.max_portions ?? 100,
             price_per_portion: p.price_per_portion ?? 0,
+            image_url: getPrimaryImage(p.images),
           }))
         } else if (selectedCategory === 'pasteleria') {
           const result = await getPastryProductsAdmin()
@@ -199,6 +206,7 @@ export default function NuevoAgendamientoPage() {
             name: p.name,
             base_price: p.price ?? 0,
             min_order_quantity: p.min_order_quantity ?? 1,
+            image_url: getPrimaryImage(p.images),
           }))
         } else {
           const result = await getCocktailProductsAdmin()
@@ -207,6 +215,7 @@ export default function NuevoAgendamientoPage() {
             name: p.name,
             base_price: p.price ?? 0,
             min_order_quantity: p.min_order_quantity ?? 1,
+            image_url: getPrimaryImage(p.images),
           }))
         }
         if (!isCancelled) setCatalogProducts(data)
@@ -290,6 +299,7 @@ export default function NuevoAgendamientoPage() {
         : undefined,
       unit_price: newItem.unit_price,
       total_price: newItem.unit_price * newItem.quantity,
+      image_url: product.image_url,
     }
 
     setItems([...items, item])
@@ -775,6 +785,24 @@ export default function NuevoAgendamientoPage() {
                         key={item.id}
                         className="flex items-center gap-3 p-3 bg-secondary rounded-xl group"
                       >
+                        {/* Product image */}
+                        <div className="w-12 h-12 rounded-lg overflow-hidden bg-white border border-border/50 flex-shrink-0">
+                          {item.image_url ? (
+                            <Image
+                              src={item.image_url}
+                              alt={item.product_name}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-border">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className={cn(
@@ -863,8 +891,25 @@ export default function NuevoAgendamientoPage() {
                 {items.length > 0 && (
                   <div className="mb-4 pb-4 border-b border-border space-y-1.5">
                     {items.map(item => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span className="text-dark-light truncate mr-2">
+                      <div key={item.id} className="flex items-center gap-2.5 text-sm">
+                        <div className="w-8 h-8 rounded-md overflow-hidden bg-secondary border border-border/50 flex-shrink-0">
+                          {item.image_url ? (
+                            <Image
+                              src={item.image_url}
+                              alt={item.product_name}
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-border">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-dark-light truncate flex-1">
                           {item.quantity}x {item.product_name}
                         </span>
                         <span className="text-dark tabular-nums flex-shrink-0">{formatCurrency(item.total_price)}</span>
