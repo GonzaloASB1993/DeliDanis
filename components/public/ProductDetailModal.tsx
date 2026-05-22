@@ -83,15 +83,15 @@ export function ProductDetailModal({ product, productType, onClose }: ProductDet
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-end sm:items-center justify-center sm:p-4">
         {/* Overlay */}
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           onClick={onClose}
         />
 
-        {/* Modal */}
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+        {/* Modal — full-height sheet on mobile, centered card on desktop */}
+        <div className="relative bg-white sm:rounded-2xl rounded-t-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
           {/* Close button */}
           <button
             onClick={onClose}
@@ -103,10 +103,10 @@ export function ProductDetailModal({ product, productType, onClose }: ProductDet
             </svg>
           </button>
 
-          <div className="flex flex-col md:flex-row md:items-stretch md:max-h-[90vh]">
-            {/* Image Section — fills column height on desktop, square on mobile */}
-            <div className="relative bg-secondary md:w-[45%] md:flex-shrink-0">
-              <div className="relative aspect-[4/5] md:aspect-auto md:h-full md:min-h-[480px]">
+          <div className="flex flex-col md:flex-row md:items-stretch flex-1 overflow-hidden">
+            {/* Image Section — short on mobile, tall on desktop */}
+            <div className="relative bg-secondary md:w-[45%] md:flex-shrink-0 flex-shrink-0">
+              <div className="relative aspect-[3/2] sm:aspect-[4/3] md:aspect-auto md:h-full md:min-h-[480px]">
                 {currentImage ? (
                   <Image
                     src={currentImage.url}
@@ -175,7 +175,7 @@ export function ProductDetailModal({ product, productType, onClose }: ProductDet
             </div>
 
             {/* Content Section */}
-            <div className="p-5 lg:p-6 md:flex-1 overflow-y-auto md:max-h-[90vh]">
+            <div className="p-4 sm:p-5 lg:p-6 md:flex-1 overflow-y-auto flex-1">
               {/* Category & Type */}
               <div className="flex flex-wrap gap-1.5 mb-3">
                 <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-xs font-medium">
@@ -195,14 +195,14 @@ export function ProductDetailModal({ product, productType, onClose }: ProductDet
 
               {/* Description */}
               {product.description && (
-                <p className="text-dark-light text-sm leading-relaxed mb-4">
+                <p className="text-dark-light text-sm leading-relaxed mb-3 line-clamp-3 sm:line-clamp-none">
                   {product.description}
                 </p>
               )}
 
               {/* Selector de porciones para tortas */}
               {productType === 'cake' && (
-                <div className="bg-secondary/50 rounded-xl p-4 mb-4">
+                <div className="bg-secondary/50 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
                   <label className="block text-sm font-medium text-dark mb-2">
                     Porciones
                   </label>
@@ -233,7 +233,7 @@ export function ProductDetailModal({ product, productType, onClose }: ProductDet
               )}
 
               {/* Price */}
-              <div className="bg-secondary rounded-xl p-4 mb-4">
+              <div className="bg-secondary rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
                 <div className="flex items-end justify-between">
                   <div>
                     <p className="text-xs text-dark-light mb-0.5">
@@ -268,7 +268,7 @@ export function ProductDetailModal({ product, productType, onClose }: ProductDet
               </div>
 
               {/* Details compactos */}
-              <div className="flex flex-wrap gap-3 mb-4 text-xs">
+              <div className="flex flex-wrap gap-3 mb-3 sm:mb-4 text-xs">
                 {productType === 'cake' && product.preparation_days && (
                   <div className="flex items-center gap-1.5 text-dark-light">
                     <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
