@@ -127,7 +127,7 @@ export function CTASection() {
         aria-hidden="true"
       >
         <span
-          className="font-display text-[8rem] sm:text-[12rem] md:text-[15rem] lg:text-[18rem] font-bold text-white/[0.04] leading-none whitespace-nowrap tracking-tight"
+          className="font-display text-[5rem] sm:text-[8rem] md:text-[15rem] lg:text-[18rem] font-bold text-white/[0.03] sm:text-white/[0.04] leading-none whitespace-nowrap tracking-tight"
         >
           DeliDanis
         </span>
@@ -218,12 +218,12 @@ export function CTASection() {
         {/* Trust indicators — full width, separated by vertical dividers */}
         <div
           ref={trustRef}
-          className="flex flex-wrap items-center justify-center gap-x-0 gap-y-4 mt-16 pt-8 border-t border-white/10 max-w-4xl mx-auto lg:flex-nowrap lg:divide-x lg:divide-white/15"
+          className="flex flex-wrap items-center justify-center gap-x-0 gap-y-2 sm:gap-y-4 mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-white/10 max-w-4xl mx-auto lg:flex-nowrap lg:divide-x lg:divide-white/15"
         >
           {trustIndicators.map((item, i) => (
             <div
               key={i}
-              className="flex items-center gap-2.5 px-6 lg:px-8 py-2"
+              className="flex items-center gap-2 sm:gap-2.5 px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2"
             >
               <svg
                 className="w-5 h-5 text-accent-light flex-shrink-0"

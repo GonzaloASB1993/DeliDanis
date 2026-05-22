@@ -181,8 +181,8 @@ export function ServicesSection() {
               className="group"
             >
               <div className="card-tile card-tile-hover">
-                {/* Image — clean, no overlays competing with content */}
-                <div className="relative aspect-[4/3] overflow-hidden">
+                {/* Image — compact on mobile, standard on desktop */}
+                <div className="relative aspect-[16/9] md:aspect-[4/3] overflow-hidden">
                   <Image
                     src={service.image}
                     alt={service.title}
@@ -193,7 +193,7 @@ export function ServicesSection() {
                 </div>
 
                 {/* Content — title here, paired with a small icon, so the hierarchy reads cleanly */}
-                <div className="p-5 lg:p-6 flex-1 flex flex-col">
+                <div className="p-4 sm:p-5 lg:p-6 flex-1 flex flex-col">
                   <div className="flex items-center gap-3 mb-3">
                     <span className="inline-flex w-9 h-9 items-center justify-center rounded-full bg-primary/10 text-primary flex-shrink-0">
                       <svg
@@ -217,7 +217,7 @@ export function ServicesSection() {
                   </p>
 
                   {/* Features */}
-                  <ul className="space-y-2 mb-5 flex-1">
+                  <ul className="space-y-1.5 sm:space-y-2 mb-4 sm:mb-5 flex-1">
                     {service.features.map((feature) => (
                       <li
                         key={feature}

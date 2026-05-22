@@ -320,10 +320,10 @@ export function TestimonialsCarousel() {
 
       <div className="container mx-auto px-4 lg:px-8 relative">
         {/* Asymmetric Section Header */}
-        <div ref={headerRef} className="flex items-center gap-4 lg:gap-6 mb-10 lg:mb-12">
+        <div ref={headerRef} className="flex items-center gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-10 lg:mb-12">
           <svg
             ref={quoteIconRef}
-            className="w-20 h-20 lg:w-[120px] lg:h-[120px] text-primary/[0.07] flex-shrink-0 -mt-2"
+            className="w-12 h-12 sm:w-20 sm:h-20 lg:w-[120px] lg:h-[120px] text-primary/[0.07] flex-shrink-0 -mt-2"
             fill="currentColor"
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -340,7 +340,7 @@ export function TestimonialsCarousel() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
           {/* Featured testimonial — left, spans 3 cols */}
           <div className="lg:col-span-3" ref={featuredRef}>
-            <div className="relative bg-primary/5 border-l-4 border-primary rounded-2xl p-8 lg:p-10 h-full">
+            <div className="relative bg-primary/5 border-l-4 border-primary rounded-2xl p-5 sm:p-8 lg:p-10 h-full">
               {/* Decorative quote mark */}
               <div className="absolute top-6 right-8 text-primary/[0.06]" aria-hidden="true">
                 <svg className="w-16 h-16 lg:w-20 lg:h-20" fill="currentColor" viewBox="0 0 24 24">
@@ -354,7 +354,7 @@ export function TestimonialsCarousel() {
               </div>
 
               {/* Quote */}
-              <blockquote className="text-dark text-xl lg:text-2xl mb-8 leading-relaxed font-light italic font-body">
+              <blockquote className="text-dark text-lg sm:text-xl lg:text-2xl mb-6 sm:mb-8 leading-relaxed font-light italic font-body">
                 &ldquo;{featured.comment}&rdquo;
               </blockquote>
 
@@ -419,7 +419,7 @@ export function TestimonialsCarousel() {
         </div>
 
         {/* Mobile pagination dots */}
-        <div className="flex items-center justify-center mt-8 lg:hidden">
+        <div className="flex items-center justify-center mt-5 sm:mt-8 lg:hidden">
           {testimonials.map((_, index) => (
             <button
               key={index}

@@ -273,12 +273,12 @@ export function Hero() {
                 />
                 <div
                   ref={statsRef}
-                  className="flex flex-wrap gap-8"
+                  className="flex flex-wrap gap-x-6 gap-y-3 sm:gap-8"
                 >
                   {STATS.map((stat, i) => (
-                    <div key={i} className="flex items-baseline gap-2">
-                      <span className="font-display text-2xl font-bold text-white">{stat.value}</span>
-                      <span className="text-sm text-white/60">{stat.label}</span>
+                    <div key={i} className="flex items-baseline gap-1.5 sm:gap-2">
+                      <span className="font-display text-xl sm:text-2xl font-bold text-white">{stat.value}</span>
+                      <span className="text-xs sm:text-sm text-white/60">{stat.label}</span>
                     </div>
                   ))}
                 </div>

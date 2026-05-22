@@ -297,7 +297,7 @@ export function FeaturedProducts() {
 
           {/* Pagination dots */}
           {showNavigation && (
-            <div className="flex justify-center mt-8">
+            <div className="flex justify-center mt-5 sm:mt-8">
               {Array.from({ length: maxIndex + 1 }).map((_, i) => (
                 <button
                   key={i}
@@ -317,7 +317,7 @@ export function FeaturedProducts() {
         </div>
 
         {/* CTA */}
-        <div className="text-center mt-12 lg:mt-14">
+        <div className="text-center mt-6 sm:mt-12 lg:mt-14">
           <Link href="/catalogo">
             <Button variant="secondary" size="lg" className="group">
               Explorar Catálogo Completo

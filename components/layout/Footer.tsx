@@ -110,7 +110,7 @@ export function Footer() {
             {/* Brand Section */}
             <div className="lg:col-span-4">
               <Link href="/" className="inline-block group mb-7">
-                <div className="relative h-20 lg:h-24 w-auto transition-all duration-300 group-hover:opacity-80">
+                <div className="relative h-14 sm:h-20 lg:h-24 w-auto transition-all duration-300 group-hover:opacity-80">
                   <Image
                     src="/logo.png"
                     alt="DeliDanis - Pastelería Artesanal Premium"
@@ -239,7 +239,7 @@ export function Footer() {
                   <p className="text-light/50 text-sm mb-4">
                     Recibe ofertas exclusivas y nuevos diseños
                   </p>
-                  <form className="flex gap-2.5">
+                  <form className="flex flex-col sm:flex-row gap-2.5">
                     <input
                       type="email"
                       placeholder="tu@email.com"
