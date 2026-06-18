@@ -56,7 +56,7 @@ La descripción debe:
 Solo responde con la descripción, sin comillas ni explicaciones adicionales.`
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 200,
       messages: [
         {
@@ -72,8 +72,7 @@ Solo responde con la descripción, sin comillas ni explicaciones adicionales.`
 
     return NextResponse.json({ description })
   } catch (error: any) {
-    console.error('Error generating description:', error)
-    // Never expose raw error messages (may include API details) to the client
+    console.error('Error generating description:', error?.status, error?.message, error?.error?.type)
     return NextResponse.json(
       { error: 'Error al generar descripción' },
       { status: 500 }
