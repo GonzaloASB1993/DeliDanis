@@ -161,7 +161,7 @@ export function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative h-[100svh] min-h-[600px] max-h-[1000px] overflow-hidden"
+      className="relative h-[100svh] min-h-[600px] max-h-[1000px] overflow-hidden -mt-[72px] lg:-mt-[88px]"
     >
       {/* ── Full-bleed background image ── */}
       <div
