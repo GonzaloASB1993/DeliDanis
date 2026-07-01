@@ -10,9 +10,9 @@ import { Button } from '@/components/ui'
 gsap.registerPlugin(ScrollTrigger)
 
 const STATS = [
-  { value: '150+', label: 'Eventos Celebrados' },
-  { value: '5.0', label: 'Calificación' },
-  { value: '3 años', label: 'De Experiencia' },
+  { value: '150+', label: 'Eventos' },
+  { value: '5.0★', label: 'Calificación' },
+  { value: '3 años', label: 'De oficio' },
 ] as const
 
 export function Hero() {
@@ -184,7 +184,7 @@ export function Hero() {
         className="absolute inset-0 z-10"
       >
         {/* Scrim vertical: fuerte abajo (zona de texto), transparente arriba (la torta se ve) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
         {/* Toque superior para legibilidad del navbar/badge */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent" />
       </div>
@@ -267,12 +267,12 @@ export function Hero() {
                 />
                 <div
                   ref={statsRef}
-                  className="flex flex-wrap gap-x-6 gap-y-3 sm:gap-8"
+                  className="grid grid-cols-3 gap-3 sm:gap-6 max-w-md"
                 >
                   {STATS.map((stat, i) => (
-                    <div key={i} className="flex items-baseline gap-1.5 sm:gap-2">
-                      <span className="font-display text-xl sm:text-2xl font-bold text-white">{stat.value}</span>
-                      <span className="text-xs sm:text-sm text-white/60">{stat.label}</span>
+                    <div key={i}>
+                      <span className="block font-display text-2xl sm:text-3xl font-bold text-accent-light leading-none">{stat.value}</span>
+                      <span className="block text-[10px] sm:text-xs uppercase tracking-wide text-white/70 mt-1.5">{stat.label}</span>
                     </div>
                   ))}
                 </div>
