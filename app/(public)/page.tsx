@@ -4,6 +4,7 @@ import { ServicesSection } from '@/components/public/ServicesSection'
 import { TestimonialsCarousel } from '@/components/public/TestimonialsCarousel'
 import { CTASection } from '@/components/public/CTASection'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
+import { MobileActionBar } from '@/components/public/MobileActionBar'
 import { JsonLd } from '@/components/JsonLd'
 import { buildMetadata } from '@/lib/utils/seo'
 
@@ -46,6 +47,9 @@ export default function HomePage() {
 
       {/* WhatsApp flotante - Acceso rápido a contacto */}
       <WhatsAppButton />
+
+      {/* Barra de acción fija mobile - Cotizar + WhatsApp siempre a mano */}
+      <MobileActionBar />
     </main>
   )
 }

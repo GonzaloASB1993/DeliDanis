@@ -10,9 +10,9 @@ import { Button } from '@/components/ui'
 gsap.registerPlugin(ScrollTrigger)
 
 const STATS = [
-  { value: '150+', label: 'Eventos Celebrados' },
-  { value: '5.0', label: 'Calificación' },
-  { value: '3 años', label: 'De Experiencia' },
+  { value: '150+', label: 'Eventos' },
+  { value: '5.0★', label: 'Calificación' },
+  { value: '3 años', label: 'De oficio' },
 ] as const
 
 export function Hero() {
@@ -161,19 +161,29 @@ export function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative h-[100svh] min-h-[600px] max-h-[1000px] overflow-hidden"
+      className="relative h-[100svh] min-h-[600px] max-h-[1000px] overflow-hidden -mt-[72px] lg:-mt-[88px]"
     >
       {/* ── Full-bleed background image ── */}
       <div
         ref={imageRef}
         className="absolute inset-0 will-change-transform"
       >
+        {/* Mobile: foto vertical, la torta llena el cuadro */}
         <Image
-          src="/images/hero-3.jpg"
+          src="/images/hero-cake-mobile.png"
           alt="Torta artesanal elegante de DeliDanis"
           fill
           sizes="100vw"
-          className="object-cover"
+          className="object-cover lg:hidden"
+          priority
+        />
+        {/* Desktop: foto horizontal */}
+        <Image
+          src="/images/hero-cake-desktop.png"
+          alt="Torta artesanal elegante de DeliDanis"
+          fill
+          sizes="100vw"
+          className="object-cover hidden lg:block"
           priority
         />
       </div>
@@ -183,14 +193,12 @@ export function Hero() {
         ref={overlayRef}
         className="absolute inset-0 z-10"
       >
-        {/* Left side: gradient for text readability — lighter so cake stays visible */}
-        <div className="absolute inset-0 bg-gradient-to-r from-dark/60 via-dark/25 to-transparent" />
-        {/* Bottom: subtle gradient for stats */}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark/40 via-transparent to-transparent" />
+        {/* Scrim vertical: fuerte abajo (zona de texto), transparente arriba (la torta se ve) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
       </div>
 
       {/* ── Content ── */}
-      <div className="relative z-20 h-full flex flex-col justify-center">
+      <div className="relative z-20 h-full flex flex-col justify-end pb-24 sm:pb-16 lg:justify-center lg:pb-0">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="max-w-2xl">
             <div ref={contentRef}>
@@ -199,24 +207,19 @@ export function Hero() {
                 ref={badgeRef}
                 className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/10 backdrop-blur-md rounded-full text-sm mb-6 border border-white/15"
               >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-light/80 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-light" />
-                </span>
-                <span className="text-white/90 font-medium">Creadas con amor, celebradas con sabor</span>
+                <span className="text-white/90 font-medium">Pastelería artesanal en Santiago</span>
               </div>
 
               {/* Title */}
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-5 leading-[1.05] tracking-tight">
+              <h1 className="font-display text-[2.5rem] leading-[1.04] sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-white mb-4 tracking-tight">
                 <span className="block overflow-hidden">
                   <span data-hero-title-inner className="block will-change-transform">
-                    Tortas que Transforman
+                    Tortas hechas a mano
                   </span>
                 </span>
                 <span className="block overflow-hidden">
-                  <span data-hero-title-inner className="block will-change-transform">
-                    <span className="text-primary-light">tu Celebración</span>{' '}
-                    en Arte
+                  <span data-hero-title-inner className="block will-change-transform font-accent italic font-medium text-primary-light">
+                    para tu celebración
                   </span>
                 </span>
               </h1>
@@ -224,12 +227,11 @@ export function Hero() {
               {/* Subtitle */}
               <p
                 data-hero-subtitle
-                className="text-lg lg:text-xl text-white/80 mb-8 max-w-lg leading-relaxed"
+                className="text-base sm:text-lg lg:text-xl text-white/85 mb-7 max-w-md leading-relaxed"
               >
-                Pastelería artesanal premium con{' '}
-                <span className="text-white font-medium">ingredientes selectos</span>,{' '}
-                <span className="text-white font-medium">diseño único</span> y el sabor que dejará
-                huella en tu evento especial.
+                A pedido para{' '}
+                <span className="text-white font-medium">matrimonios, cumpleaños y quinceañeros</span>.
+                Te ayudo a elegir sabor y diseño sin compromiso.
               </p>
 
               {/* CTA Buttons */}
@@ -237,12 +239,12 @@ export function Hero() {
                 data-hero-buttons
                 className="flex flex-col sm:flex-row gap-4 mb-10"
               >
-                <Link href="/agendar" className="group">
+                <Link href="/cotizar" className="group">
                   <Button
                     size="lg"
                     className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all duration-300"
                   >
-                    <span>Reserva tu fecha</span>
+                    <span>Cotiza tu torta</span>
                     <svg
                       className="w-5 h-5 ml-2.5 transition-transform duration-300 group-hover:translate-x-1"
                       fill="none"
@@ -260,7 +262,7 @@ export function Hero() {
                     variant="secondary"
                     className="w-full sm:w-auto border-2 border-white/60 text-white bg-white/10 hover:bg-white/20 hover:border-white backdrop-blur-md transition-all duration-300"
                   >
-                    Explorar creaciones
+                    Ver catálogo
                   </Button>
                 </Link>
               </div>
@@ -273,12 +275,12 @@ export function Hero() {
                 />
                 <div
                   ref={statsRef}
-                  className="flex flex-wrap gap-x-6 gap-y-3 sm:gap-8"
+                  className="grid grid-cols-3 gap-3 sm:gap-6 max-w-md"
                 >
                   {STATS.map((stat, i) => (
-                    <div key={i} className="flex items-baseline gap-1.5 sm:gap-2">
-                      <span className="font-display text-xl sm:text-2xl font-bold text-white">{stat.value}</span>
-                      <span className="text-xs sm:text-sm text-white/60">{stat.label}</span>
+                    <div key={i}>
+                      <span className="block font-display text-2xl sm:text-3xl font-bold text-accent-light leading-none">{stat.value}</span>
+                      <span className="block text-[10px] sm:text-xs uppercase tracking-wide text-white/70 mt-1.5">{stat.label}</span>
                     </div>
                   ))}
                 </div>

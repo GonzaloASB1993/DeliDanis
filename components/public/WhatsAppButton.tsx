@@ -1,19 +1,36 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
+
+function getWhatsAppMessage(pathname: string): string {
+  if (pathname === '/') {
+    return 'Hola, quiero cotizar una torta para mi evento'
+  }
+  if (pathname === '/catalogo') {
+    return 'Hola, estoy viendo el catalogo y me interesa cotizar'
+  }
+  if (pathname.startsWith('/catalogo/')) {
+    return 'Hola, me interesa el producto que vi en su catalogo'
+  }
+  if (pathname.startsWith('/agendar')) {
+    return 'Hola, quiero agendar un pedido'
+  }
+  return 'Hola, me gustaria cotizar un pedido'
+}
+
 export function WhatsAppButton() {
+  const pathname = usePathname()
   const phoneNumber = '56939282764' // +56 9 3928 2764
-  const message = encodeURIComponent(
-    '¡Hola! Me gustaría obtener más información sobre sus tortas.'
-  )
 
   const handleClick = () => {
+    const message = encodeURIComponent(getWhatsAppMessage(pathname))
     window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank', 'noopener,noreferrer')
   }
 
   return (
     <button
       onClick={handleClick}
-      className="fixed bottom-6 right-6 z-40 bg-[#25D366] hover:bg-[#20BA5A] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+      className="hidden lg:block fixed bottom-6 right-6 z-40 bg-[#25D366] hover:bg-[#20BA5A] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
       aria-label="Contactar por WhatsApp"
     >
       <svg
@@ -26,7 +43,7 @@ export function WhatsAppButton() {
 
       {/* Tooltip */}
       <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-dark text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 pointer-events-none">
-        ¿Necesitas ayuda?
+        Escríbenos por WhatsApp
       </span>
     </button>
   )

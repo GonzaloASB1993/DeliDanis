@@ -195,7 +195,7 @@ export function ProductDetailModal({ product, productType, onClose }: ProductDet
 
               {/* Description */}
               {product.description && (
-                <p className="text-dark-light text-sm leading-relaxed mb-3 line-clamp-3 sm:line-clamp-none">
+                <p className="text-dark-light text-sm leading-relaxed mb-3">
                   {product.description}
                 </p>
               )}
