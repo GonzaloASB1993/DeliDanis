@@ -168,12 +168,22 @@ export function Hero() {
         ref={imageRef}
         className="absolute inset-0 will-change-transform"
       >
+        {/* Mobile: foto vertical, la torta llena el cuadro */}
         <Image
-          src="/images/hero-3.jpg"
+          src="/images/hero-cake-mobile.png"
           alt="Torta artesanal elegante de DeliDanis"
           fill
           sizes="100vw"
-          className="object-cover"
+          className="object-cover lg:hidden"
+          priority
+        />
+        {/* Desktop: foto horizontal */}
+        <Image
+          src="/images/hero-cake-desktop.png"
+          alt="Torta artesanal elegante de DeliDanis"
+          fill
+          sizes="100vw"
+          className="object-cover hidden lg:block"
           priority
         />
       </div>
@@ -185,8 +195,6 @@ export function Hero() {
       >
         {/* Scrim vertical: fuerte abajo (zona de texto), transparente arriba (la torta se ve) */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
-        {/* Toque superior para legibilidad del navbar/badge */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-transparent" />
       </div>
 
       {/* ── Content ── */}
