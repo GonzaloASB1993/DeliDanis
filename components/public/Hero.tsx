@@ -217,6 +217,8 @@ export function Hero() {
       >
         {/* Scrim vertical: fuerte abajo (zona de texto), transparente arriba (la torta se ve) */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
+        {/* Scrim superior: garantiza contraste para navbar + badge sin depender de qué tan clara sea la foto en esa zona */}
+        <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-black/65 via-black/40 to-transparent" />
       </div>
 
       {/* ── Content ── */}

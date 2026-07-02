@@ -92,7 +92,7 @@ export function Navbar() {
                 height={80}
                 className={cn(
                   'h-full w-auto object-contain transition-all duration-500',
-                  isTransparent && 'drop-shadow-[0_1px_10px_rgba(255,255,255,0.9)]'
+                  isTransparent && 'brightness-0 invert drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)]'
                 )}
                 priority
               />
@@ -120,7 +120,7 @@ export function Navbar() {
                             active
                               ? 'text-primary'
                               : isTransparent
-                                ? 'text-dark/80 hover:text-dark hover:bg-white/40'
+                                ? 'text-white/90 hover:text-white hover:bg-white/10 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]'
                                 : 'text-dark/80 hover:text-dark hover:bg-secondary/60'
                           )}
                         >
@@ -210,7 +210,7 @@ export function Navbar() {
               className={cn(
                 'lg:hidden p-2.5 -mr-2 transition-colors rounded-xl',
                 isTransparent
-                  ? 'text-dark hover:text-primary hover:bg-white/40'
+                  ? 'text-white hover:text-white/80 hover:bg-white/10 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]'
                   : 'text-dark hover:text-primary hover:bg-secondary/60'
               )}
               aria-label="Abrir menú"
