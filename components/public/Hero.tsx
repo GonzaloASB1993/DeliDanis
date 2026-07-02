@@ -215,10 +215,10 @@ export function Hero() {
         ref={overlayRef}
         className="absolute inset-0 z-10"
       >
-        {/* Scrim vertical: fuerte abajo (zona de texto), transparente arriba (la torta se ve) */}
+        {/* Scrim vertical: fuerte abajo (zona de título/CTAs en blanco), transparente arriba.
+            El navbar y el badge ahora son sólidos (no dependen de este scrim), así que arriba
+            la foto queda libre — más fiel a "la foto llena todo el cuadro". */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
-        {/* Scrim superior: garantiza contraste para navbar + badge sin depender de qué tan clara sea la foto en esa zona */}
-        <div className="absolute inset-x-0 top-0 h-[45%] bg-gradient-to-b from-black/65 via-black/40 to-transparent" />
       </div>
 
       {/* ── Content ── */}
@@ -226,12 +226,12 @@ export function Hero() {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="max-w-2xl">
             <div ref={contentRef}>
-              {/* Badge */}
+              {/* Badge: sólido y opaco a propósito — legible sobre cualquier foto, sin depender de scrims */}
               <div
                 ref={badgeRef}
-                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/10 backdrop-blur-md rounded-full text-sm mb-6 border border-white/15"
+                className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white rounded-full text-sm mb-6 shadow-md"
               >
-                <span className="text-white/90 font-medium">Pastelería artesanal en Santiago</span>
+                <span className="text-dark font-medium">Pastelería artesanal en Santiago</span>
               </div>
 
               {/* Title */}

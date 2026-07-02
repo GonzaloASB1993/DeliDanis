@@ -51,10 +51,6 @@ export function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const pathname = usePathname()
 
-  // En la home el navbar es transparente sobre el hero full-bleed; se vuelve blanco al hacer scroll
-  const isHomepage = pathname === '/'
-  const isTransparent = isHomepage && !isScrolled
-
   const handleScroll = useCallback(() => {
     setIsScrolled(window.scrollY > 10)
   }, [])
@@ -67,12 +63,12 @@ export function Navbar() {
 
   return (
     <>
+      {/* Navbar blanco sólido siempre — legible sobre cualquier foto de hero, sin depender de scrims */}
       <nav
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out',
-          isTransparent
-            ? 'bg-transparent py-4'
-            : 'bg-white/95 backdrop-blur-md shadow-[0_1px_20px_rgba(61,61,61,0.08)] py-2'
+          'bg-white/95 backdrop-blur-md shadow-[0_1px_20px_rgba(61,61,61,0.08)]',
+          isScrolled ? 'py-2' : 'py-3'
         )}
       >
         <div className="container mx-auto px-4 lg:px-8">
@@ -90,10 +86,7 @@ export function Navbar() {
                 alt="DeliDanis"
                 width={240}
                 height={80}
-                className={cn(
-                  'h-full w-auto object-contain transition-all duration-500',
-                  isTransparent && 'brightness-0 invert drop-shadow-[0_1px_8px_rgba(0,0,0,0.45)]'
-                )}
+                className="h-full w-auto object-contain"
                 priority
               />
             </Link>
@@ -119,9 +112,7 @@ export function Navbar() {
                             'px-4 py-2.5 rounded-full text-[15px] font-medium transition-all duration-300 relative flex items-center gap-1.5',
                             active
                               ? 'text-primary'
-                              : isTransparent
-                                ? 'text-white/90 hover:text-white hover:bg-white/10 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]'
-                                : 'text-dark/80 hover:text-dark hover:bg-secondary/60'
+                              : 'text-dark/80 hover:text-dark hover:bg-secondary/60'
                           )}
                         >
                           {item.name}
@@ -178,9 +169,7 @@ export function Navbar() {
                           'px-4 py-2.5 rounded-full text-[15px] font-medium transition-all duration-300 relative inline-block',
                           active
                             ? 'text-primary'
-                            : isTransparent
-                              ? 'text-dark/80 hover:text-dark hover:bg-white/40'
-                              : 'text-dark/80 hover:text-dark hover:bg-secondary/60'
+                            : 'text-dark/80 hover:text-dark hover:bg-secondary/60'
                         )}
                       >
                         {item.name}
@@ -207,12 +196,7 @@ export function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className={cn(
-                'lg:hidden p-2.5 -mr-2 transition-colors rounded-xl',
-                isTransparent
-                  ? 'text-white hover:text-white/80 hover:bg-white/10 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]'
-                  : 'text-dark hover:text-primary hover:bg-secondary/60'
-              )}
+              className="lg:hidden p-2.5 -mr-2 transition-colors rounded-xl text-dark hover:text-primary hover:bg-secondary/60"
               aria-label="Abrir menú"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
