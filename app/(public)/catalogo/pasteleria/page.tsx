@@ -206,7 +206,7 @@ export default function PasteleriaPage() {
           </aside>
 
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 min-w-0">
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <div>
@@ -223,19 +223,19 @@ export default function PasteleriaPage() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <label htmlFor="sort" className="text-sm text-dark-light whitespace-nowrap">
+              <div className="flex items-center gap-2 min-w-0 w-full sm:w-auto">
+                <label htmlFor="sort" className="hidden sm:inline text-sm text-dark-light whitespace-nowrap flex-shrink-0">
                   Ordenar por:
                 </label>
                 <select
                   id="sort"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="px-4 py-2 border border-border rounded-lg bg-white text-dark focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  className="min-w-0 flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-border rounded-lg bg-white text-dark text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                 >
                   <option value="name">Nombre</option>
-                  <option value="price-asc">Precio: Menor a Mayor</option>
-                  <option value="price-desc">Precio: Mayor a Menor</option>
+                  <option value="price-asc">Precio: menor a mayor</option>
+                  <option value="price-desc">Precio: mayor a menor</option>
                 </select>
               </div>
             </div>
