@@ -26,28 +26,43 @@ export function Hero() {
 
   // ── Initial entrance animation ──
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const content = contentRef.current
-      const badge = badgeRef.current
-      const stats = statsRef.current
-      const statsBorder = statsBorderRef.current
-      const overlay = overlayRef.current
-      const image = imageRef.current
+    const content = contentRef.current
+    const badge = badgeRef.current
+    const stats = statsRef.current
+    const statsBorder = statsBorderRef.current
+    const overlay = overlayRef.current
+    const image = imageRef.current
+
+    // Safety net: guarantee every entrance-animated element ends up visible
+    // even if the GSAP timeline below throws or stalls partway on a real
+    // device. Without this, an element whose "from" (hidden) state gets
+    // applied but never reaches its "to" (visible) state stays invisible
+    // forever — e.g. the badge disappearing while the rest of the hero
+    // renders normally.
+    const revealFallback = () => {
+      if (!content) return
+      gsap.set(
+        [badge, overlay, stats?.children, statsBorder].filter(Boolean),
+        { opacity: 1, y: 0, scaleX: 1, scale: 1 }
+      )
+      gsap.set(content.querySelectorAll('[data-hero-title-inner]'), { y: '0%' })
+      const subtitle = content.querySelector('[data-hero-subtitle]')
+      if (subtitle) gsap.set(subtitle, { opacity: 1, y: 0 })
+      const buttons = content.querySelector('[data-hero-buttons]')
+      if (buttons) gsap.set(buttons, { opacity: 1, y: 0 })
+      if (image) gsap.set(image, { scale: 1 })
+    }
+    const fallbackTimer = window.setTimeout(revealFallback, 3500)
+
+    let ctx: ReturnType<typeof gsap.context> | undefined
+    try {
+      ctx = gsap.context(() => {
       if (!content) return
 
       // Respect reduced motion
       const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       if (prefersReducedMotion) {
-        gsap.set(
-          [badge, overlay, stats?.children, statsBorder].filter(Boolean),
-          { opacity: 1, y: 0, scaleX: 1, scale: 1 }
-        )
-        const titles = content.querySelectorAll('[data-hero-title-inner]')
-        gsap.set(titles, { y: '0%' })
-        const subtitle = content.querySelector('[data-hero-subtitle]')
-        if (subtitle) gsap.set(subtitle, { opacity: 1, y: 0 })
-        const buttons = content.querySelector('[data-hero-buttons]')
-        if (buttons) gsap.set(buttons, { opacity: 1, y: 0 })
+        revealFallback()
         return
       }
 
@@ -58,6 +73,7 @@ export function Hero() {
       const tl = gsap.timeline({
         defaults: { ease: 'power3.out' },
         delay: 0.2,
+        onComplete: () => window.clearTimeout(fallbackTimer),
       })
 
       // 1. Image reveal — zoom out from 1.15 to 1
@@ -153,9 +169,15 @@ export function Hero() {
           scrub: true,
         },
       })
-    }, heroRef)
+      }, heroRef)
+    } catch {
+      revealFallback()
+    }
 
-    return () => ctx.revert()
+    return () => {
+      window.clearTimeout(fallbackTimer)
+      ctx?.revert()
+    }
   }, [])
 
   return (
