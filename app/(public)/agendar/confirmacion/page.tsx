@@ -72,27 +72,14 @@ function ConfirmacionContent() {
         setOrderData(result.order as OrderData)
         setIsLoading(false)
 
-        // Send notification email to business (fire and forget)
+        // Send notification email to business (fire and forget).
+        // The endpoint re-fetches the order server-side by id — we only pass the id,
+        // since a browser can't hold the internal secret the endpoint used to require.
         const order = result.order as OrderData
         fetch('/api/email/notify-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderNumber: order.order_number,
-            customerName: `${order.customer.first_name} ${order.customer.last_name}`,
-            customerEmail: order.customer.email,
-            customerPhone: order.customer.phone,
-            eventDate: order.event_date,
-            eventTime: order.event_time,
-            eventType: order.event_type,
-            deliveryType: order.delivery_type,
-            deliveryAddress: order.delivery_address,
-            deliveryCity: order.delivery_city,
-            deliveryFee: order.delivery_fee,
-            subtotal: order.subtotal,
-            total: order.total,
-            items: order.items,
-          }),
+          body: JSON.stringify({ orderId: order.id }),
         }).catch(console.error)
       } catch (err) {
         setError('Error al cargar el pedido')

@@ -371,9 +371,11 @@ export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
     set((state) => ({
       currentStep: Math.min(state.currentStep + 1, 3),
     }))
-    // Scroll to top for better UX when advancing steps
+    // Scroll instantáneo (no 'smooth'): al cambiar de paso el contenido puede
+    // encogerse mucho, y una animación suave puede quedar "clavada" en el
+    // nuevo fondo (más corto) de la página en vez de llegar arriba.
     if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      window.scrollTo({ top: 0, behavior: 'auto' })
     }
   },
 
@@ -382,7 +384,7 @@ export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
       currentStep: Math.max(state.currentStep - 1, 1),
     }))
     if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      window.scrollTo({ top: 0, behavior: 'auto' })
     }
   },
 

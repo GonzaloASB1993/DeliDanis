@@ -176,7 +176,7 @@ export function TortaServiceForm({
           </div>
 
           {/* Precio y Botón */}
-          <div className="flex items-center justify-between p-6 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl border-2 border-primary/20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 sm:p-6 bg-gradient-to-br from-primary/5 to-accent/5 rounded-xl border-2 border-primary/20">
             <div>
               <p className="text-sm text-dark-light mb-1">Precio estimado</p>
               <p className="text-3xl font-bold text-accent font-display">
@@ -187,7 +187,7 @@ export function TortaServiceForm({
               size="lg"
               onClick={handleSubmit}
               disabled={!canSubmit}
-              className="min-w-[200px]"
+              className="w-full sm:w-auto sm:min-w-[200px]"
             >
               + Agregar al Pedido
             </Button>
