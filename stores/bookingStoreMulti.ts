@@ -81,12 +81,14 @@ export interface BookingData {
 interface BookingStore {
   bookingData: BookingData
   currentStep: number
+  deliveryCostSetting: number
 
   // Actions básicas
   setEventType: (eventType: string) => void
   setEventDate: (date: Date) => void
   setEventTime: (time: 'AM' | 'PM') => void
   setDeliveryType: (type: 'pickup' | 'delivery') => void
+  setDeliveryCostSetting: (cost: number) => void
   setCustomer: (customer: Partial<BookingData['customer']>) => void
 
   // Actions para servicios
@@ -218,6 +220,13 @@ const calculatePastryPrice = (service: Omit<PastryService, 'id' | 'price'>): num
 export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
   bookingData: initialBookingData,
   currentStep: 1,
+  // Fallback hasta que la página cargue el valor real desde settings (tabla `payments` en Supabase)
+  deliveryCostSetting: PRICES.delivery,
+
+  setDeliveryCostSetting: (cost) => {
+    set({ deliveryCostSetting: cost })
+    get().calculateTotal()
+  },
 
   setEventType: (eventType) =>
     set((state) => ({
@@ -338,12 +347,13 @@ export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
 
   calculateTotal: () => {
     const { services, deliveryType } = get().bookingData
+    const { deliveryCostSetting } = get()
 
     // Sumar todos los servicios
     const subtotal = services.reduce((sum, service) => sum + service.price, 0)
 
-    // Calcular tarifa de entrega
-    const deliveryFee = deliveryType === 'delivery' ? PRICES.delivery : 0
+    // Calcular tarifa de entrega (usa el valor configurado en el admin, no un precio fijo)
+    const deliveryFee = deliveryType === 'delivery' ? deliveryCostSetting : 0
 
     const total = subtotal + deliveryFee
 

@@ -90,9 +90,9 @@ export function BookingCalendar({ onSelectDate, selectedDate, minDate }: Booking
   }
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
+    <div className="bg-white rounded-2xl p-4 shadow-sm max-w-md mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <button
           onClick={goToPreviousMonth}
           className="p-2 hover:bg-secondary rounded-lg transition-colors"
@@ -139,11 +139,11 @@ export function BookingCalendar({ onSelectDate, selectedDate, minDate }: Booking
       </div>
 
       {/* Day names */}
-      <div className="grid grid-cols-7 gap-2 mb-2">
+      <div className="grid grid-cols-7 gap-1.5 mb-1.5">
         {dayNames.map((name) => (
           <div
             key={name}
-            className="text-center text-sm font-medium text-dark-light py-2"
+            className="text-center text-xs font-medium text-dark-light py-1"
           >
             {name}
           </div>
@@ -151,7 +151,7 @@ export function BookingCalendar({ onSelectDate, selectedDate, minDate }: Booking
       </div>
 
       {/* Calendar days */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1.5">
         {days.map((day, index) => {
           const available = isDateAvailable(day)
           const selected = isSelectedDate(day)
@@ -176,7 +176,7 @@ export function BookingCalendar({ onSelectDate, selectedDate, minDate }: Booking
       </div>
 
       {/* Legend */}
-      <div className="mt-6 pt-6 border-t border-border space-y-2">
+      <div className="mt-4 pt-4 border-t border-border space-y-1.5">
         <p className="text-xs text-dark-light">
           <span className="inline-block w-3 h-3 rounded bg-primary mr-2"></span>
           Fecha seleccionada

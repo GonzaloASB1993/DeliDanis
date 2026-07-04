@@ -33,6 +33,7 @@ export default function AgendarPage() {
     setEventDate,
     setEventTime,
     setDeliveryType,
+    setDeliveryCostSetting,
     setCustomer,
     addService,
     removeService,
@@ -72,10 +73,13 @@ export default function AgendarPage() {
         .then(({ data }) => {
           if (typeof data?.value?.delivery_cost === 'number') {
             setDeliveryCost(data.value.delivery_cost)
+            // El store calcula el total del carrito con este mismo valor,
+            // para que no quede desincronizado del precio mostrado aquí.
+            setDeliveryCostSetting(data.value.delivery_cost)
           }
         })
     })
-  }, [])
+  }, [setDeliveryCostSetting])
 
   // Estado para productos cargados desde BD
   const [cakeProducts, setCakeProducts] = useState<ProductWithImages[]>([])
@@ -124,6 +128,15 @@ export default function AgendarPage() {
     loadProducts()
   }, [])
 
+  // Cuando el contenido del paso se colapsa (un formulario largo vuelve al resumen corto),
+  // el navegador puede dejar el scroll "clavado" en el nuevo fondo de la página (más corta)
+  // en vez de volver arriba. Se llama después de cada transición que acorta el contenido.
+  const scrollStepToTop = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    }
+  }
+
   // Handler: select service category
   const handleSelectCategory = (type: ServiceType) => {
     setSelectedServiceType(type)
@@ -136,17 +149,20 @@ export default function AgendarPage() {
     addService(service)
     setShowServiceForm(false)
     setSelectedServiceType(null)
+    scrollStepToTop()
   }
 
   // Handler: cancel service form
   const handleCancelServiceForm = () => {
     setShowServiceForm(false)
     setSelectedServiceType(null)
+    scrollStepToTop()
   }
 
   // Handler: cancel out of the category selector (fixes the dead-end bug)
   const handleCancelServiceSelector = () => {
     setShowServiceSelector(false)
+    scrollStepToTop()
   }
 
   // Validar todo el formulario del paso 4
