@@ -186,10 +186,10 @@ export function Navbar() {
             {/* Desktop CTA */}
             <div className="hidden lg:flex items-center gap-3">
               <Link
-                href="/cotizar"
+                href="/agendar"
                 className="bg-primary text-white hover:bg-primary-hover rounded-full px-6 py-2 text-sm font-semibold transition-all duration-300 hover:shadow-[0_4px_20px_rgba(212,132,124,0.4)] active:scale-[0.97]"
               >
-                Cotiza gratis
+                Agenda ahora
               </Link>
             </div>
 
