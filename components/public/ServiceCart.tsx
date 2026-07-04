@@ -159,7 +159,7 @@ export function ServiceCart({
   onRemoveService,
   onAddAnother,
   onContinue,
-  currentStep = 2,
+  currentStep = 1,
 }: ServiceCartProps) {
   const hasServices = services.length > 0
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
@@ -275,8 +275,8 @@ export function ServiceCart({
             </div>
           </div>
 
-          {/* Actions - Only show on step 2 */}
-          {currentStep === 2 && (
+          {/* Actions - Only show on step 1 (Servicios) */}
+          {currentStep === 1 && (
             <div className="space-y-2">
               <button
                 onClick={() => {
