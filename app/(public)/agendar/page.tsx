@@ -8,9 +8,9 @@ import { ServiceCart } from '@/components/public/ServiceCart'
 import { TortaServiceForm } from '@/components/public/TortaServiceForm'
 import { CocktailServiceForm } from '@/components/public/CocktailServiceForm'
 import { PastryServiceForm } from '@/components/public/PastryServiceForm'
-import { EventTypeSelector } from '@/components/public/EventTypeSelector'
+import { eventTypes } from '@/components/public/EventTypeSelector'
 import { BookingCalendar } from '@/components/public/BookingCalendar'
-import { Button, Input, Card } from '@/components/ui'
+import { Button, Input, Card, Select } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils/format'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
 import { cn } from '@/lib/utils/cn'
@@ -144,6 +144,11 @@ export default function AgendarPage() {
     setSelectedServiceType(null)
   }
 
+  // Handler: cancel out of the category selector (fixes the dead-end bug)
+  const handleCancelServiceSelector = () => {
+    setShowServiceSelector(false)
+  }
+
   // Validar todo el formulario del paso 4
   const validateContactForm = (): boolean => {
     const errors: typeof formErrors = {}
@@ -265,14 +270,15 @@ export default function AgendarPage() {
     nextStep()
   }
 
-  // Validation functions
-  const canContinueStep1 = bookingData.eventType !== null
-  const canContinueStep2 = bookingData.services.length > 0
-  const canContinueStep3 =
+  // Validation functions (renumbered for the 3-step wizard:
+  // 1 = Servicios, 2 = Detalles (incluye tipo de evento), 3 = Contacto + Pago)
+  const canContinueStep1 = bookingData.services.length > 0
+  const canContinueStep2 =
+    bookingData.eventType !== null &&
     bookingData.eventDate !== null &&
     bookingData.eventTime !== null &&
     bookingData.deliveryType !== null
-  const canContinueStep4 = useMemo(() => {
+  const canContinueStep3 = useMemo(() => {
     // Verificar que todos los campos requeridos tengan valor
     const hasRequiredFields =
       bookingData.customer.firstName.trim() !== '' &&
