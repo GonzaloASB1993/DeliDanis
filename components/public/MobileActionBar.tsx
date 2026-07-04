@@ -8,7 +8,7 @@ const WA_PHONE = '56939282764' // +56 9 3928 2764
 
 function waMessage(pathname: string): string {
   if (pathname === '/') {
-    return 'Hola DeliDanis, vengo de la web y quiero cotizar una torta para mi evento'
+    return 'Hola DeliDanis, vengo de la web y quiero agendar una torta para mi evento'
   }
   if (pathname === '/catalogo') {
     return 'Hola DeliDanis, estoy viendo el catálogo y quiero cotizar'
@@ -38,10 +38,10 @@ export function MobileActionBar() {
     >
       <div className="pb-safe flex gap-2 border-t border-border bg-white/95 px-3 pt-2 pb-2 backdrop-blur-md shadow-[0_-4px_20px_rgba(61,61,61,0.08)]">
         <Link
-          href="/cotizar"
+          href="/agendar"
           className="flex flex-1 items-center justify-center rounded-xl bg-primary py-3.5 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
         >
-          Cotiza tu torta
+          Agenda tu torta
         </Link>
         <a
           href={waHref}

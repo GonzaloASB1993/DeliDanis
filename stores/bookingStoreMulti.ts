@@ -359,7 +359,7 @@ export const useBookingStoreMulti = create<BookingStore>((set, get) => ({
 
   nextStep: () => {
     set((state) => ({
-      currentStep: Math.min(state.currentStep + 1, 5),
+      currentStep: Math.min(state.currentStep + 1, 3),
     }))
     // Scroll to top for better UX when advancing steps
     if (typeof window !== 'undefined') {

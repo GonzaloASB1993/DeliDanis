@@ -263,12 +263,12 @@ export function Hero() {
                 data-hero-buttons
                 className="flex flex-col sm:flex-row gap-4 mb-10"
               >
-                <Link href="/cotizar" className="group">
+                <Link href="/agendar" className="group">
                   <Button
                     size="lg"
                     className="w-full sm:w-auto shadow-md hover:shadow-lg transition-all duration-300"
                   >
-                    <span>Cotiza tu torta</span>
+                    <span>Agenda tu torta</span>
                     <svg
                       className="w-5 h-5 ml-2.5 transition-transform duration-300 group-hover:translate-x-1"
                       fill="none"

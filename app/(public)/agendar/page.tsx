@@ -8,9 +8,9 @@ import { ServiceCart } from '@/components/public/ServiceCart'
 import { TortaServiceForm } from '@/components/public/TortaServiceForm'
 import { CocktailServiceForm } from '@/components/public/CocktailServiceForm'
 import { PastryServiceForm } from '@/components/public/PastryServiceForm'
-import { EventTypeSelector } from '@/components/public/EventTypeSelector'
+import { eventTypes } from '@/components/public/EventTypeSelector'
 import { BookingCalendar } from '@/components/public/BookingCalendar'
-import { Button, Input, Card } from '@/components/ui'
+import { Button, Input, Card, Select } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils/format'
 import { WhatsAppButton } from '@/components/public/WhatsAppButton'
 import { cn } from '@/lib/utils/cn'
@@ -144,6 +144,11 @@ export default function AgendarPage() {
     setSelectedServiceType(null)
   }
 
+  // Handler: cancel out of the category selector (fixes the dead-end bug)
+  const handleCancelServiceSelector = () => {
+    setShowServiceSelector(false)
+  }
+
   // Validar todo el formulario del paso 4
   const validateContactForm = (): boolean => {
     const errors: typeof formErrors = {}
@@ -265,14 +270,15 @@ export default function AgendarPage() {
     nextStep()
   }
 
-  // Validation functions
-  const canContinueStep1 = bookingData.eventType !== null
-  const canContinueStep2 = bookingData.services.length > 0
-  const canContinueStep3 =
+  // Validation functions (renumbered for the 3-step wizard:
+  // 1 = Servicios, 2 = Detalles (incluye tipo de evento), 3 = Contacto + Pago)
+  const canContinueStep1 = bookingData.services.length > 0
+  const canContinueStep2 =
+    bookingData.eventType !== null &&
     bookingData.eventDate !== null &&
     bookingData.eventTime !== null &&
     bookingData.deliveryType !== null
-  const canContinueStep4 = useMemo(() => {
+  const canContinueStep3 = useMemo(() => {
     // Verificar que todos los campos requeridos tengan valor
     const hasRequiredFields =
       bookingData.customer.firstName.trim() !== '' &&
@@ -334,63 +340,19 @@ export default function AgendarPage() {
     }
   }
 
-  // Progress percentage
-  const progressPercentage = (currentStep / 5) * 100
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary via-white to-primary/5 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-secondary via-white to-primary/5 py-8 md:py-10">
       <div className="container mx-auto px-4">
-        {/* Progress Bar - Aligned with content */}
-        <div className="max-w-7xl mx-auto mb-8">
-          <div className="lg:pr-[420px]">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-dark">Paso {currentStep} de 5</span>
-              <span className="text-sm text-dark-light font-medium">{Math.round(progressPercentage)}% completado</span>
-            </div>
-            <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-              <div
-                className="h-full bg-gradient-to-r from-primary via-primary-hover to-accent transition-all duration-500 ease-out shadow-sm"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-
-            {/* Step Labels */}
-            <div className="grid grid-cols-5 gap-3 mt-5">
-              {[
-                { num: 1, label: 'Evento', icon: '🎊' },
-                { num: 2, label: 'Servicios', icon: '🛍️' },
-                { num: 3, label: 'Detalles', icon: '📋' },
-                { num: 4, label: 'Contacto', icon: '📞' },
-                { num: 5, label: 'Pago', icon: '💳' },
-              ].map((step) => (
-                <div
-                  key={step.num}
-                  className={cn(
-                    'text-center py-3 px-4 rounded-xl transition-all duration-300 border-2',
-                    currentStep === step.num
-                      ? 'bg-primary border-primary text-white font-semibold shadow-lg scale-105'
-                      : currentStep > step.num
-                      ? 'bg-accent/10 border-accent text-accent font-medium'
-                      : 'bg-white border-gray-200 text-gray-400'
-                  )}
-                >
-                  <div className="text-lg mb-1">{step.icon}</div>
-                  <div className="text-xs font-semibold">{step.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* Main Content with Sidebar Cart */}
         <div className="max-w-7xl mx-auto">
           {/* Header - Aligned with form content */}
-          <div className="lg:pr-[420px] mb-8">
-            <h1 className="font-display text-4xl md:text-5xl font-bold text-dark mb-4">
+          <div className="lg:pr-[420px] mb-5">
+            <p className="text-sm font-medium text-dark-light mb-2">Paso {currentStep} de 3</p>
+            <h1 className="font-display text-3xl md:text-4xl font-bold text-dark mb-3">
               Arma Tu Evento Perfecto
             </h1>
-            <p className="text-lg text-dark-light">
-              Selecciona los servicios que necesitas para tu celebración. Puedes combinar tortas,
+            <p className="text-base text-dark-light">
+              Selecciona los servicios que necesites para tu celebración. Puedes combinar tortas,
               coctelería y pastelería en un solo pedido.
             </p>
           </div>
@@ -398,45 +360,18 @@ export default function AgendarPage() {
           {/* Grid con formulario y cart */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Main Form */}
-          <div className="lg:col-span-7 xl:col-span-8">
-            <Card className="p-6 md:p-8">
-              {/* STEP 1: Event Type */}
+          <div
+            className={cn(
+              'lg:col-span-7 xl:col-span-8',
+              bookingData.services.length > 0 && 'pb-24 lg:pb-0'
+            )}
+          >
+            <Card className="p-5 md:p-6">
+              {/* STEP 1: Services */}
               {currentStep === 1 && (
-                <div className="space-y-6">
+                <div className="space-y-4">
                   <div>
-                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
-                      ¿Para qué tipo de evento?
-                    </h2>
-                    <p className="text-dark-light">
-                      Esto nos ayuda a recomendarte los mejores productos para tu celebración
-                    </p>
-                  </div>
-
-                  <EventTypeSelector
-                    selectedEventType={bookingData.eventType}
-                    onSelectEventType={(slug) => setEventType(slug)}
-                  />
-
-                  <div className="flex justify-end pt-4">
-                    <Button
-                      onClick={nextStep}
-                      disabled={!canContinueStep1}
-                      className="px-8"
-                    >
-                      Continuar
-                      <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 2: Services */}
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                    <h2 className="font-display text-2xl font-bold text-dark mb-2">
                       Selecciona Tus Servicios
                     </h2>
                     <p className="text-dark-light">
@@ -451,11 +386,12 @@ export default function AgendarPage() {
                         <ServiceCategorySelector
                           selectedCategory={selectedServiceType}
                           onSelectCategory={handleSelectCategory}
+                          onCancel={handleCancelServiceSelector}
                         />
                       ) : (
-                        <div className="text-center py-12">
+                        <div className="text-center py-10">
                           <div className="mb-4 flex justify-center">
-                          <svg className="w-16 h-16 text-dark-light/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-14 h-14 text-dark-light/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                           </svg>
                         </div>
@@ -542,14 +478,8 @@ export default function AgendarPage() {
 
                   {/* Navigation Buttons */}
                   {!showServiceForm && !showServiceSelector && (
-                    <div className="flex justify-between pt-4">
-                      <Button onClick={prevStep} variant="ghost">
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                        </svg>
-                        Atrás
-                      </Button>
-                      <Button onClick={nextStep} disabled={!canContinueStep2}>
+                    <div className="flex justify-end pt-4">
+                      <Button onClick={nextStep} disabled={!canContinueStep1}>
                         Continuar
                         <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -560,17 +490,31 @@ export default function AgendarPage() {
                 </div>
               )}
 
-              {/* STEP 3: Event Details & Delivery */}
-              {currentStep === 3 && (
-                <div className="space-y-6">
+              {/* STEP 2: Event Details & Delivery (incluye tipo de evento) */}
+              {currentStep === 2 && (
+                <div className="space-y-4">
                   <div>
-                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                    <h2 className="font-display text-2xl font-bold text-dark mb-2">
                       Detalles del Evento
                     </h2>
                     <p className="text-dark-light">
-                      Cuéntanos cuándo y dónde necesitas tu pedido
+                      Cuéntanos qué tipo de evento es, cuándo y dónde necesitas tu pedido
                     </p>
                   </div>
+
+                  {/* Event Type */}
+                  <Select
+                    label="Tipo de Evento *"
+                    placeholder="Selecciona el tipo de evento"
+                    value={bookingData.eventType || ''}
+                    onChange={(e) => setEventType(e.target.value)}
+                  >
+                    {eventTypes.map((et) => (
+                      <option key={et.id} value={et.slug}>
+                        {et.name}
+                      </option>
+                    ))}
+                  </Select>
 
                   {/* Event Date */}
                   <div>
@@ -588,13 +532,13 @@ export default function AgendarPage() {
                     <label className="block text-sm font-semibold text-dark mb-3">
                       Horario del Evento *
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {['AM', 'PM'].map((time) => (
                         <button
                           key={time}
                           onClick={() => setEventTime(time as 'AM' | 'PM')}
                           className={cn(
-                            'py-4 px-6 rounded-xl border-2 font-semibold transition-all duration-200',
+                            'py-3 px-5 rounded-xl border-2 font-semibold transition-all duration-200 text-sm',
                             bookingData.eventTime === time
                               ? 'border-primary bg-primary text-white shadow-lg'
                               : 'border-border hover:border-primary/50 text-dark'
@@ -611,17 +555,17 @@ export default function AgendarPage() {
                     <label className="block text-sm font-semibold text-dark mb-3">
                       Tipo de Entrega *
                     </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <button
                         onClick={() => setDeliveryType('pickup')}
                         className={cn(
-                          'py-6 px-6 rounded-xl border-2 transition-all duration-200 text-left',
+                          'py-4 px-5 rounded-xl border-2 transition-all duration-200 text-left',
                           bookingData.deliveryType === 'pickup'
                             ? 'border-primary bg-primary/10 shadow-lg'
                             : 'border-border hover:border-primary/50'
                         )}
                       >
-                        <div className="w-8 h-8 mb-2 text-dark-light">
+                        <div className="w-7 h-7 mb-2 text-dark-light">
                           <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                           </svg>
@@ -632,13 +576,13 @@ export default function AgendarPage() {
                       <button
                         onClick={() => setDeliveryType('delivery')}
                         className={cn(
-                          'py-6 px-6 rounded-xl border-2 transition-all duration-200 text-left',
+                          'py-4 px-5 rounded-xl border-2 transition-all duration-200 text-left',
                           bookingData.deliveryType === 'delivery'
                             ? 'border-primary bg-primary/10 shadow-lg'
                             : 'border-border hover:border-primary/50'
                         )}
                       >
-                        <div className="w-8 h-8 mb-2 text-dark-light">
+                        <div className="w-7 h-7 mb-2 text-dark-light">
                           <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
                           </svg>
@@ -656,7 +600,7 @@ export default function AgendarPage() {
                       </svg>
                       Atrás
                     </Button>
-                    <Button onClick={nextStep} disabled={!canContinueStep3}>
+                    <Button onClick={nextStep} disabled={!canContinueStep2}>
                       Continuar
                       <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -666,11 +610,11 @@ export default function AgendarPage() {
                 </div>
               )}
 
-              {/* STEP 4: Contact Information */}
-              {currentStep === 4 && (
-                <div className="space-y-6">
+              {/* STEP 3: Contact Information + Pago (mismo paso) */}
+              {currentStep === 3 && (
+                <div className="space-y-4">
                   <div>
-                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
+                    <h2 className="font-display text-2xl font-bold text-dark mb-2">
                       Información de Contacto
                     </h2>
                     <p className="text-dark-light">
@@ -739,136 +683,115 @@ export default function AgendarPage() {
                     </>
                   )}
 
-                  <div className="flex justify-between pt-4">
-                    <Button onClick={prevStep} variant="ghost">
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
-                      </svg>
-                      Atrás
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        if (!validateContactForm()) return
-                        nextStep()
-                      }}
-                      disabled={!canContinueStep4}
-                      className="bg-accent hover:bg-accent-light"
-                    >
-                      Continuar al Pago
-                      <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Button>
-                  </div>
-                </div>
-              )}
-              {/* STEP 5: Pago */}
-              {currentStep === 5 && (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="font-display text-3xl font-bold text-dark mb-2">
-                      Confirmar y Pagar
-                    </h2>
-                    <p className="text-dark-light">
-                      Elige cómo quieres pagar para confirmar tu pedido
-                    </p>
-                  </div>
-
-                  {/* Trust Signals */}
-                  <div className="flex flex-wrap items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                      <span className="text-sm font-medium text-green-800">Pago 100% Seguro</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-sm font-medium text-green-800">Datos protegidos</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">MercadoPago</span>
-                      <span className="text-sm text-green-800">Procesado por</span>
-                    </div>
-                  </div>
-
-                  {/* Resumen de pago */}
-                  <div className="bg-secondary/50 rounded-xl p-5 space-y-3">
-                    <h3 className="font-semibold text-dark">Resumen de pago</h3>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-dark-light">Subtotal servicios</span>
-                      <span className="text-dark font-medium">{formatCurrency(bookingData.subtotal)}</span>
-                    </div>
-                    {bookingData.deliveryFee > 0 && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-dark-light">Envío</span>
-                        <span className="text-dark font-medium">{formatCurrency(bookingData.deliveryFee)}</span>
+                  {/* Pago: aparece en la misma pantalla en cuanto los datos de contacto son válidos */}
+                  {canContinueStep3 && (
+                    <div className="space-y-4 pt-2 border-t border-border">
+                      <div className="pt-4">
+                        <h2 className="font-display text-2xl font-bold text-dark mb-2">
+                          Confirmar y Pagar
+                        </h2>
+                        <p className="text-dark-light">
+                          Elige cómo quieres pagar para confirmar tu pedido
+                        </p>
                       </div>
-                    )}
-                    <div className="flex justify-between font-bold text-base pt-2 border-t border-border">
-                      <span className="text-dark">Total del pedido</span>
-                      <span className="text-accent font-display text-xl">{formatCurrency(bookingData.total)}</span>
-                    </div>
-                  </div>
 
-                  {/* Error */}
-                  {paymentError && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                      {paymentError}
-                    </div>
-                  )}
-
-                  {/* Opciones de pago */}
-                  <div className="space-y-3">
-                    {/* Pagar depósito */}
-                    <button
-                      onClick={() => handlePay('deposit')}
-                      disabled={isPaymentLoading}
-                      className="w-full p-5 bg-white border-2 border-primary rounded-2xl text-left hover:bg-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-dark group-hover:text-primary transition-colors">
-                          Pagar depósito ahora
-                        </span>
-                        <span className="text-xl font-bold font-display text-primary">
-                          {formatCurrency(Math.round(bookingData.total * depositPercentage / 100))}
-                        </span>
+                      {/* Trust Signals */}
+                      <div className="flex flex-wrap items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                          <span className="text-sm font-medium text-green-800">Pago 100% Seguro</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-sm font-medium text-green-800">Datos protegidos</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">MercadoPago</span>
+                          <span className="text-sm text-green-800">Procesado por</span>
+                        </div>
                       </div>
-                      <p className="text-sm text-dark-light">
-                        {depositPercentage}% ahora para reservar tu fecha · El saldo lo pagas más adelante
+
+                      {/* Resumen de pago */}
+                      <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
+                        <h3 className="font-semibold text-dark">Resumen de pago</h3>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-dark-light">Subtotal servicios</span>
+                          <span className="text-dark font-medium">{formatCurrency(bookingData.subtotal)}</span>
+                        </div>
+                        {bookingData.deliveryFee > 0 && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-dark-light">Envío</span>
+                            <span className="text-dark font-medium">{formatCurrency(bookingData.deliveryFee)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between font-bold text-base pt-2 border-t border-border">
+                          <span className="text-dark">Total del pedido</span>
+                          <span className="text-accent font-display text-xl">{formatCurrency(bookingData.total)}</span>
+                        </div>
+                      </div>
+
+                      {/* Error */}
+                      {paymentError && (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                          {paymentError}
+                        </div>
+                      )}
+
+                      {/* Opciones de pago */}
+                      <div className="space-y-3">
+                        {/* Pagar depósito */}
+                        <button
+                          onClick={() => handlePay('deposit')}
+                          disabled={isPaymentLoading}
+                          className="w-full p-4 bg-white border-2 border-primary rounded-2xl text-left hover:bg-primary/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-dark group-hover:text-primary transition-colors">
+                              Pagar depósito ahora
+                            </span>
+                            <span className="text-xl font-bold font-display text-primary">
+                              {formatCurrency(Math.round(bookingData.total * depositPercentage / 100))}
+                            </span>
+                          </div>
+                          <p className="text-sm text-dark-light">
+                            {depositPercentage}% ahora para reservar tu fecha · El saldo lo pagas más adelante
+                          </p>
+                        </button>
+
+                        {/* Pagar total */}
+                        <button
+                          onClick={() => handlePay('full')}
+                          disabled={isPaymentLoading}
+                          className="w-full p-4 bg-white border-2 border-gray-200 rounded-2xl text-left hover:border-accent hover:bg-accent/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-semibold text-dark">
+                              Pagar monto completo
+                            </span>
+                            <span className="text-xl font-bold font-display text-accent">
+                              {formatCurrency(bookingData.total)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-dark-light">
+                            Pago único · Sin saldo pendiente
+                          </p>
+                        </button>
+                      </div>
+
+                      <p className="text-xs text-center text-dark-light">
+                        Serás redirigido al sitio oficial de MercadoPago para completar tu pago de forma segura.
                       </p>
-                    </button>
 
-                    {/* Pagar total */}
-                    <button
-                      onClick={() => handlePay('full')}
-                      disabled={isPaymentLoading}
-                      className="w-full p-5 bg-white border-2 border-gray-200 rounded-2xl text-left hover:border-accent hover:bg-accent/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-dark">
-                          Pagar monto completo
-                        </span>
-                        <span className="text-xl font-bold font-display text-accent">
-                          {formatCurrency(bookingData.total)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-dark-light">
-                        Pago único · Sin saldo pendiente
-                      </p>
-                    </button>
-                  </div>
-
-                  <p className="text-xs text-center text-dark-light">
-                    Serás redirigido al sitio oficial de MercadoPago para completar tu pago de forma segura.
-                  </p>
-
-                  {isPaymentLoading && (
-                    <div className="text-center py-4">
-                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <p className="text-sm text-dark-light mt-2">Preparando tu pago...</p>
+                      {isPaymentLoading && (
+                        <div className="text-center py-4">
+                          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                          <p className="text-sm text-dark-light mt-2">Preparando tu pago...</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
