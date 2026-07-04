@@ -38,35 +38,47 @@ const serviceCategories: ServiceCategory[] = [
 interface ServiceCategorySelectorProps {
   selectedCategory: ServiceType | null
   onSelectCategory: (type: ServiceType) => void
+  onCancel: () => void
 }
 
 export function ServiceCategorySelector({
   selectedCategory,
   onSelectCategory,
+  onCancel,
 }: ServiceCategorySelectorProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <button
+        onClick={onCancel}
+        className="flex items-center gap-2 text-sm font-medium text-dark-light hover:text-dark transition-colors"
+        aria-label="Volver sin elegir un servicio"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+        </svg>
+        Atrás
+      </button>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {serviceCategories.map((category) => (
           <button
             key={category.type}
             onClick={() => onSelectCategory(category.type)}
             className={cn(
-              'relative p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-105',
+              'relative p-5 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-105',
               selectedCategory === category.type
                 ? 'border-primary bg-primary/10 shadow-xl ring-4 ring-primary/20'
                 : 'border-border hover:border-primary/50 bg-white hover:shadow-lg'
             )}
           >
             {/* Icono grande */}
-            <div className="w-12 h-12 mb-4 transition-transform duration-300 group-hover:scale-110 text-dark-light">
+            <div className="w-10 h-10 mb-3 transition-transform duration-300 group-hover:scale-110 text-dark-light">
               <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={category.iconPath} />
               </svg>
             </div>
 
             {/* Título */}
-            <h3 className="font-display text-2xl font-bold text-dark mb-2">
+            <h3 className="font-display text-xl font-bold text-dark mb-2">
               {category.name}
             </h3>
 
