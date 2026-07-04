@@ -1,30 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { getPayment, verifyWebhookSignature } from '@/lib/payments/mercadopago'
 
 const TOLERANCE_CLP = 10 // tolerancia de $10 CLP por redondeos
 
-export async function POST(request: NextRequest) {
+async function processPayment(paymentId: string) {
   try {
-    const body = await request.json()
-
-    // Solo procesar eventos de tipo "payment"
-    if (body.type !== 'payment' || !body.data?.id) {
-      return NextResponse.json({ ok: true }, { status: 200 })
-    }
-
-    const paymentId = String(body.data.id)
-
-    // Verificar firma
-    const xSignature = request.headers.get('x-signature') || ''
-    const xRequestId = request.headers.get('x-request-id') || ''
-    const isValid = verifyWebhookSignature(xSignature, xRequestId, paymentId)
-
-    if (!isValid) {
-      console.error('[MP Webhook] Firma inválida, rechazando')
-      return NextResponse.json({ error: 'Firma inválida' }, { status: 401 })
-    }
-
     // Obtener datos del pago desde la API de MP
     let payment: Awaited<ReturnType<typeof getPayment>>
     try {
@@ -36,18 +18,17 @@ export async function POST(request: NextRequest) {
       } else {
         console.error('[MP Webhook] Error al obtener pago:', mpError)
       }
-      // Retornar 200 para que MP no reintente; el pago quedará pendiente hasta resolución manual
-      return NextResponse.json({ ok: true }, { status: 200 })
+      return
     }
 
     if (payment.status !== 'approved') {
-      return NextResponse.json({ ok: true }, { status: 200 })
+      return
     }
 
     const orderNumber = payment.external_reference
     if (!orderNumber) {
       console.error('[MP Webhook] Sin external_reference en pago', paymentId)
-      return NextResponse.json({ ok: true }, { status: 200 })
+      return
     }
 
     // Usar cliente admin (service role) para bypass de RLS — el webhook no tiene sesión de usuario
@@ -62,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     if (existingOrder) {
       console.log('[MP Webhook] Pago ya procesado (idempotente):', paymentId)
-      return NextResponse.json({ ok: true }, { status: 200 })
+      return
     }
 
     // Buscar pedido por order_number
@@ -74,12 +55,12 @@ export async function POST(request: NextRequest) {
 
     if (orderError || !order) {
       console.error('[MP Webhook] Pedido no encontrado:', orderNumber)
-      return NextResponse.json({ ok: true }, { status: 200 })
+      return
     }
 
     // Si ya está pagado, no procesar
     if (order.payment_status === 'paid') {
-      return NextResponse.json({ ok: true }, { status: 200 })
+      return
     }
 
     const paidAmount = Math.round(payment.transaction_amount || 0)
@@ -104,7 +85,6 @@ export async function POST(request: NextRequest) {
     // 3. Balance payment (order already has partial payment, paidAmount ≈ remaining balance)
     const isFullPayment = Math.abs(paidAmount - totalAmount) <= TOLERANCE_CLP
     const isBalancePayment = order.payment_status === 'partial' && existingDeposit > 0
-    const isDepositPayment = !isFullPayment && !isBalancePayment && Math.abs(paidAmount - expectedDeposit) <= TOLERANCE_CLP
 
     const wasInCheckout = order.status === 'pending_payment'
 
@@ -141,7 +121,7 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error('[MP Webhook] Error actualizando pedido:', updateError)
-      return NextResponse.json({ error: 'Error BD' }, { status: 500 })
+      return
     }
 
     // Incrementar capacidad diaria solo si venía de pending_payment
@@ -208,6 +188,41 @@ export async function POST(request: NextRequest) {
     }).catch(err => console.error('[MP Webhook] Error enviando email:', err))
 
     console.log(`[MP Webhook] Procesado OK: ${orderNumber} → ${updateData.payment_status}`)
+  } catch (error) {
+    console.error('[MP Webhook] Error inesperado procesando pago:', error)
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+
+    // Solo procesar eventos de tipo "payment"
+    if (body.type !== 'payment' || !body.data?.id) {
+      return NextResponse.json({ ok: true }, { status: 200 })
+    }
+
+    const paymentId = String(body.data.id)
+
+    // Verificar firma
+    const xSignature = request.headers.get('x-signature') || ''
+    const xRequestId = request.headers.get('x-request-id') || ''
+    const isValid = verifyWebhookSignature(xSignature, xRequestId, paymentId)
+
+    if (!isValid) {
+      console.error('[MP Webhook] Firma inválida, rechazando')
+      return NextResponse.json({ error: 'Firma inválida' }, { status: 401 })
+    }
+
+    // Responder de inmediato (MercadoPago tiene un timeout corto de espera para
+    // la respuesta del webhook) y procesar el pago — llamada a la API de MP,
+    // varias escrituras en Supabase, envío de email — después de enviar la
+    // respuesta, usando `after()`. Antes esto se hacía todo antes de responder,
+    // y bajo un cold start la cadena completa podía tardar más de lo que
+    // MercadoPago está dispuesto a esperar, reportando la entrega como fallida
+    // (502) sin que nuestro código llegara siquiera a loguear nada.
+    after(() => processPayment(paymentId))
+
     return NextResponse.json({ ok: true }, { status: 200 })
   } catch (error) {
     console.error('[MP Webhook] Error inesperado:', error)
